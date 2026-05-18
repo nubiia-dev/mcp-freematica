@@ -14,7 +14,7 @@
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
     "format": "prettier --write src tests",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -23,13 +23,14 @@
     "node": ">=20"
   },
   "keywords": ["mcp", "freematica", "nubiia"],
+  "author": "Freemática",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "axios": "^1.7.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",
-    "express-rate-limit": "^7.4.0",
+    "express-rate-limit": "^8.3.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
