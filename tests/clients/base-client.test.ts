@@ -69,6 +69,7 @@ describe('BaseClient', () => {
     nock(BASE_URL).get('/x').reply(429, '', { 'retry-after': '5' });
     await expect(client.testGet('/x')).rejects.toMatchObject({
       code: 'rate_limit_exceeded',
+      retryAfter: 5,
     });
   });
 

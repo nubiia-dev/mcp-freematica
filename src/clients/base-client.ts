@@ -101,13 +101,6 @@ export class BaseClient {
         return new FreematicaError('network_error', `Network error: ${err.message}`);
       }
     }
-    // Handle raw Error objects with a code property (e.g. network errors wrapped by nock)
-    if (err instanceof Error && 'code' in err) {
-      const code = (err as NodeJS.ErrnoException).code;
-      if (code === 'ECONNREFUSED' || code === 'ETIMEDOUT' || code === 'ENOTFOUND') {
-        return new FreematicaError('network_error', `Network error: ${err.message}`);
-      }
-    }
     const msg = err instanceof Error ? err.message : String(err);
     return new FreematicaError('unexpected_error', `Unexpected error: ${msg}`);
   }
