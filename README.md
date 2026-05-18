@@ -142,12 +142,50 @@ Patrón inspirado en `mcp-nevent` y `mcp-holded`.
 
 ## Despliegue
 
-Pensado para ejecutarse dentro de **Nubiia**. La plataforma se encarga del deploy y de inyectar las variables de entorno. Si necesitas contenerizar:
+Pensado para ejecutarse dentro de **Nubiia**. La plataforma se encarga del deploy y de inyectar las variables de entorno. Tienes 3 opciones:
+
+### Opción 1 — Instalar como paquete npm desde GitHub Packages (recomendada)
+
+El paquete se publica como `@serlimar/mcp-freematica` en GitHub Packages cuando se crea un tag `v*` en `main`.
 
 ```bash
-docker build -t slm-freematica-mcp .
-docker run --env-file .env -p 3000:3000 slm-freematica-mcp
+# .npmrc del consumidor:
+echo "@serlimar:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
+
+# Instalar y ejecutar
+npm install -g @serlimar/mcp-freematica
+mcp-freematica   # binario instalado, lee env vars y arranca el server
 ```
+
+`GITHUB_TOKEN` debe tener scope `read:packages` y acceso al repo `serlimar/slm-freematica-mcp`.
+
+### Opción 2 — Docker
+
+```bash
+docker build -t mcp-freematica .
+docker run --env-file .env -p 3000:3000 mcp-freematica
+```
+
+### Opción 3 — Clone + build
+
+```bash
+git clone https://github.com/serlimar/slm-freematica-mcp.git
+cd slm-freematica-mcp
+npm ci && npm run build
+node dist/index.js
+```
+
+## Publicar una nueva versión
+
+1. Bump de versión en `package.json` (semver).
+2. Commit + merge a `main`.
+3. Crear y empujar un tag con prefijo `v`:
+   ```bash
+   git tag v0.2.0
+   git push origin v0.2.0
+   ```
+4. El workflow `.github/workflows/publish.yml` se dispara, valida (lint + typecheck + test + build) y publica en GitHub Packages.
 
 ## Especificaciones y diseño
 
