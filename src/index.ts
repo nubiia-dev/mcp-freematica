@@ -1,42 +1,68 @@
 #!/usr/bin/env node
-import { loadConfig } from './config.js';
+import { loadAuthConfig } from './config.js';
 import { FreematicaClient } from './clients/freematica-client.js';
-import { createHttpApp } from './transports/http.js';
+
+function parseArg(name: string): string | undefined {
+  const prefix = `--${name}=`;
+  const arg = process.argv.find((a) => a.startsWith(prefix));
+  return arg ? arg.slice(prefix.length) : undefined;
+}
+
+const TRANSPORT = parseArg('transport') ?? process.env.MCP_TRANSPORT ?? 'stdio';
 
 async function main(): Promise<void> {
-  const config = loadConfig();
+  const auth = loadAuthConfig();
 
   const client = new FreematicaClient({
-    baseUrl: config.FREEMATICA_BASE_URL,
+    baseUrl: auth.FREEMATICA_BASE_URL,
     authHeaders: {
-      'x-auth-token': config.FREEMATICA_AUTH_TOKEN,
-      'x-auth-company': config.FREEMATICA_AUTH_COMPANY,
-      'x-auth-organization': config.FREEMATICA_AUTH_ORGANIZATION,
-      'x-auth-app': config.FREEMATICA_AUTH_APP,
-      'x-auth-session': config.FREEMATICA_AUTH_SESSION,
+      'x-auth-token': auth.FREEMATICA_AUTH_TOKEN,
+      'x-auth-company': auth.FREEMATICA_AUTH_COMPANY,
+      'x-auth-organization': auth.FREEMATICA_AUTH_ORGANIZATION,
+      'x-auth-app': auth.FREEMATICA_AUTH_APP,
+      'x-auth-session': auth.FREEMATICA_AUTH_SESSION,
     },
   });
 
-  const { app, shutdown } = await createHttpApp({
-    port: config.MCP_PORT,
-    client,
-    allowedOrigins: config.MCP_ALLOWED_ORIGINS,
-  });
+  if (TRANSPORT === 'http') {
+    const { loadHttpConfig } = await import('./config.js');
+    const { createHttpApp } = await import('./transports/http.js');
+    const http = loadHttpConfig();
 
-  process.on('SIGTERM', () => {
-    void shutdown().then(() => process.exit(0));
-  });
-  process.on('SIGINT', () => {
-    void shutdown().then(() => process.exit(0));
-  });
+    const { app, shutdown } = await createHttpApp({
+      port: http.MCP_PORT,
+      client,
+      allowedOrigins: http.MCP_ALLOWED_ORIGINS,
+    });
 
-  app.listen(config.MCP_PORT, () => {
+    process.on('SIGTERM', () => {
+      void shutdown().then(() => process.exit(0));
+    });
+    process.on('SIGINT', () => {
+      void shutdown().then(() => process.exit(0));
+    });
+
+    app.listen(http.MCP_PORT, () => {
+      console.error(
+        `[freematica-mcp] HTTP transport listening on port ${http.MCP_PORT} | base=${auth.FREEMATICA_BASE_URL}`,
+      );
+      console.error(`[freematica-mcp] MCP endpoint:    http://localhost:${http.MCP_PORT}/mcp`);
+      console.error(`[freematica-mcp] Health endpoint: http://localhost:${http.MCP_PORT}/health`);
+    });
+    return;
+  }
+
+  if (TRANSPORT !== 'stdio') {
     console.error(
-      `[freematica-mcp] HTTP server listening on port ${config.MCP_PORT} | base=${config.FREEMATICA_BASE_URL}`,
+      `[freematica-mcp] Unknown transport "${TRANSPORT}". Valid: stdio, http. Defaulting to stdio.`,
     );
-    console.error(`[freematica-mcp] MCP endpoint:    http://localhost:${config.MCP_PORT}/mcp`);
-    console.error(`[freematica-mcp] Health endpoint: http://localhost:${config.MCP_PORT}/health`);
-  });
+  }
+
+  console.error(
+    `[freematica-mcp] Starting stdio transport v0.2.0 | base=${auth.FREEMATICA_BASE_URL}`,
+  );
+  const { startStdio } = await import('./transports/stdio.js');
+  await startStdio({ client });
 }
 
 main().catch((err) => {
