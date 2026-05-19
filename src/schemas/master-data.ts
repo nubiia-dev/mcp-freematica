@@ -41,7 +41,7 @@ export const CATALOG_ENDPOINTS: Record<MasterDataCatalog, string> = {
   provincias: '/pgrl/v1/provincias',
   poblaciones: '/pgrl/v2/poblaciones',
   empresas: '/pgrl/v1/empresas',
-  delegaciones: '/pgrl/v2/delegaciones',
+  delegaciones: '/pgrl/v1/delegaciones',
   'lineas-negocio': '/pgrl/v2/lineas-negocio',
   'cargos-clientes': '/pgrl/v2/cargos-clientes',
   familias: '/part/v1/familias',

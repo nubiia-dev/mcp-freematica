@@ -48,8 +48,8 @@ describe('CATALOG_ENDPOINTS', () => {
     expect(CATALOG_ENDPOINTS['clases-servicios']).toBe('/pvss/v1/clases-servicios');
   });
 
-  it('maps delegaciones to /pgrl/v2/delegaciones (v2, not v1)', () => {
-    expect(CATALOG_ENDPOINTS['delegaciones']).toBe('/pgrl/v2/delegaciones');
+  it('maps delegaciones to /pgrl/v1/delegaciones (v2 returns 400 in production)', () => {
+    expect(CATALOG_ENDPOINTS['delegaciones']).toBe('/pgrl/v1/delegaciones');
   });
 
   it('maps poblaciones to /pgrl/v2/poblaciones', () => {

@@ -91,7 +91,7 @@ La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de l
 | `poblaciones` | `GET /pgrl/v2/poblaciones` | Municipios |
 | **Organizativos** | | |
 | `empresas` | `GET /pgrl/v1/empresas` | Empresas |
-| `delegaciones` | `GET /pgrl/v2/delegaciones` | Delegaciones |
+| `delegaciones` | `GET /pgrl/v1/delegaciones` | Delegaciones |
 | `lineas-negocio` | `GET /pgrl/v2/lineas-negocio` | Líneas de negocio |
 | `cargos-clientes` | `GET /pgrl/v2/cargos-clientes` | Cargos de contactos |
 | **Inventario** | | |
@@ -168,7 +168,7 @@ node --env-file=.env --import tsx src/index.ts
    #   ...
    ```
 
-2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.3.0", "sessions": 0 }`:
+2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.3.1", "sessions": 0 }`:
    ```bash
    MCP_TRANSPORT=http node dist/index.js &
    curl http://localhost:3000/health
