@@ -49,7 +49,7 @@ function sendRequest(
       proc.stdout.off('data', onData);
       try {
         resolve(JSON.parse(line) as JsonRpcResponse);
-      } catch (err) {
+      } catch {
         reject(new Error(`Invalid JSON from server: ${line}`));
       }
     };
