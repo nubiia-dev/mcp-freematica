@@ -2,6 +2,19 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.3.0] — 2026-05-19
+
+### Added
+- Nueva tool `freematica_get_master_data` que expone 19 catálogos de datos maestros del API de Freemática (tipos, geográficos, organizativos, inventario) a través de un único enum `catalog`.
+- `src/schemas/master-data.ts` con `MASTER_DATA_CATALOGS` (enum de 19 valores) y `CATALOG_ENDPOINTS` (mapeo a endpoints REST). Una sola fuente de verdad para añadir catálogos futuros.
+- `FreematicaClient.getMasterData(catalog)` que resuelve el endpoint via el record.
+- Sección "Datos maestros disponibles" en README con la tabla catálogo → endpoint.
+
+### Changed
+- `createFreematicaServer` ahora registra dos tools (la existente + la nueva).
+- `server-instructions.ts` ampliado con la nueva tool y un patrón de uso (resolver IDs crípticos a nombres humanos).
+- Version reportada en `/health` y en el `serverInfo` MCP actualizada a `0.3.0`.
+
 ## [0.2.0] — 2026-05-19
 
 ### Added
