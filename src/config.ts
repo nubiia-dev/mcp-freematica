@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const ConfigSchema = z.object({
+const AuthConfigSchema = z.object({
   FREEMATICA_BASE_URL: z
     .string()
     .url()
@@ -10,22 +10,39 @@ const ConfigSchema = z.object({
   FREEMATICA_AUTH_ORGANIZATION: z.string().min(1),
   FREEMATICA_AUTH_APP: z.string().min(1),
   FREEMATICA_AUTH_SESSION: z.string().min(1),
+});
+
+const HttpConfigSchema = z.object({
   MCP_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   MCP_ALLOWED_ORIGINS: z.string().default('*'),
 });
 
-export type Config = z.infer<typeof ConfigSchema>;
+export type AuthConfig = z.infer<typeof AuthConfigSchema>;
+export type HttpConfig = z.infer<typeof HttpConfigSchema>;
+export type Config = AuthConfig & HttpConfig;
+
+function formatZodError(err: z.ZodError): string {
+  const issues = err.issues
+    .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+    .join('\n');
+  return (
+    `[freematica-mcp] Invalid configuration:\n${issues}\n\n` +
+    `Set the missing/invalid environment variables and restart.`
+  );
+}
+
+export function loadAuthConfig(): AuthConfig {
+  const result = AuthConfigSchema.safeParse(process.env);
+  if (!result.success) throw new Error(formatZodError(result.error));
+  return result.data;
+}
+
+export function loadHttpConfig(): HttpConfig {
+  const result = HttpConfigSchema.safeParse(process.env);
+  if (!result.success) throw new Error(formatZodError(result.error));
+  return result.data;
+}
 
 export function loadConfig(): Config {
-  const result = ConfigSchema.safeParse(process.env);
-  if (!result.success) {
-    const issues = result.error.issues
-      .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
-      .join('\n');
-    throw new Error(
-      `[freematica-mcp] Invalid configuration:\n${issues}\n\n` +
-        `Set the missing/invalid environment variables and restart.`,
-    );
-  }
-  return result.data;
+  return { ...loadAuthConfig(), ...loadHttpConfig() };
 }
