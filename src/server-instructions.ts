@@ -9,6 +9,17 @@ Este servidor expone operaciones del API REST de Freemática como tools MCP.
   material asignado a servicios (sin parámetros). Devuelve un objeto
   { items: VoContratosServMatAsignado[], count: number }.
 
+- **freematica_get_master_data** — Devuelve un catálogo de datos maestros.
+  Parámetro \`catalog\` (enum): tipos-contrato, tipo-instalacion, clases-servicios,
+  tipos-casos, subtipos-casos, tipos-oportunidad-negocio, tipos-impuestos,
+  tipos-marcajes, naturalezas-abono, paises, nacionalidades, provincias,
+  poblaciones, empresas, delegaciones, lineas-negocio, cargos-clientes,
+  familias, subfamilias. Devuelve { catalog, items, count }.
+
+  Patrón típico: cuando una respuesta de otra tool contenga IDs de tipo de
+  contrato o clase de servicio, llamar primero a freematica_get_master_data
+  con el catálogo correspondiente para mapear esos IDs a nombres humanos.
+
 ## Manejo de errores
 
 Las llamadas pueden fallar con uno de estos códigos:
