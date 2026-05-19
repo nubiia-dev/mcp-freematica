@@ -5,7 +5,7 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 ## Stack
 
 - TypeScript + Node.js ≥20
-- `@modelcontextprotocol/sdk` (Streamable HTTP transport)
+- `@modelcontextprotocol/sdk` (stdio + Streamable HTTP transports)
 - Express + axios + zod
 - Vitest + nock para tests
 
@@ -14,6 +14,58 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 | Tool | Endpoint Freemática | Descripción |
 |---|---|---|
 | `freematica_list_materiales_asignados_servicios` | `GET /pvss/v2/contratos-servicios-material` | Lista de material asignado a servicios |
+
+## Modos de transporte
+
+El binario soporta dos transportes seleccionables. La selección sigue este orden de precedencia:
+
+1. CLI flag: `--transport=<modo>`
+2. Variable de entorno: `MCP_TRANSPORT=<modo>`
+3. Default: `stdio`
+
+| Modo | Cuándo usar | Comando |
+|---|---|---|
+| `stdio` | Claude Desktop, Claude Code, ejecución local | `mcp-freematica` (default) o `mcp-freematica --transport=stdio` |
+| `http`  | Nubiia, deploy como servicio web | `mcp-freematica --transport=http` o `MCP_TRANSPORT=http mcp-freematica` |
+
+### Configurar en Claude Desktop (stdio)
+
+Edita `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "freematica": {
+      "command": "npx",
+      "args": ["-y", "@serlimar/mcp-freematica"],
+      "env": {
+        "FREEMATICA_AUTH_TOKEN": "...",
+        "FREEMATICA_AUTH_COMPANY": "...",
+        "FREEMATICA_AUTH_ORGANIZATION": "...",
+        "FREEMATICA_AUTH_APP": "...",
+        "FREEMATICA_AUTH_SESSION": "..."
+      }
+    }
+  }
+}
+```
+
+Reinicia Claude Desktop y la tool `freematica_list_materiales_asignados_servicios` aparecerá disponible.
+
+### Configurar en Claude Code (stdio)
+
+```bash
+claude mcp add freematica npx -y @serlimar/mcp-freematica \
+  -e FREEMATICA_AUTH_TOKEN=... \
+  -e FREEMATICA_AUTH_COMPANY=... \
+  -e FREEMATICA_AUTH_ORGANIZATION=... \
+  -e FREEMATICA_AUTH_APP=... \
+  -e FREEMATICA_AUTH_SESSION=...
+```
+
+### Configurar en Nubiia (HTTP)
+
+Setear `MCP_TRANSPORT=http` en las variables de entorno del proceso, junto a las 5 `FREEMATICA_AUTH_*`. Resto de variables (puerto, origins) opcionales — ver tabla en "Configuración".
 
 ## Configuración
 
@@ -29,8 +81,9 @@ El servidor lee toda su configuración de **variables de entorno** al arrancar. 
 | `FREEMATICA_AUTH_APP` | ✅ | — | Header `x-auth-app`. Identifica la aplicación que consume (p.ej. `pvss`). |
 | `FREEMATICA_AUTH_SESSION` | ✅ | — | Header `x-auth-session`. Identifica la sesión activa. |
 | `FREEMATICA_BASE_URL` | ❌ | `https://api-p01.clientservicepanel.com/restsat/api` | Base URL del API de Freemática. Cambiar solo si Freemática cambia el host o se usa un entorno alternativo. |
-| `MCP_PORT` | ❌ | `3000` | Puerto TCP donde el servidor MCP expone `/mcp` y `/health`. |
-| `MCP_ALLOWED_ORIGINS` | ❌ | `*` | CORS: lista de orígenes permitidos separados por coma, o `*` para todos. En producción restringir al dominio de Nubiia. |
+| `MCP_TRANSPORT` | ❌ | `stdio` | Transporte: `stdio` (default, para Claude Desktop/Code) o `http` (para Nubiia). Equivale al flag `--transport=`. |
+| `MCP_PORT` | ❌ (solo HTTP) | `3000` | Puerto TCP donde el servidor MCP expone `/mcp` y `/health`. Ignorado en modo stdio. |
+| `MCP_ALLOWED_ORIGINS` | ❌ (solo HTTP) | `*` | CORS: lista de orígenes permitidos separados por coma, o `*` para todos. En producción restringir al dominio de Nubiia. Ignorado en modo stdio. |
 
 ### De dónde salen las credenciales `x-auth-*`
 
@@ -82,10 +135,12 @@ node --env-file=.env --import tsx src/index.ts
    #   ...
    ```
 
-2. **Con env vars válidas** — el proceso queda escuchando y `/health` devuelve `{ "status": "ok", "version": "0.1.0", "sessions": 0 }`:
+2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.2.0", "sessions": 0 }`:
    ```bash
+   MCP_TRANSPORT=http node dist/index.js &
    curl http://localhost:3000/health
    ```
+   En modo stdio (default) no hay endpoints HTTP — el server escucha JSON-RPC por stdin/stdout.
 
 3. **Llamada real al API de Freemática** — inicializa sesión MCP y llama la única tool disponible. Si las credenciales son correctas devolverá `items` + `count`; si no, un error con `code: "invalid_token"` o similar:
    ```bash
@@ -189,9 +244,12 @@ node dist/index.js
 
 ## Especificaciones y diseño
 
-- Spec: `docs/superpowers/specs/2026-05-18-freematica-mcp-design.md`
-- Plan: `docs/superpowers/plans/2026-05-18-freematica-mcp.md`
+- v0.1.0 spec: `docs/superpowers/specs/2026-05-18-freematica-mcp-design.md` (bootstrap inicial)
+- v0.1.0 plan: `docs/superpowers/plans/2026-05-18-freematica-mcp.md`
+- v0.2.0 spec: `docs/superpowers/specs/2026-05-19-stdio-transport-design.md` (stdio support)
+- v0.2.0 plan: `docs/superpowers/plans/2026-05-19-stdio-transport.md`
 - API: `apidocs/Freematica API - Complete Collection.postman_collection.json`
+- CHANGELOG: `CHANGELOG.md`
 
 ## Licencia
 
