@@ -14,6 +14,7 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 | Tool | Endpoint Freemática | Descripción |
 |---|---|---|
 | `freematica_list_materiales_asignados_servicios` | `GET /pvss/v2/contratos-servicios-material` | Lista de material asignado a servicios |
+| `freematica_get_master_data` | (19 endpoints según `catalog`) | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario) |
 
 ## Modos de transporte
 
@@ -66,6 +67,38 @@ claude mcp add freematica npx -y @serlimar/mcp-freematica \
 ### Configurar en Nubiia (HTTP)
 
 Setear `MCP_TRANSPORT=http` en las variables de entorno del proceso, junto a las 5 `FREEMATICA_AUTH_*`. Resto de variables (puerto, origins) opcionales — ver tabla en "Configuración".
+
+## Datos maestros disponibles
+
+La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de los 19 valores siguientes. Cada uno mapea a un endpoint específico de Freemática.
+
+| `catalog` | Endpoint Freemática | Contenido |
+|---|---|---|
+| **Tipos / clasificaciones** | | |
+| `tipos-contrato` | `GET /ppre/v2/tipos-contrato` | Tipos de contrato comercial |
+| `tipo-instalacion` | `GET /ppre/v1/tipo-instalacion` | Tipos de instalación física |
+| `clases-servicios` | `GET /pvss/v1/clases-servicios` | Clases de servicio operativas |
+| `tipos-casos` | `GET /pcrm/v2/tipos-casos` | Tipos de caso CRM |
+| `subtipos-casos` | `GET /pcrm/v2/subtipos-casos` | Subtipos de caso CRM |
+| `tipos-oportunidad-negocio` | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial |
+| `tipos-impuestos` | `GET /pgrl/v2/tipos-impuestos` | IVA, IRPF, retenciones |
+| `tipos-marcajes` | `GET /pkai/v1/tiposmarcajes` | Tipos de marcaje |
+| `naturalezas-abono` | `GET /pven/v1/naturalezas-abono` | Naturalezas de abono comercial |
+| **Geográficos** | | |
+| `paises` | `GET /pgrl/v1/paises` | Países |
+| `nacionalidades` | `GET /pgrl/v1/nacionalidades` | Nacionalidades |
+| `provincias` | `GET /pgrl/v1/provincias` | Provincias |
+| `poblaciones` | `GET /pgrl/v2/poblaciones` | Municipios |
+| **Organizativos** | | |
+| `empresas` | `GET /pgrl/v1/empresas` | Empresas |
+| `delegaciones` | `GET /pgrl/v2/delegaciones` | Delegaciones |
+| `lineas-negocio` | `GET /pgrl/v2/lineas-negocio` | Líneas de negocio |
+| `cargos-clientes` | `GET /pgrl/v2/cargos-clientes` | Cargos de contactos |
+| **Inventario** | | |
+| `familias` | `GET /part/v1/familias` | Familias de artículos |
+| `subfamilias` | `GET /part/v1/subfamilias` | Subfamilias |
+
+Respuesta: `{ catalog, items, count }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
 
 ## Configuración
 
@@ -135,7 +168,7 @@ node --env-file=.env --import tsx src/index.ts
    #   ...
    ```
 
-2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.2.0", "sessions": 0 }`:
+2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.3.0", "sessions": 0 }`:
    ```bash
    MCP_TRANSPORT=http node dist/index.js &
    curl http://localhost:3000/health
@@ -248,6 +281,8 @@ node dist/index.js
 - v0.1.0 plan: `docs/superpowers/plans/2026-05-18-freematica-mcp.md`
 - v0.2.0 spec: `docs/superpowers/specs/2026-05-19-stdio-transport-design.md` (stdio support)
 - v0.2.0 plan: `docs/superpowers/plans/2026-05-19-stdio-transport.md`
+- v0.3.0 spec: `docs/superpowers/specs/2026-05-19-master-data-tool-design.md` (master data tool)
+- v0.3.0 plan: `docs/superpowers/plans/2026-05-19-master-data-tool.md`
 - API: `apidocs/Freematica API - Complete Collection.postman_collection.json`
 - CHANGELOG: `CHANGELOG.md`
 

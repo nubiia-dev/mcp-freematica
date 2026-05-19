@@ -51,4 +51,26 @@ describe('FreematicaClient', () => {
       });
     });
   });
+
+  describe('getMasterData', () => {
+    it('calls the endpoint mapped for the requested catalog and returns the array', async () => {
+      const fakeData = [
+        { idreg: 1, nombre: 'España' },
+        { idreg: 2, nombre: 'Francia' },
+      ];
+      const scope = nock(BASE_URL).get('/pgrl/v1/paises').reply(200, fakeData);
+
+      const result = await client.getMasterData('paises');
+
+      expect(result).toEqual(fakeData);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates FreematicaError on 401', async () => {
+      nock(BASE_URL).get('/pgrl/v1/paises').reply(401);
+      await expect(client.getMasterData('paises')).rejects.toMatchObject({
+        code: 'invalid_token',
+      });
+    });
+  });
 });
