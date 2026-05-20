@@ -15,9 +15,9 @@ Este servidor expone operaciones del API REST de Freemática como tools MCP.
 - **freematica_get_master_data** — Devuelve un catálogo de datos maestros.
   Parámetro \`catalog\` (enum): tipos-contrato, tipo-instalacion, clases-servicios,
   tipos-casos, subtipos-casos, tipos-oportunidad-negocio, tipos-impuestos,
-  tipos-marcajes, naturalezas-abono, paises, nacionalidades, provincias,
-  poblaciones, empresas, delegaciones, lineas-negocio, cargos-clientes,
-  familias, subfamilias. Devuelve { catalog, items, count, total }.
+  naturalezas-abono, paises, nacionalidades, provincias, poblaciones, empresas,
+  delegaciones, lineas-negocio, cargos-clientes, familias, subfamilias (18 catálogos).
+  Devuelve { catalog, items, count, total }.
 
 ### Clientes (2)
 

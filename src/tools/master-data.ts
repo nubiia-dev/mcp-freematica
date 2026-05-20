@@ -18,14 +18,13 @@ const CATALOG_DESCRIPTIONS = [
   'subtipos-casos (CRM)',
   'tipos-oportunidad-negocio (CRM)',
   'tipos-impuestos (IVA, IRPF, retenciones)',
-  'tipos-marcajes (presencia / jornada)',
   'naturalezas-abono',
   'paises',
   'nacionalidades',
   'provincias',
-  'poblaciones (municipios)',
+  'poblaciones (municipios — dataset grande, paginar con cuidado)',
   'empresas',
-  'delegaciones',
+  'delegaciones (agrupadas por código — listado global)',
   'lineas-negocio',
   'cargos-clientes (puestos de contactos)',
   'familias (de artículos)',
@@ -48,7 +47,7 @@ const TOOL_DESCRIPTION = [
 /**
  * Registra la tool freematica_get_master_data sobre el McpServer.
  *
- * Una sola tool expone los 19 catálogos vía un enum `catalog`. Añadir nuevos
+ * Una sola tool expone los 18 catálogos vía un enum `catalog`. Añadir nuevos
  * catálogos requiere actualizar `src/schemas/master-data.ts` (enum + record),
  * no este archivo.
  */
