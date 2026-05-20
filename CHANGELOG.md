@@ -2,6 +2,30 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.4.0] — 2026-05-20
+
+### Fixed
+- **Envelope unwrap**: el API REST de Freemática envuelve todas las respuestas en `{ errorCode, errorMessage, data }`. El `BaseClient` desempaqueta ahora `data` automáticamente y mapea `errorCode != "200"` a `FreematicaError` (con códigos como `invalid_token`, `not_found`, `server_error`, etc.). Las tools v0.3.x estaban devolviendo el wrapper completo en `items` — bug silencioso al no haber sido consumidas en producción.
+
+### Added
+- 6 tools comerciales nuevas:
+  - `freematica_list_clientes` (paginada)
+  - `freematica_get_cliente`
+  - `freematica_list_contactos_clientes` (paginada)
+  - `freematica_list_oportunidades_negocio` (paginada)
+  - `freematica_get_oportunidad_negocio`
+  - `freematica_get_oportunidad_negocio_datos_ampliados`
+- `PaginationSchema` reutilizable: `page` (1-indexed, default 1), `items` (1..50, default 20). Bloquea `page=0` (peligroso en el API real).
+- Helper `okList()` para serializar respuestas de listado con `items, count, total, page, items_per_page`.
+- `FreematicaListData<T>` y `FreematicaEnvelope<T>` types.
+
+### Changed (breaking — no consumed yet)
+- Tools existentes (`freematica_list_materiales_asignados_servicios`, `freematica_get_master_data`) devuelven ahora `{ items, count, total, ... }` (antes era el wrapper completo de Freemática mal mapeado).
+- `FreematicaClient.getMaterialesAsignadosServicios()` y `getMasterData()` devuelven `Promise<{ items, total }>` en vez de `Promise<T[]>`.
+
+### Notes
+- Probado empíricamente contra el API real de Freemática. Confirmado que `grupoCli` documentado en Postman no funciona en producción — no se expone como filtro.
+
 ## [0.3.1] — 2026-05-19
 
 ### Fixed
