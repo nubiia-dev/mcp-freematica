@@ -88,7 +88,6 @@ La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de l
 | `subtipos-casos` | `GET /pcrm/v2/subtipos-casos` | Subtipos de caso CRM |
 | `tipos-oportunidad-negocio` | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial |
 | `tipos-impuestos` | `GET /pgrl/v2/tipos-impuestos` | IVA, IRPF, retenciones |
-| `tipos-marcajes` | `GET /pkai/v1/tiposmarcajes` | Tipos de marcaje |
 | `naturalezas-abono` | `GET /pven/v1/naturalezas-abono` | Naturalezas de abono comercial |
 | **Geográficos** | | |
 | `paises` | `GET /pgrl/v1/paises` | Países |
@@ -97,7 +96,7 @@ La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de l
 | `poblaciones` | `GET /pgrl/v2/poblaciones` | Municipios |
 | **Organizativos** | | |
 | `empresas` | `GET /pgrl/v1/empresas` | Empresas |
-| `delegaciones` | `GET /pgrl/v1/delegaciones` | Delegaciones |
+| `delegaciones` | `GET /pgrl/v1/delegaciones/agrupcod` | Delegaciones (listado global) |
 | `lineas-negocio` | `GET /pgrl/v2/lineas-negocio` | Líneas de negocio |
 | `cargos-clientes` | `GET /pgrl/v2/cargos-clientes` | Cargos de contactos |
 | **Inventario** | | |
@@ -196,7 +195,7 @@ node --env-file=.env --import tsx src/index.ts
    #   ...
    ```
 
-2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.4.0", "sessions": 0 }`:
+2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.4.1", "sessions": 0 }`:
    ```bash
    MCP_TRANSPORT=http node dist/index.js &
    curl http://localhost:3000/health
@@ -313,6 +312,7 @@ node dist/index.js
 - v0.3.0 plan: `docs/superpowers/plans/2026-05-19-master-data-tool.md`
 - v0.4.0 spec: `docs/superpowers/specs/2026-05-20-commercial-tools-design.md` (commercial tools + envelope unwrap fix)
 - v0.4.0 plan: `docs/superpowers/plans/2026-05-20-commercial-tools.md`
+- v0.4.1: hotfix de catálogos `delegaciones` (endpoint cambiado a /agrupcod) y `tipos-marcajes` (eliminado — endpoint roto). Ver CHANGELOG.
 - API: `apidocs/Freematica API - Complete Collection.postman_collection.json`
 - CHANGELOG: `CHANGELOG.md`
 

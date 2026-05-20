@@ -6,7 +6,7 @@ import {
 } from '../../src/schemas/master-data.js';
 
 describe('MASTER_DATA_CATALOGS', () => {
-  it('includes the 19 expected catalogs in stable order', () => {
+  it('includes the 18 expected catalogs in stable order', () => {
     expect(MASTER_DATA_CATALOGS).toEqual([
       'tipos-contrato',
       'tipo-instalacion',
@@ -15,7 +15,6 @@ describe('MASTER_DATA_CATALOGS', () => {
       'subtipos-casos',
       'tipos-oportunidad-negocio',
       'tipos-impuestos',
-      'tipos-marcajes',
       'naturalezas-abono',
       'paises',
       'nacionalidades',
@@ -28,7 +27,11 @@ describe('MASTER_DATA_CATALOGS', () => {
       'familias',
       'subfamilias',
     ]);
-    expect(MASTER_DATA_CATALOGS).toHaveLength(19);
+    expect(MASTER_DATA_CATALOGS).toHaveLength(18);
+  });
+
+  it('does not include tipos-marcajes (broken upstream — requires sTipoMarcaje param)', () => {
+    expect(MASTER_DATA_CATALOGS).not.toContain('tipos-marcajes');
   });
 });
 
@@ -48,8 +51,8 @@ describe('CATALOG_ENDPOINTS', () => {
     expect(CATALOG_ENDPOINTS['clases-servicios']).toBe('/pvss/v1/clases-servicios');
   });
 
-  it('maps delegaciones to /pgrl/v1/delegaciones (v2 returns 400 in production)', () => {
-    expect(CATALOG_ENDPOINTS['delegaciones']).toBe('/pgrl/v1/delegaciones');
+  it('maps delegaciones to /pgrl/v1/delegaciones/agrupcod (other variants require empresa param)', () => {
+    expect(CATALOG_ENDPOINTS['delegaciones']).toBe('/pgrl/v1/delegaciones/agrupcod');
   });
 
   it('maps poblaciones to /pgrl/v2/poblaciones', () => {
@@ -66,5 +69,9 @@ describe('MasterDataCatalogSchema', () => {
 
   it('rejects unknown catalogs', () => {
     expect(() => MasterDataCatalogSchema.parse('not-a-catalog')).toThrow();
+  });
+
+  it('rejects tipos-marcajes (removed in v0.4.1)', () => {
+    expect(() => MasterDataCatalogSchema.parse('tipos-marcajes')).toThrow();
   });
 });
