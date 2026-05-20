@@ -34,34 +34,52 @@ describe('registerContratosTools', () => {
     expect(tools).toHaveProperty(TOOL_NAME);
   });
 
-  it('handler returns ok() with items + count on success', async () => {
+  it('handler returns okList() with items, count, total on success', async () => {
     const fakeData = [{ idreg: 1 }, { idreg: 2 }];
-    nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, fakeData);
+    nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, {
+      errorCode: '200',
+      errorMessage: '',
+      data: { total: '2', items: fakeData, rowHeight: -1 },
+    });
 
     const { server } = buildServer();
     const tools = (server as unknown as {
-      _registeredTools: Record<string, { handler: (args: unknown) => Promise<unknown> }>;
+      _registeredTools: Record<string, { handler?: (args: unknown) => Promise<unknown>; callback?: (args: unknown) => Promise<unknown> }>;
     })._registeredTools;
+    const handler = tools[TOOL_NAME].handler ?? tools[TOOL_NAME].callback;
+    if (!handler) throw new Error('handler not registered');
 
-    const result = (await tools[TOOL_NAME].handler({})) as {
+    const result = (await handler({})) as {
       content: { type: string; text: string }[];
       isError?: boolean;
     };
 
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed).toEqual({ items: fakeData, count: 2 });
+    expect(parsed).toEqual({
+      items: fakeData,
+      count: 2,
+      total: 2,
+      page: undefined,
+      items_per_page: undefined,
+    });
   });
 
   it('handler returns error() on API failure', async () => {
-    nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(401);
+    nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, {
+      errorCode: '401',
+      errorMessage: 'Unauthorized',
+      data: null,
+    });
 
     const { server } = buildServer();
     const tools = (server as unknown as {
-      _registeredTools: Record<string, { handler: (args: unknown) => Promise<unknown> }>;
+      _registeredTools: Record<string, { handler?: (args: unknown) => Promise<unknown>; callback?: (args: unknown) => Promise<unknown> }>;
     })._registeredTools;
+    const handler = tools[TOOL_NAME].handler ?? tools[TOOL_NAME].callback;
+    if (!handler) throw new Error('handler not registered');
 
-    const result = (await tools[TOOL_NAME].handler({})) as {
+    const result = (await handler({})) as {
       content: { type: string; text: string }[];
       isError?: boolean;
     };
