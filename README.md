@@ -15,6 +15,12 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 |---|---|---|
 | `freematica_list_materiales_asignados_servicios` | `GET /pvss/v2/contratos-servicios-material` | Lista de material asignado a servicios |
 | `freematica_get_master_data` | (19 endpoints según `catalog`) | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario) |
+| `freematica_list_clientes` | `GET /pgrl/v2/clientes` | Lista paginada de clientes |
+| `freematica_get_cliente` | `GET /pgrl/v2/clientes/{idReg}` | Detalle de un cliente |
+| `freematica_list_contactos_clientes` | `GET /pgrl/v2/contactos-clientes` | Lista paginada de contactos |
+| `freematica_list_oportunidades_negocio` | `GET /pcrm/v2/oportunidades-negocio` | Lista paginada de oportunidades |
+| `freematica_get_oportunidad_negocio` | `GET /pcrm/v2/oportunidades-negocio/{idReg}` | Detalle de oportunidad |
+| `freematica_get_oportunidad_negocio_datos_ampliados` | `GET /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados` | Datos ampliados (puede 404) |
 
 ## Modos de transporte
 
@@ -100,6 +106,28 @@ La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de l
 
 Respuesta: `{ catalog, items, count }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
 
+## Paginación
+
+Todas las tools `freematica_list_*` aceptan dos parámetros opcionales:
+
+- **`page`** (int, ≥1, default 1): página a recuperar, **1-indexed**.
+- **`items`** (int, 1..50, default 20): items por página.
+
+La respuesta incluye siempre `total` (total de elementos en el dataset) para que el LLM pueda iterar páginas.
+
+> ⚠️ El parámetro está bloqueado en `page ≥ 1` porque el API real de Freemática trata `page=0` como "devuelve TODO el dataset" (varios MB en endpoints grandes como `clientes`). Verificado empíricamente.
+
+## IDs opacos en endpoints de detalle
+
+Las tools `freematica_get_*` requieren un `id` que **NO** es el código natural (`COD_CLI`, `ID_OPORTUNIDAD`) sino el campo **`idReg`** que aparece en los items del listado correspondiente. Es un string opaco base64 como `MV9fMTAwMA==`.
+
+Si pasas un código natural, el API responde `not_found`.
+
+Patrón típico de uso desde el LLM:
+1. `freematica_list_clientes(page=1, items=20)` → encontrar el cliente que interesa.
+2. Tomar el campo `idReg` de ese item.
+3. `freematica_get_cliente(id="<idReg>")` → detalle completo.
+
 ## Configuración
 
 El servidor lee toda su configuración de **variables de entorno** al arrancar. Si falta alguna obligatoria, el proceso muere con un mensaje claro listando qué falta — no acepta requests hasta que la configuración sea válida.
@@ -168,7 +196,7 @@ node --env-file=.env --import tsx src/index.ts
    #   ...
    ```
 
-2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.3.1", "sessions": 0 }`:
+2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.4.0", "sessions": 0 }`:
    ```bash
    MCP_TRANSPORT=http node dist/index.js &
    curl http://localhost:3000/health
@@ -283,6 +311,8 @@ node dist/index.js
 - v0.2.0 plan: `docs/superpowers/plans/2026-05-19-stdio-transport.md`
 - v0.3.0 spec: `docs/superpowers/specs/2026-05-19-master-data-tool-design.md` (master data tool)
 - v0.3.0 plan: `docs/superpowers/plans/2026-05-19-master-data-tool.md`
+- v0.4.0 spec: `docs/superpowers/specs/2026-05-20-commercial-tools-design.md` (commercial tools + envelope unwrap fix)
+- v0.4.0 plan: `docs/superpowers/plans/2026-05-20-commercial-tools.md`
 - API: `apidocs/Freematica API - Complete Collection.postman_collection.json`
 - CHANGELOG: `CHANGELOG.md`
 

@@ -64,8 +64,8 @@ export function registerMasterDataTools(server: McpServer, client: FreematicaCli
     { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async ({ catalog }): Promise<CallToolResult> => {
       try {
-        const items = await client.getMasterData(catalog);
-        return ok({ catalog, items, count: items.length }) as CallToolResult;
+        const { items, total } = await client.getMasterData(catalog);
+        return ok({ catalog, items, count: items.length, total }) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;
         return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;

@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { FreematicaError } from '../clients/base-client.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
-import { error, ok } from './helpers.js';
+import { error, okList } from './helpers.js';
 
 const LIST_MATERIALES_TOOL_NAME = 'freematica_list_materiales_asignados_servicios';
 
@@ -33,8 +33,8 @@ export function registerContratosTools(server: McpServer, client: FreematicaClie
     { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async (): Promise<CallToolResult> => {
       try {
-        const items = await client.getMaterialesAsignadosServicios();
-        return ok({ items, count: items.length }) as CallToolResult;
+        const { items, total } = await client.getMaterialesAsignadosServicios();
+        return okList({ items, total }) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;
         return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;

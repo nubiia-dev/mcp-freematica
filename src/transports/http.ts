@@ -52,7 +52,7 @@ export async function createHttpApp(config: HttpTransportConfig): Promise<HttpAp
   });
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', version: '0.3.1', sessions: sessions.size });
+    res.json({ status: 'ok', version: '0.4.0', sessions: sessions.size });
   });
 
   // POST /mcp — JSON-RPC handler

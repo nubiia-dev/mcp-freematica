@@ -54,7 +54,11 @@ describe('registerMasterDataTools', () => {
       { idreg: 1, nombre: 'España' },
       { idreg: 2, nombre: 'Francia' },
     ];
-    nock(BASE_URL).get('/pgrl/v1/paises').reply(200, fakeData);
+    nock(BASE_URL).get('/pgrl/v1/paises').reply(200, {
+      errorCode: '200',
+      errorMessage: '',
+      data: { total: '2', items: fakeData, rowHeight: -1 },
+    });
 
     const { server } = buildServer();
     const handler = getHandler(server);
@@ -66,11 +70,15 @@ describe('registerMasterDataTools', () => {
 
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0].text);
-    expect(parsed).toEqual({ catalog: 'paises', items: fakeData, count: 2 });
+    expect(parsed).toEqual({ catalog: 'paises', items: fakeData, count: 2, total: 2 });
   });
 
   it('handler returns error() on API failure', async () => {
-    nock(BASE_URL).get('/pgrl/v1/paises').reply(401);
+    nock(BASE_URL).get('/pgrl/v1/paises').reply(200, {
+      errorCode: '401',
+      errorMessage: 'Unauthorized',
+      data: null,
+    });
 
     const { server } = buildServer();
     const handler = getHandler(server);

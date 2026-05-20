@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ok, error } from '../../src/tools/helpers.js';
+import { ok, error, okList } from '../../src/tools/helpers.js';
 import { FreematicaError } from '../../src/clients/base-client.js';
 
 describe('ok', () => {
@@ -33,5 +33,37 @@ describe('error', () => {
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('unexpected_error');
     expect(parsed.message).toContain('boom');
+  });
+});
+
+describe('okList', () => {
+  it('wraps list payload with items, count, total, page, items_per_page', () => {
+    const result = okList({
+      items: [{ a: 1 }, { a: 2 }],
+      total: 100,
+      page: 2,
+      itemsPerPage: 10,
+    });
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed).toEqual({
+      items: [{ a: 1 }, { a: 2 }],
+      count: 2,
+      total: 100,
+      page: 2,
+      items_per_page: 10,
+    });
+  });
+
+  it('omits page/items_per_page when not provided', () => {
+    const result = okList({ items: [], total: 0 });
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed).toEqual({
+      items: [],
+      count: 0,
+      total: 0,
+      page: undefined,
+      items_per_page: undefined,
+    });
   });
 });

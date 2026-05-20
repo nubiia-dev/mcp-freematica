@@ -16,6 +16,21 @@ export function ok(data: unknown): ToolResult {
   };
 }
 
+export function okList(args: {
+  items: unknown[];
+  total: number;
+  page?: number;
+  itemsPerPage?: number;
+}): ToolResult {
+  return ok({
+    items: args.items,
+    count: args.items.length,
+    total: args.total,
+    page: args.page,
+    items_per_page: args.itemsPerPage,
+  });
+}
+
 export function error(codeOrErr: FreematicaErrorCode | Error, message?: string): ToolResult {
   let code: FreematicaErrorCode;
   let msg: string;
