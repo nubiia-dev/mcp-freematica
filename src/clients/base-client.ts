@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, AxiosError } from 'axios';
+import type { FreematicaEnvelope } from '../types/api-envelope.js';
 
 export type FreematicaErrorCode =
   | 'invalid_token'
@@ -70,14 +71,34 @@ export class BaseClient {
     body?: unknown,
   ): Promise<T> {
     try {
-      const res = await this.http.request<T>({ method, url: path, data: body });
-      return res.data;
+      const res = await this.http.request<FreematicaEnvelope<T>>({
+        method,
+        url: path,
+        data: body,
+      });
+      const envelope = res.data;
+      if (envelope?.errorCode !== '200') {
+        throw this.mapEnvelopeError(envelope);
+      }
+      return envelope.data;
     } catch (err) {
-      throw this.mapError(err);
+      if (err instanceof FreematicaError) throw err;
+      throw this.mapAxiosError(err);
     }
   }
 
-  private mapError(err: unknown): FreematicaError {
+  private mapEnvelopeError(env: FreematicaEnvelope<unknown> | undefined): FreematicaError {
+    const code = env?.errorCode ?? 'unknown';
+    const msg = env?.errorMessage || `API error (envelope errorCode=${code})`;
+    if (code === '401') return new FreematicaError('invalid_token', msg);
+    if (code === '403') return new FreematicaError('forbidden', msg);
+    if (code === '404') return new FreematicaError('not_found', msg);
+    if (code === '429') return new FreematicaError('rate_limit_exceeded', msg);
+    if (code.startsWith('5')) return new FreematicaError('server_error', msg);
+    return new FreematicaError('unexpected_error', msg);
+  }
+
+  private mapAxiosError(err: unknown): FreematicaError {
     if (err instanceof AxiosError) {
       if (err.response) {
         const status = err.response.status;
