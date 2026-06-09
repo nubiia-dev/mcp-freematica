@@ -37,6 +37,50 @@ Total de catálogos: 18 → **24**.
 - `tests/tools/master-data.test.ts`: añadidos 4 tests de integración nock (lineas-negocio, bancos, calendarios, incidencecode) + test exhaustivo que mocka y verifica cada uno de los 24 catálogos.
 - **Total tests: 254 (todos en verde)**
 
+### Added — Cartera Clientes + Facturas Ventas (TD-118)
+
+#### Nuevas tools (7)
+
+- **`freematica_list_cartera_clientes`** (`GET /pcar/v1/cartera-clientes`): lista paginada de documentos de cartera de clientes con filtros FIQL completos.
+  - Filtros: `empresa` (CARCL_EMP), `codCliente` (CARCL_CODAUX), `grupoCliente` (CARCL_GRUPAUX), `representante` (CARCL_CODREP), `formaPago` (CARCL_CODFPAG), `modoPago` (CARCL_CODMPAG)
+  - Rangos de fecha: `fechaDocDesde/Hasta` (CARCL_FECDOC), `fechaVencimientoDesde/Hasta` (CARCL_FECVCTO)
+  - `estado`: enum `pendiente | cancelado | derivado` → `CARCL_SITCAR==1/2/3`
+  - `soloImpagados`: boolean → `CARCL_FECIMPAG!=null`
+  - `referencia`: exacto → `CARCL_REFCAR`
+- **`freematica_get_cartera_cliente`** (`GET /pcar/v1/cartera-clientes/{idreg}`): detalle de un documento por `idReg` opaco.
+- **`freematica_list_facturas_cabecera`** (`GET /pven/v1/facturas-cabecera`): lista paginada de cabeceras de facturas de ventas con filtros FIQL.
+  - Filtros: `empresa` (FVC_EMP), `codCliente` (FVC_CODAUX), `representante` (FVC_CODREP), `serie` (FVC_SERFAC), `numFactura` (FVC_NUMFAC), `formaPago` (FVC_CODFPAG), `delegacion` (FVC_DELEG)
+  - Rangos de fecha: `fechaFacturaDesde/Hasta` (FVC_FECFAC)
+  - `traspasadoContabilidad`: boolean → `FVC_TRSCONT==S/N`
+- **`freematica_get_factura_cabecera`** (`GET /pven/v1/facturas-cabecera/{idreg}`): detalle de una factura por `idReg` opaco.
+- **`freematica_list_factura_lineas`** (`GET /pven/v1/facturas-cabecera/{idreg}/lineas`): líneas de detalle de una factura. Filtros: `codArticulo` (FVL_CODART), `codFamilia` (FVL_CODFAM), `codSubfamilia` (FVL_CODSFAM), `delegacion` (FVL_DELEG).
+- **`freematica_list_factura_iva`** (`GET /pven/v1/facturas-cabecera/{idreg}/iva`): líneas de IVA de una factura. Filtro: `tipoIva` (FVI_TIPIVA).
+- **`freematica_list_factura_vencimientos`** (`GET /pven/v1/facturas-cabecera/{idreg}/vencimientos`): vencimientos de cobro de una factura. Filtros: `fechaVencimientoDesde/Hasta` (FVV_FECVCTO), `modoPago` (FVV_CODMPAG).
+
+#### Nuevos schemas Zod
+
+- **`src/schemas/cartera.ts`**: `ListCarteraFiltersSchema` con `EstadoCarteraEnum` (pendiente/cancelado/derivado) y mapa FIQL `ESTADO_CARTERA_FIQL_MAP`.
+- **`src/schemas/facturas-ventas.ts`**: `ListFacturasCabeceraFiltersSchema`, `ListFacturaLineasFiltersSchema`, `ListFacturaIvaFiltersSchema`, `ListFacturaVencimientosFiltersSchema`.
+
+#### Tests
+
+- `tests/tools/cartera.test.ts`: 13 tests (registro, happy path con filtros FIQL, errores 404 + 500)
+- `tests/tools/facturas-ventas.test.ts`: 23 tests (registro, happy path con filtros FIQL para las 5 tools, errores 404 + 500)
+- `tests/clients/freematica-client-cartera.test.ts`: 34 tests (métodos del cliente: list/get cartera, list/get facturas cabecera, lineas, iva, vencimientos)
+- **Total: 302 tests, todos en verde**
+
+#### Coverage nuevos archivos
+
+| Archivo | Statements | Functions | Lines |
+|---------|-----------|-----------|-------|
+| `src/schemas/cartera.ts` | 100% | 100% | 100% |
+| `src/schemas/facturas-ventas.ts` | 100% | 100% | 100% |
+| `src/tools/cartera.ts` | 100% | 100% | 100% |
+| `src/tools/facturas-ventas.ts` | 100% | 100% | 100% |
+| `src/clients/freematica-client.ts` | 100% | 100% | 100% |
+
+---
+
 ## [0.5.0-rc.1] — 2026-06-09
 
 ### Fixes post code-review (TD-117)

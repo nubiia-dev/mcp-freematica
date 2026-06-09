@@ -1,9 +1,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { FreematicaClient } from './clients/freematica-client.js';
 import { FREEMATICA_MCP_INSTRUCTIONS } from './server-instructions.js';
+import { registerCarteraTools } from './tools/cartera.js';
 import { registerClientesTools } from './tools/clientes.js';
 import { registerContactosClientesTools } from './tools/contactos-clientes.js';
 import { registerContratosTools } from './tools/contratos.js';
+import { registerFacturasVentasTools } from './tools/facturas-ventas.js';
 import { registerMasterDataTools } from './tools/master-data.js';
 import { registerOportunidadesNegocioTools } from './tools/oportunidades-negocio.js';
 
@@ -28,6 +30,8 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerClientesTools(server, opts.client);
   registerContactosClientesTools(server, opts.client);
   registerOportunidadesNegocioTools(server, opts.client);
+  registerCarteraTools(server, opts.client);
+  registerFacturasVentasTools(server, opts.client);
 
   return server;
 }
