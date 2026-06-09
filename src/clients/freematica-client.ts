@@ -140,15 +140,21 @@ export class FreematicaClient extends BaseClient {
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
     if (opts.exportado !== undefined) url.searchParams.set('exportado', opts.exportado);
 
-    const fiql = buildFiql({
+    // Construir grupos AND para el filtro de fecha (ambos usan FCC_FCHFAC con distinto operador).
+    // FCC_FCHFAC_HASTA NO existe en el schema Freemática; no se puede usar como campo sintético.
+    // La solución correcta es la composición AND: dos expresiones con el mismo campo real.
+    const dateGroups: import('./fiql-builder.js').FiqlGroup[] = [];
+    if (opts.fechaDesde !== undefined) {
+      dateGroups.push({ FCC_FCHFAC: { op: 'ge', value: opts.fechaDesde } });
+    }
+    if (opts.fechaHasta !== undefined) {
+      dateGroups.push({ FCC_FCHFAC: { op: 'le', value: opts.fechaHasta } });
+    }
+
+    // Resto de filtros escalares en un grupo plano
+    const scalarGroup: import('./fiql-builder.js').FiqlGroup = {
       FCC_CODEMP: opts.empresa,
       FCC_CODPRO: opts.codProveedor,
-      FCC_FCHFAC: opts.fechaDesde !== undefined
-        ? { op: 'ge', value: opts.fechaDesde }
-        : undefined,
-      ...(opts.fechaHasta !== undefined
-        ? { FCC_FCHFAC_HASTA: { op: 'le', value: opts.fechaHasta } }
-        : {}),
       FCC_SERIEFRA: opts.serie,
       FCC_NUMFRA: opts.numFactura,
       FCC_FPAGO: opts.formaPago,
@@ -158,7 +164,9 @@ export class FreematicaClient extends BaseClient {
           : undefined,
       FCC_DELEG: opts.delegacion,
       FCC_LIN_NEGOCIO: opts.lineaNegocio,
-    });
+    };
+
+    const fiql = buildFiql({ and: [...dateGroups, scalarGroup] });
     appendRquery(url, fiql);
 
     const path = url.pathname + (url.search ? url.search : '');
@@ -332,7 +340,7 @@ export class FreematicaClient extends BaseClient {
     return this.listResourceWithFiql(
       '/pgrl/v2/localizaciones-servicio-clientes',
       opts,
-      fiqlFilters as Record<string, string | undefined>,
+      fiqlFilters as Parameters<typeof buildFiql>[0],
     );
   }
 

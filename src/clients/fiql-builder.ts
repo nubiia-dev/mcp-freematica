@@ -32,7 +32,11 @@
  * - `ge`  → `=ge=`     Mayor o igual
  * - `le`  → `=le=`     Menor o igual
  * - `in`  → `=in=`     En lista (valor: array)
- * - `lk`  → `=lk=`     Like / búsqueda parcial (extensión Freemática para NOMBRE_PRO, etc.)
+ * - `lk`  → `=lk=`     Like / búsqueda parcial. **EXTENSIÓN NO ESTÁNDAR de Freemática.**
+ *             El operador `=lk=` no forma parte de la especificación FIQL original.
+ *             Se usa para búsquedas de texto parcial en campos como `NOMBRE_PRO`.
+ *             No hay evidencia documental en la colección Postman; se asume por convención
+ *             del API Freemática. Si el API no lo soporta, usar `==` con wildcards `%`.
  */
 export type FiqlOp = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le' | 'in' | 'lk';
 

@@ -4,6 +4,32 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 ## [0.5.0-rc.2] — 2026-06-09
 
+### Fixed — Post code-review (TD-119)
+
+#### Fixed — Critical (bug funcional)
+
+- **`FCC_FCHFAC_HASTA` no existe en Freemática** (`src/clients/freematica-client.ts`): el campo `FCC_FCHFAC_HASTA` era sintético e inventado; el filtro `fechaHasta` quedaba silenciosamente ignorado. Fix: la composición AND usa ahora el mismo campo real `FCC_FCHFAC` con operador `=le=` para el límite superior y `=ge=` para el inferior. Rquery resultante: `FCC_FCHFAC=ge=YYYY-MM-DD;FCC_FCHFAC=le=YYYY-MM-DD`.
+
+#### Fixed — Menor
+
+- **Type cast incorrecto en `listLocalizacionesServicioClientes`** (`src/clients/freematica-client.ts:335`): `fiqlFilters as Record<string, string | undefined>` reemplazado por `fiqlFilters as Parameters<typeof buildFiql>[0]`, coherente con el patrón de `listProveedores`.
+
+- **Version mismatch en `server.ts`**: `version` bumped de `'0.5.0'` a `'0.5.0-rc.2'` para alinear con `package.json` y `CHANGELOG`.
+
+#### Documented
+
+- **Operador `=lk=`** (`src/clients/fiql-builder.ts`): JSDoc actualizado para indicar explícitamente que `=lk=` es una **extensión no estándar de Freemática** (no parte de FIQL spec); sin evidencia documental en la colección Postman. Se mantiene el operador con documentación clara.
+
+#### Tests añadidos
+
+- `tests/fiql-builder.test.ts`: 5 tests nuevos para el operador `=lk=` (happy path, escape de reservados, injection prevention).
+- `tests/fiql-builder.property.test.ts`: regex `FIQL_OP_RE` actualizado para incluir `=lk=`.
+- `tests/tools/facturas-compras.test.ts`: 3 tests nuevos: `fechaDesde` solo, `fechaHasta` solo, y `fechaDesde+fechaHasta` simultáneos (regresión del bug fix). **Total: 15 tests** (+2 netos respecto a rc.1).
+- `tests/clients/freematica-client.test.ts`: 3 tests nuevos equivalentes a nivel cliente. **Total: 45 tests** (+3 netos).
+- **Total global: 315 tests, todos en verde**.
+
+---
+
 ### Added — Dominio financiero compras + proveedores + localizaciones (TD-119)
 
 #### Tools nuevas (7)

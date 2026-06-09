@@ -99,6 +99,32 @@ describe('buildFiql', () => {
     it('returns empty string for in with empty array', () => {
       expect(buildFiql({ COD_CLI: { op: 'in', value: [] } })).toBe('');
     });
+
+    // =lk= — Freemática extension (NOT standard FIQL)
+    it('generates =lk= for lk operator (Freemática partial-match extension)', () => {
+      expect(buildFiql({ NOMBRE_PRO: { op: 'lk', value: 'García' } }))
+        .toBe('NOMBRE_PRO=lk=García');
+    });
+
+    it('generates =lk= for lk operator with plain ASCII', () => {
+      expect(buildFiql({ NOMBRE_PRO: { op: 'lk', value: 'Lopez' } }))
+        .toBe('NOMBRE_PRO=lk=Lopez');
+    });
+
+    it('escapes reserved chars in =lk= value (semicolon)', () => {
+      expect(buildFiql({ NOMBRE: { op: 'lk', value: 'a;b' } }))
+        .toBe('NOMBRE=lk=a%3Bb');
+    });
+
+    it('escapes reserved chars in =lk= value (comma)', () => {
+      expect(buildFiql({ NOMBRE: { op: 'lk', value: 'a,b' } }))
+        .toBe('NOMBRE=lk=a%2Cb');
+    });
+
+    it('escapes = in =lk= value (prevents operator injection)', () => {
+      expect(buildFiql({ NOMBRE: { op: 'lk', value: 'x=gt=0' } }))
+        .toBe('NOMBRE=lk=x%3Dgt%3D0');
+    });
   });
 
   // ---------------------------------------------------------------------------

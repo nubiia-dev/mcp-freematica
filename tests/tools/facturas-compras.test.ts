@@ -150,13 +150,13 @@ describe('registerFacturasComprasTools', () => {
     expect(result.isError).toBeUndefined();
   });
 
-  it('list passes rquery FIQL for fecha desde/hasta filters', async () => {
+  it('list passes rquery FIQL for fechaDesde only (FCC_FCHFAC=ge=)', async () => {
     const fake = [{ FCC_FCHFAC: '2024-01-15' }];
     nock(BASE_URL)
       .get('/pcmp/v2/facturas-compras')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('FCC_FCHFAC') && String(q.page) === '1';
+        return rquery.includes('FCC_FCHFAC=ge=2024-01-01') && String(q.page) === '1';
       })
       .reply(200, listEnv(fake, 1));
 
@@ -166,6 +166,57 @@ describe('registerFacturasComprasTools', () => {
       page: 1,
       items: 20,
       fechaDesde: '2024-01-01',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+  });
+
+  it('list passes rquery FIQL with BOTH FCC_FCHFAC=ge= AND FCC_FCHFAC=le= for fecha desde+hasta', async () => {
+    // BUG FIX: FCC_FCHFAC_HASTA no existe en el schema Freemática.
+    // Ambos filtros deben usar el mismo campo FCC_FCHFAC con distintos operadores.
+    const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+    nock(BASE_URL)
+      .get('/pcmp/v2/facturas-compras')
+      .query(q => {
+        const rquery = String(q.rquery ?? '');
+        return (
+          rquery.includes('FCC_FCHFAC=ge=2024-01-01') &&
+          rquery.includes('FCC_FCHFAC=le=2024-01-31') &&
+          !rquery.includes('FCC_FCHFAC_HASTA')
+        );
+      })
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, LIST_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaDesde: '2024-01-01',
+      fechaHasta: '2024-01-31',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.items).toEqual(fake);
+  });
+
+  it('list passes rquery FIQL for fechaHasta only (FCC_FCHFAC=le=)', async () => {
+    const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+    nock(BASE_URL)
+      .get('/pcmp/v2/facturas-compras')
+      .query(q => {
+        const rquery = String(q.rquery ?? '');
+        return rquery.includes('FCC_FCHFAC=le=2024-01-31') && !rquery.includes('FCC_FCHFAC=ge=');
+      })
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, LIST_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaHasta: '2024-01-31',
     })) as { content: { type: string; text: string }[]; isError?: boolean };
 
     expect(result.isError).toBeUndefined();

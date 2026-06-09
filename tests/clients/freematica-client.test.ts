@@ -233,6 +233,62 @@ describe('FreematicaClient', () => {
       expect(result.items).toEqual(fake);
     });
 
+    // BUG FIX: FCC_FCHFAC_HASTA es un campo sintético que no existe en Freemática.
+    // El filtro de fecha hasta debe usar el campo real FCC_FCHFAC con operador =le=.
+
+    it('passes FCC_FCHFAC=ge= only when fechaDesde is set (no fechaHasta)', async () => {
+      const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return rq.includes('FCC_FCHFAC=ge=2024-01-01') && !rq.includes('FCC_FCHFAC=le=');
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({ items: 20, page: 1, fechaDesde: '2024-01-01' });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FCC_FCHFAC=le= only when fechaHasta is set (no fechaDesde)', async () => {
+      const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return rq.includes('FCC_FCHFAC=le=2024-01-31') && !rq.includes('FCC_FCHFAC=ge=');
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({ items: 20, page: 1, fechaHasta: '2024-01-31' });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes BOTH FCC_FCHFAC=ge= AND FCC_FCHFAC=le= when fechaDesde+fechaHasta are set (bug fix)', async () => {
+      // Verifica el bug fix: antes se generaba FCC_FCHFAC_HASTA (campo inexistente).
+      // Ahora ambos filtros usan el campo real FCC_FCHFAC con distintos operadores.
+      const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return (
+            rq.includes('FCC_FCHFAC=ge=2024-01-01') &&
+            rq.includes('FCC_FCHFAC=le=2024-01-31') &&
+            !rq.includes('FCC_FCHFAC_HASTA')
+          );
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({
+        items: 20,
+        page: 1,
+        fechaDesde: '2024-01-01',
+        fechaHasta: '2024-01-31',
+      });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
     it('passes FIQL for serie and numFactura', async () => {
       const fake = [{ FCC_SERIEFRA: 'A', FCC_NUMFRA: '2024999' }];
       nock(BASE_URL)
