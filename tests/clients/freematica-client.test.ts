@@ -168,4 +168,279 @@ describe('FreematicaClient', () => {
       ).rejects.toMatchObject({ code: 'not_found' });
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // PRL — getFichaPrevCliente
+  // ---------------------------------------------------------------------------
+
+  describe('getFichaPrevCliente', () => {
+    it('sends codCli query param and returns { items, total }', async () => {
+      const fake = [{ COD_CLI: '123', CODIGO_FICHA: 'F-001' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v2/ficha-prev-cliente')
+        .query({ codCli: '123' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.getFichaPrevCliente({ codCliente: '123' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('sends grpCli query param', async () => {
+      const fake = [{ COD_GRUPO_CLI: 5 }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v2/ficha-prev-cliente')
+        .query({ grpCli: '5' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.getFichaPrevCliente({ grupoCliente: 5 });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('sends locServ query param', async () => {
+      const fake = [{ COD_LOC_SERV: 99001 }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v2/ficha-prev-cliente')
+        .query({ locServ: '99001' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.getFichaPrevCliente({ codLocalizacionServicio: 99001 });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('sends codigo query param', async () => {
+      const fake = [{ CODIGO_FICHA: 'FICHA-XYZ' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v2/ficha-prev-cliente')
+        .query({ codigo: 'FICHA-XYZ' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.getFichaPrevCliente({ codigoFicha: 'FICHA-XYZ' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates not_found on 404 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pprl/v2/ficha-prev-cliente')
+        .query({ codCli: 'BAD' })
+        .reply(200, { errorCode: '404', errorMessage: 'Not found', data: null });
+      await expect(client.getFichaPrevCliente({ codCliente: 'BAD' })).rejects.toMatchObject({
+        code: 'not_found',
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // PRL — listVigilanciaSalud
+  // ---------------------------------------------------------------------------
+
+  describe('listVigilanciaSalud', () => {
+    it('calls /pprl/v1/vigilancia-salud with pagination params', async () => {
+      const fake = [{ PERVS_PERSO: 'P001' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({ items: '10', page: '1' })
+        .reply(200, listEnv(fake, 50));
+      const result = await client.listVigilanciaSalud({ items: 10, page: 1 });
+      expect(result).toEqual({ items: fake, total: 50 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('sends FIQL filters for empresa and delegacion', async () => {
+      const fake = [{ PERVS_EMP: '1' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({ items: '20', page: '1', rquery: 'PERVS_EMP==1;PERVS_DELEG==MAD' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listVigilanciaSalud({
+        items: 20,
+        page: 1,
+        empresa: '1',
+        delegacion: 'MAD',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('sends idRegPersona as native query param', async () => {
+      const fake = [{ PERVS_PERSO: 'P001' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({ items: '20', page: '1', idRegPersona: 'ABCDEF==' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listVigilanciaSalud({ items: 20, page: 1, idRegPersona: 'ABCDEF==' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates server_error on 500 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Boom', data: null });
+      await expect(client.listVigilanciaSalud({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'server_error',
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // PRL — getVigilanciaSalud
+  // ---------------------------------------------------------------------------
+
+  describe('getVigilanciaSalud', () => {
+    it('returns the VS record for idReg', async () => {
+      const fake = { PERVS_RESULTADO: 'APTO', idReg: 'vs001' };
+      nock(BASE_URL).get('/pprl/v1/vigilancia-salud/vs001').reply(200, detailEnv(fake));
+      const result = await client.getVigilanciaSalud('vs001');
+      expect(result).toEqual(fake);
+    });
+
+    it('propagates not_found on 404 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud/BADID')
+        .reply(200, { errorCode: '404', errorMessage: 'Not found', data: null });
+      await expect(client.getVigilanciaSalud('BADID')).rejects.toMatchObject({ code: 'not_found' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Personal — listPersonal
+  // ---------------------------------------------------------------------------
+
+  describe('listPersonal', () => {
+    it('calls /pers/v2/personal with pagination and no filters', async () => {
+      const fake = [{ VSSPER_COD: 'P001' }];
+      const scope = nock(BASE_URL)
+        .get('/pers/v2/personal')
+        .query({ items: '10', page: '1' })
+        .reply(200, listEnv(fake, 100));
+      const result = await client.listPersonal({ items: 10, page: 1 });
+      expect(result).toEqual({ items: fake, total: 100 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('sends FIQL rquery with empresa and activo=S', async () => {
+      const fake = [{ VSSPER_EMP: '1', VSSPER_ACTIVO: 'S' }];
+      const scope = nock(BASE_URL)
+        .get('/pers/v2/personal')
+        .query({ items: '20', page: '1', rquery: 'VSSPER_EMP==1;VSSPER_ACTIVO==S' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPersonal({ items: 20, page: 1, empresa: '1', activo: true });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('sends VSSPER_ACTIVO==N when activo=false', async () => {
+      const fake = [{ VSSPER_ACTIVO: 'N' }];
+      const scope = nock(BASE_URL)
+        .get('/pers/v2/personal')
+        .query({ items: '20', page: '1', rquery: 'VSSPER_ACTIVO==N' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPersonal({ items: 20, page: 1, activo: false });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates server_error on 500 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pers/v2/personal')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Boom', data: null });
+      await expect(client.listPersonal({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'server_error',
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Personal — getPersona
+  // ---------------------------------------------------------------------------
+
+  describe('getPersona', () => {
+    it('returns the persona for idReg', async () => {
+      const fake = { VSSPER_COD: 'P001', VSSPER_NOM: 'Ana' };
+      nock(BASE_URL).get('/pers/v2/personal/PERS001%3D%3D').reply(200, detailEnv(fake));
+      const result = await client.getPersona('PERS001==');
+      expect(result).toEqual(fake);
+    });
+
+    it('propagates not_found on 404 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pers/v2/personal/BADID')
+        .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+      await expect(client.getPersona('BADID')).rejects.toMatchObject({ code: 'not_found' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Calendarios — listCalendarios
+  // ---------------------------------------------------------------------------
+
+  describe('listCalendarios', () => {
+    it('calls /pgrl/v1/calendarios with pagination', async () => {
+      const fake = [{ idReg: 'cal001', NOMBRE: 'Cal 2025' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v1/calendarios')
+        .query({ items: '10', page: '1' })
+        .reply(200, listEnv(fake, 5));
+      const result = await client.listCalendarios({ items: 10, page: 1 });
+      expect(result).toEqual({ items: fake, total: 5 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('calls with no params when no opts', async () => {
+      const fake = [{ idReg: 'cal001' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v1/calendarios')
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listCalendarios();
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates invalid_token on 401 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v1/calendarios')
+        .reply(200, { errorCode: '401', errorMessage: 'Unauthorized', data: null });
+      await expect(client.listCalendarios()).rejects.toMatchObject({ code: 'invalid_token' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Calendarios — listCalendarioPeriodos
+  // ---------------------------------------------------------------------------
+
+  describe('listCalendarioPeriodos', () => {
+    it('calls /pgrl/v1/calendarios/{id}/periodos with pagination', async () => {
+      const fake = [{ FECHA_INICIO: '2025-01-01', FECHA_FIN: '2025-01-31' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v1/calendarios/cal001/periodos')
+        .query({ items: '12', page: '1' })
+        .reply(200, listEnv(fake, 12));
+      const result = await client.listCalendarioPeriodos('cal001', { items: 12, page: 1 });
+      expect(result).toEqual({ items: fake, total: 12 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('url-encodes idCalendario in the path', async () => {
+      const fake = [{ FECHA_INICIO: '2025-01-01' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v1/calendarios/cal%2B001%3D%3D/periodos')
+        .query({ items: '5', page: '1' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listCalendarioPeriodos('cal+001==', { items: 5, page: 1 });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates not_found on 404 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v1/calendarios/NOCAL/periodos')
+        .query({ items: '5', page: '1' })
+        .reply(200, { errorCode: '404', errorMessage: 'Not found', data: null });
+      await expect(
+        client.listCalendarioPeriodos('NOCAL', { items: 5, page: 1 }),
+      ).rejects.toMatchObject({ code: 'not_found' });
+    });
+  });
 });
