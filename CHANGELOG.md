@@ -2,6 +2,25 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0-rc.2] — 2026-06-09
+
+### Fixes post code-review (TD-121)
+
+#### Fixed
+
+- **Tests fecha range `fechaCitaDesde/Hasta`** (`tests/clients/freematica-client.test.ts`, `tests/tools/prl.test.ts`): añadidos 3 tests de client-level y 1 test tool-level verificando que `listVigilanciaSalud` genera correctamente `PERVS_FCH_CITA=ge=`, `PERVS_FCH_CITA=le=` y la combinación `ge+le;` al pasar `fechaCitaDesde`, `fechaCitaHasta` o ambos.
+
+- **Version mismatch**: `package.json`, `src/server.ts` y `src/index.ts` alineados a `0.5.0-rc.2`.
+
+- **README tools table**: añadidas 7 filas para las tools de PRL, Personal y Calendarios introducidas en TD-121 (`freematica_get_ficha_prev_cliente`, `freematica_list_vigilancia_salud`, `freematica_get_vigilancia_salud`, `freematica_list_personal`, `freematica_get_persona`, `freematica_list_calendarios`, `freematica_list_calendario_periodos`).
+
+#### Tests summary (post-fix)
+
+- Tests nuevos: +4 (3 client-level + 1 tool-level fecha range)
+- Total: 303 tests, todos en verde
+
+---
+
 ## [0.5.0] — 2026-06-09
 
 ### PRL + Personal + Calendarios (TD-121)

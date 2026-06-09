@@ -281,6 +281,56 @@ describe('FreematicaClient', () => {
         code: 'server_error',
       });
     });
+
+    it('emite PERVS_FCH_CITA=ge=... en rquery cuando solo fechaCitaDesde', async () => {
+      const fake = [{ PERVS_FCH_CITA: '2025-01-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({ items: '20', page: '1', rquery: 'PERVS_FCH_CITA=ge=2025-01-01' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listVigilanciaSalud({
+        items: 20,
+        page: 1,
+        fechaCitaDesde: '2025-01-01',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('emite PERVS_FCH_CITA=le=... en rquery cuando solo fechaCitaHasta', async () => {
+      const fake = [{ PERVS_FCH_CITA: '2025-11-30' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({ items: '20', page: '1', rquery: 'PERVS_FCH_CITA=le=2025-12-31' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listVigilanciaSalud({
+        items: 20,
+        page: 1,
+        fechaCitaHasta: '2025-12-31',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('emite ambas expresiones ge+le unidas con ";" cuando rango completo', async () => {
+      const fake = [{ PERVS_FCH_CITA: '2025-06-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({
+          items: '20',
+          page: '1',
+          rquery: 'PERVS_FCH_CITA=ge=2025-01-01;PERVS_FCH_CITA=le=2025-12-31',
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listVigilanciaSalud({
+        items: 20,
+        page: 1,
+        fechaCitaDesde: '2025-01-01',
+        fechaCitaHasta: '2025-12-31',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
   });
 
   // ---------------------------------------------------------------------------

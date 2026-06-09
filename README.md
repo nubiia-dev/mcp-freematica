@@ -21,6 +21,13 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 | `freematica_list_oportunidades_negocio` | `GET /pcrm/v2/oportunidades-negocio` | Lista paginada de oportunidades |
 | `freematica_get_oportunidad_negocio` | `GET /pcrm/v2/oportunidades-negocio/{idReg}` | Detalle de oportunidad |
 | `freematica_get_oportunidad_negocio_datos_ampliados` | `GET /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados` | Datos ampliados (puede 404) |
+| `freematica_get_ficha_prev_cliente` | `GET /pprl/v2/ficha-prev-cliente` | Ficha PRL de un cliente (filtros: codCliente, grupoCliente, codLocalizacionServicio, codigoFicha) |
+| `freematica_list_vigilancia_salud` | `GET /pprl/v1/vigilancia-salud` | Lista paginada de registros de Vigilancia de la Salud con filtros FIQL y rango de fecha de cita |
+| `freematica_get_vigilancia_salud` | `GET /pprl/v1/vigilancia-salud/{idreg}` | Detalle de un registro de Vigilancia de la Salud por idReg opaco |
+| `freematica_list_personal` | `GET /pers/v2/personal` | Lista paginada de personas (RRHH) con filtros FIQL (empresa, delegación, nombre, NIF, activo...) |
+| `freematica_get_persona` | `GET /pers/v2/personal/{idreg}` | Detalle de una persona por idReg opaco |
+| `freematica_list_calendarios` | `GET /pgrl/v1/calendarios` | Lista paginada de calendarios laborales |
+| `freematica_list_calendario_periodos` | `GET /pgrl/v1/calendarios/{idreg}/periodos` | Periodos de un calendario laboral concreto |
 
 ## Modos de transporte
 

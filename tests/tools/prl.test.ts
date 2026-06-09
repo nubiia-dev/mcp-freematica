@@ -323,6 +323,32 @@ describe('registerPrlTools', () => {
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.error).toBe('server_error');
     });
+
+    it('pasa filtro fechaCitaDesde/Hasta al client y lo traduce a FIQL ge+le', async () => {
+      const fake = [{ PERVS_FCH_CITA: '2025-06-15', idReg: 'xyz' }];
+      nock(BASE_URL)
+        .get('/pprl/v1/vigilancia-salud')
+        .query({
+          items: '20',
+          page: '1',
+          rquery: 'PERVS_FCH_CITA=ge=2025-01-01;PERVS_FCH_CITA=le=2025-12-31',
+        })
+        .reply(200, listEnv(fake, 1));
+
+      const server = buildServer();
+      const handler = getHandler(server, LIST_VS_TOOL);
+      const result = (await handler({
+        page: 1,
+        items: 20,
+        fechaCitaDesde: '2025-01-01',
+        fechaCitaHasta: '2025-12-31',
+      })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+      expect(parsed.total).toBe(1);
+    });
   });
 
   // -------------------------------------------------------------------------
