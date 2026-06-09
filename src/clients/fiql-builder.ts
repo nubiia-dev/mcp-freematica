@@ -22,8 +22,19 @@
  *   El `==` en un valor se convierte en `%3D%3D` automáticamente.
  */
 
-/** Operadores escalares soportados. */
-export type FiqlOp = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le' | 'in';
+/**
+ * Operadores escalares soportados.
+ *
+ * - `eq`  → `==`       Igual (por defecto)
+ * - `ne`  → `!=`       Distinto
+ * - `gt`  → `=gt=`     Mayor que
+ * - `lt`  → `=lt=`     Menor que
+ * - `ge`  → `=ge=`     Mayor o igual
+ * - `le`  → `=le=`     Menor o igual
+ * - `in`  → `=in=`     En lista (valor: array)
+ * - `lk`  → `=lk=`     Like / búsqueda parcial (extensión Freemática para NOMBRE_PRO, etc.)
+ */
+export type FiqlOp = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le' | 'in' | 'lk';
 
 /** Valor escalar (primitivo o con operador explícito). */
 export type FiqlValue =
@@ -56,6 +67,7 @@ const OP_MAP: Record<FiqlOp, string> = {
   ge: '=ge=',
   le: '=le=',
   in: '=in=',
+  lk: '=lk=',
 };
 
 /**

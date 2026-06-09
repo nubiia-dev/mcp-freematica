@@ -2,6 +2,45 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0-rc.2] — 2026-06-09
+
+### Added — Dominio financiero compras + proveedores + localizaciones (TD-119)
+
+#### Tools nuevas (7)
+
+- **`freematica_list_facturas_compras`** (`src/tools/facturas-compras.ts`): lista paginada de facturas de compras con filtros FIQL (empresa, proveedor, serie, numFactura, formaPago, traspasadoContabilidad, delegacion, lineaNegocio, rango fechas) + query param nativo `exportado` (`all` | `not_exported`). Endpoint: `GET /pcmp/v2/facturas-compras`.
+
+- **`freematica_get_factura_compra`** (`src/tools/facturas-compras.ts`): detalle de una factura de compra por `idReg` opaco. Endpoint: `GET /pcmp/v2/facturas-compras/{idReg}`.
+
+- **`freematica_list_proveedores`** (`src/tools/proveedores.ts`): lista paginada de proveedores con filtros FIQL (codProveedor, grupoProveedor, nif, tipoIdent, codProvincia, codPais). Búsqueda parcial por `nombre` mediante operador `=lk=`. Filtro `activo` mapea `FECHA_BAJA==null` (activos) / `FECHA_BAJA!=null` (bajas). Endpoint: `GET /pgrl/v2/proveedores`.
+
+- **`freematica_get_proveedor`** (`src/tools/proveedores.ts`): detalle de un proveedor por `idReg` opaco. Endpoint: `GET /pgrl/v2/proveedores/{idReg}`.
+
+- **`freematica_list_localizaciones_cobro_clientes`** (`src/tools/localizaciones.ts`): localizaciones de cobro de clientes (domiciliación bancaria). Filtros: codCliente, grupoCliente, formaPago (COD_FORMA_COBRO). Endpoint: `GET /pgrl/v2/localizaciones-cobro-clientes`.
+
+- **`freematica_list_localizaciones_pago_proveedores`** (`src/tools/localizaciones.ts`): localizaciones de pago de proveedores. Filtros: codProveedor, grupoProveedor, formaPago (COD_FORMA_PAGO). Endpoint: `GET /pgrl/v2/localizaciones-pago-proveedores`.
+
+- **`freematica_list_localizaciones_servicio_clientes`** (`src/tools/localizaciones.ts`): localizaciones de servicio de clientes. Filtros: codCliente, grupoCliente, codPais, codProvincia, representante, activo (FECHA_BAJA nulo/no nulo). Endpoint: `GET /pgrl/v2/localizaciones-servicio-clientes`.
+
+#### Cambios en cliente y builder
+
+- **`FreematicaClient`** (`src/clients/freematica-client.ts`): 7 métodos nuevos (`listFacturasCompras`, `getFacturaCompra`, `listProveedores`, `getProveedor`, `listLocalizacionesCobroClientes`, `listLocalizacionesPagoProveedores`, `listLocalizacionesServicioClientes`). Nuevo helper privado `listResourceWithFiql` que centraliza la lógica de paginación + FIQL rquery.
+
+- **`FiqlOp`** (`src/clients/fiql-builder.ts`): añadido operador `lk` → `=lk=` para búsqueda parcial (LIKE). Compatible con la extensión Freemática para campos de texto libre.
+
+- **`server.ts`**: versión bumped a `0.5.0`. Registradas las 3 nuevas familias de tools (facturas-compras, proveedores, localizaciones). Total tools: 15.
+
+#### Tests (TD-119)
+
+- `tests/tools/facturas-compras.test.ts`: 13 tests (registro, happy path, filtros FIQL, exportado nativo, errores 404/500/401).
+- `tests/tools/proveedores.test.ts`: 13 tests (registro, happy path, filtros FIQL, =lk= nombre, activo/baja FIQL, errores).
+- `tests/tools/localizaciones.test.ts`: 19 tests (3 tools: cobro clientes, pago proveedores, servicio clientes — happy path + filtros FIQL + errores).
+- `tests/clients/freematica-client.test.ts`: +28 nuevos tests para los 7 métodos añadidos al cliente.
+- `tests/server.test.ts`: actualizado de 8 → 15 tools registradas.
+- **Total: 305 tests, todos en verde**.
+
+---
+
 ## [0.5.0-rc.1] — 2026-06-09
 
 ### Fixes post code-review (TD-117)
