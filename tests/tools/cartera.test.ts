@@ -194,6 +194,30 @@ describe('registerCarteraTools', () => {
     expect(parsed.items).toEqual(fake);
   });
 
+  it('list_cartera_clientes does NOT emit CARCL_FECIMPAG when soloImpagados=false', async () => {
+    const fake = [{ CARCL_CODAUX: '0001000' }];
+    nock(BASE_URL)
+      .get('/pcar/v1/cartera-clientes')
+      .query((q) => {
+        const rq = q['rquery'] as string | undefined;
+        // rquery may be absent or present, but must NOT contain CARCL_FECIMPAG
+        return rq === undefined || !rq.includes('CARCL_FECIMPAG');
+      })
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, LIST_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      soloImpagados: false,
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.items).toEqual(fake);
+  });
+
   it('list_cartera_clientes applies date range filters for CARCL_FECDOC', async () => {
     const fake = [{ CARCL_CODAUX: '0001000', CARCL_FECDOC: '2026-03-15' }];
     nock(BASE_URL)
