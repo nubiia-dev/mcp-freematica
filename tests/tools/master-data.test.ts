@@ -3,6 +3,7 @@ import nock from 'nock';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { FreematicaClient } from '../../src/clients/freematica-client.js';
 import { registerMasterDataTools } from '../../src/tools/master-data.js';
+import { MASTER_DATA_CATALOGS, CATALOG_ENDPOINTS } from '../../src/schemas/master-data.js';
 
 const BASE_URL = 'https://api.example.com/restsat/api';
 const AUTH_HEADERS = {
@@ -37,6 +38,15 @@ function getHandler(server: McpServer): (args: Record<string, unknown>) => Promi
   return fn;
 }
 
+/** Builds a fake Freemática list envelope. */
+function fakeEnvelope(items: unknown[], total?: number) {
+  return {
+    errorCode: '200',
+    errorMessage: '',
+    data: { total: String(total ?? items.length), items, rowHeight: -1 },
+  };
+}
+
 describe('registerMasterDataTools', () => {
   afterEach(() => {
     nock.cleanAll();
@@ -54,11 +64,7 @@ describe('registerMasterDataTools', () => {
       { idreg: 1, nombre: 'España' },
       { idreg: 2, nombre: 'Francia' },
     ];
-    nock(BASE_URL).get('/pgrl/v1/paises').reply(200, {
-      errorCode: '200',
-      errorMessage: '',
-      data: { total: '2', items: fakeData, rowHeight: -1 },
-    });
+    nock(BASE_URL).get('/pgrl/v1/paises').reply(200, fakeEnvelope(fakeData));
 
     const { server } = buildServer();
     const handler = getHandler(server);
@@ -91,5 +97,105 @@ describe('registerMasterDataTools', () => {
     expect(result.isError).toBe(true);
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('invalid_token');
+  });
+
+  // ------------------------------------------------------------------ TD-122
+  it('handler resolves lineas-negocio to /pgrl/v2/lineas-negocio endpoint', async () => {
+    const fakeData = [{ idreg: 1, nombre: 'Línea Seguridad' }];
+    nock(BASE_URL).get('/pgrl/v2/lineas-negocio').reply(200, fakeEnvelope(fakeData));
+
+    const { server } = buildServer();
+    const handler = getHandler(server);
+
+    const result = (await handler({ catalog: 'lineas-negocio' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.catalog).toBe('lineas-negocio');
+    expect(parsed.items).toEqual(fakeData);
+    expect(parsed.count).toBe(1);
+  });
+
+  it('handler resolves bancos to /pgrl/v2/bancos endpoint', async () => {
+    const fakeData = [{ idreg: 1, nombre: 'Banco Santander' }];
+    nock(BASE_URL).get('/pgrl/v2/bancos').reply(200, fakeEnvelope(fakeData));
+
+    const { server } = buildServer();
+    const handler = getHandler(server);
+
+    const result = (await handler({ catalog: 'bancos' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.catalog).toBe('bancos');
+    expect(parsed.count).toBe(1);
+  });
+
+  it('handler resolves calendarios to /pgrl/v1/calendarios endpoint', async () => {
+    const fakeData = [{ idreg: 1, nombre: 'Calendario General' }];
+    nock(BASE_URL).get('/pgrl/v1/calendarios').reply(200, fakeEnvelope(fakeData));
+
+    const { server } = buildServer();
+    const handler = getHandler(server);
+
+    const result = (await handler({ catalog: 'calendarios' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.catalog).toBe('calendarios');
+    expect(parsed.count).toBe(1);
+  });
+
+  it('handler resolves incidencecode to /pvss/v2/incidencecode endpoint', async () => {
+    const fakeData = [{ idreg: 1, nombre: 'INC-001' }];
+    nock(BASE_URL).get('/pvss/v2/incidencecode').reply(200, fakeEnvelope(fakeData));
+
+    const { server } = buildServer();
+    const handler = getHandler(server);
+
+    const result = (await handler({ catalog: 'incidencecode' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.catalog).toBe('incidencecode');
+    expect(parsed.count).toBe(1);
+  });
+
+  /**
+   * Exhaustive check: every catalog in the enum can be called and resolves
+   * to the correct endpoint without error.
+   * Uses nock to mock the expected URL for each catalog.
+   */
+  it('every catalog in MASTER_DATA_CATALOGS has a working endpoint mapping', async () => {
+    const { server } = buildServer();
+    const handler = getHandler(server);
+
+    for (const catalog of MASTER_DATA_CATALOGS) {
+      const endpoint = CATALOG_ENDPOINTS[catalog];
+      nock(BASE_URL).get(endpoint).reply(200, fakeEnvelope([{ idreg: 1 }]));
+
+      const result = (await handler({ catalog })) as {
+        content: { type: string; text: string }[];
+        isError?: boolean;
+      };
+
+      expect(result.isError, `catalog=${catalog} returned isError=true`).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.catalog, `catalog=${catalog} echo mismatch`).toBe(catalog);
+
+      nock.cleanAll();
+    }
   });
 });

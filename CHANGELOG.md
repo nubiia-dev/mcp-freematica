@@ -2,6 +2,41 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0-rc.2] — 2026-06-09
+
+### Master-data verification + new catalogs (TD-122)
+
+#### Verified
+
+- **`lineas-negocio`** (`/pgrl/v2/lineas-negocio`): confirmado presente en `MASTER_DATA_CATALOGS` desde v0.4.1. Test unitario y documentación README ya reflejaban el catálogo correctamente.
+
+#### Added — 6 new master-data catalogs
+
+Nuevos catálogos identificados en la Postman collection que cumplen el criterio de "sin parámetros requeridos adicionales":
+
+| Catálogo | Endpoint | Sección |
+|---|---|---|
+| `incidencecode` | `GET /pvss/v2/incidencecode` | Tipos / clasificaciones |
+| `claves-facturacion` | `GET /pvss/v2/claves-facturacion` | Tipos / clasificaciones |
+| `calendarios` | `GET /pgrl/v1/calendarios` | Organizativos |
+| `series` | `GET /pgrl/v2/series` | Organizativos |
+| `lineas` | `GET /part/v1/lineas` | Inventario |
+| `bancos` | `GET /pgrl/v2/bancos` | Financiero (nueva sección) |
+
+Total de catálogos: 18 → **24**.
+
+#### Changed
+
+- `src/schemas/master-data.ts`: enum reordenado en secciones con comentarios (tipos, geográficos, organizativos, inventario, **financiero**). Añadido JSDoc con instrucciones para añadir futuros catálogos.
+- `src/tools/master-data.ts`: `CATALOG_DESCRIPTIONS` ampliado con los 6 nuevos catálogos. Comentario JSDoc actualizado (18 → 24).
+- `README.md`: tabla "Datos maestros disponibles" actualizada (18 → 24 filas, nueva sección "Financiero"). Header de tools actualizado (19 → 24 endpoints).
+
+#### Tests
+
+- `tests/schemas/master-data.test.ts`: actualizado a 24 catálogos. Añadidos tests de presencia para `lineas-negocio` y los 6 nuevos. Añadido test exhaustivo de endpoints.
+- `tests/tools/master-data.test.ts`: añadidos 4 tests de integración nock (lineas-negocio, bancos, calendarios, incidencecode) + test exhaustivo que mocka y verifica cada uno de los 24 catálogos.
+- **Total tests: 254 (todos en verde)**
+
 ## [0.5.0-rc.1] — 2026-06-09
 
 ### Fixes post code-review (TD-117)
