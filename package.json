@@ -1,6 +1,6 @@
 {
   "name": "@serlimar/mcp-freematica",
-  "version": "0.5.0-rc.0",
+  "version": "0.5.0-rc.1",
   "description": "MCP server for Freemática REST API (consumed by Claude via Nubiia)",
   "type": "module",
   "main": "dist/index.js",
