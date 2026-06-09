@@ -127,10 +127,18 @@ export class FreematicaClient extends BaseClient {
    *
    * Endpoint: GET /pcar/v1/cartera-clientes
    *
-   * Construye la FIQL a partir de los filtros tipados y la añade como `rquery`.
-   * El filtro `soloImpagados=true` genera `CARCL_FECIMPAG!=null` (documentos con
-   * fecha de impago registrada). El filtro `estado` mapea a los valores numéricos
-   * de `CARCL_SITCAR` (1=pendiente, 2=cancelado, 3=derivado).
+   * Construye la FIQL a partir de los filtros tipados y la añade como `rquery`
+   * usando `appendRquery()` (patrón canónico del foundation TD-117).
+   *
+   * El filtro `soloImpagados=true` genera `CARCL_FECIMPAG!=null`, donde el
+   * valor `'null'` es la convención centinela de Freemática para indicar "sin
+   * valor" en campos de fecha opcionales (assumption empírica: observado en
+   * datos reales de la API; documentado para futuras implementaciones).
+   * El operador `ne` se pasa vía `buildFiql` para garantizar escaping
+   * consistente con el resto de filtros.
+   *
+   * El filtro `estado` mapea a los valores numéricos de `CARCL_SITCAR`
+   * (1=pendiente, 2=cancelado, 3=derivado).
    *
    * @param opts - Filtros tipados del schema `ListCarteraFiltersSchema`.
    * @returns Lista paginada de documentos de cartera.
@@ -165,13 +173,14 @@ export class FreematicaClient extends BaseClient {
     if (opts.fechaVencimientoDesde !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
     if (opts.fechaVencimientoHasta !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
 
-    // soloImpagados: CARCL_FECIMPAG!=null (literal "null" as Freemática string sentinel)
+    // soloImpagados: 'null' es el centinela de Freemática para fecha sin valor.
+    // Se pasa por buildFiql (op 'ne') igual que el resto de filtros para
+    // garantizar escaping uniforme y legibilidad del código.
     if (opts.soloImpagados === true) {
-      parts.push('CARCL_FECIMPAG!=null');
+      parts.push(buildFiql({ CARCL_FECIMPAG: { op: 'ne', value: 'null' } }));
     }
 
-    const finalFiql = parts.join(';');
-    if (finalFiql) url.searchParams.set('rquery', finalFiql);
+    appendRquery(url, parts.join(';'));
 
     const path = url.pathname + (url.search ? url.search : '');
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
@@ -233,8 +242,7 @@ export class FreematicaClient extends BaseClient {
       fiqlParts.push(buildFiql({ FVC_TRSCONT: opts.traspasadoContabilidad ? 'S' : 'N' }));
     }
 
-    const finalFiql = fiqlParts.join(';');
-    if (finalFiql) url.searchParams.set('rquery', finalFiql);
+    appendRquery(url, fiqlParts.join(';'));
 
     const path = url.pathname + (url.search ? url.search : '');
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
@@ -325,8 +333,7 @@ export class FreematicaClient extends BaseClient {
     if (opts.fechaVencimientoDesde !== undefined) fiqlParts.push(buildFiql({ FVV_FECVCTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
     if (opts.fechaVencimientoHasta !== undefined) fiqlParts.push(buildFiql({ FVV_FECVCTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
 
-    const finalFiql = fiqlParts.join(';');
-    if (finalFiql) url.searchParams.set('rquery', finalFiql);
+    appendRquery(url, fiqlParts.join(';'));
 
     const path = url.pathname + (url.search ? url.search : '');
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
