@@ -4,6 +4,22 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 ## [0.5.0-rc.2] — 2026-06-09
 
+<<<<<<< HEAD
+### Fixes post code-review (TD-121)
+
+#### Fixed
+
+- **Tests fecha range `fechaCitaDesde/Hasta`** (`tests/clients/freematica-client.test.ts`, `tests/tools/prl.test.ts`): añadidos 3 tests de client-level y 1 test tool-level verificando que `listVigilanciaSalud` genera correctamente `PERVS_FCH_CITA=ge=`, `PERVS_FCH_CITA=le=` y la combinación `ge+le;` al pasar `fechaCitaDesde`, `fechaCitaHasta` o ambos.
+
+- **Version mismatch**: `package.json`, `src/server.ts` y `src/index.ts` alineados a `0.5.0-rc.2`.
+
+- **README tools table**: añadidas 7 filas para las tools de PRL, Personal y Calendarios introducidas en TD-121 (`freematica_get_ficha_prev_cliente`, `freematica_list_vigilancia_salud`, `freematica_get_vigilancia_salud`, `freematica_list_personal`, `freematica_get_persona`, `freematica_list_calendarios`, `freematica_list_calendario_periodos`).
+
+#### Tests summary (post-fix)
+
+- Tests nuevos: +4 (3 client-level + 1 tool-level fecha range)
+- Total: 303 tests, todos en verde
+=======
 ### Fixed — Post code-review (TD-120)
 
 - **Version mismatch** (`package.json`, `src/server.ts`, `src/index.ts`): alineadas las tres referencias de versión a `0.5.0-rc.2`. El log de stdio también actualizado de `v0.4.1` a `v0.5.0-rc.2`.
@@ -13,11 +29,45 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 - **Asunción `borrador` FIQL sin documentar** (`src/clients/freematica-client.ts`): añadido JSDoc prominente en el bloque `if (opts.borrador !== undefined)` explicando que `ASI_BORR != ''` / `ASI_BORR == ''` es la convención empíricamente observada para campos nullable en Freemática FIQL, no verificada contra la API real. Añadido TODO para verificación futura.
 
 - **Respuesta truncada no incluía campo `total`** (`src/tools/contabilidad.ts`): el payload del branch truncado omitía `total`, impidiendo que el cliente supiera cuántos registros existen en la API. Añadido `total: result.total` al payload. Nuevo test `respuesta truncada incluye campo total con el total real de la API` verifica el comportamiento.
+>>>>>>> origin/development
 
 ---
 
 ## [0.5.0] — 2026-06-09
 
+<<<<<<< HEAD
+### PRL + Personal + Calendarios (TD-121)
+
+#### Added
+
+- **PRL tools** (`src/tools/prl.ts`): 3 nuevas tools de Prevención de Riesgos Laborales.
+  - `freematica_get_ficha_prev_cliente` — ficha PRL de un cliente. Filtros nativos (NO FIQL): codCliente, grupoCliente, codLocalizacionServicio, codigoFicha. Validación `.refine()` interna exige al menos un identificador para evitar devolver el dataset completo.
+  - `freematica_list_vigilancia_salud` — lista paginada de registros VS con filtros FIQL (empresa, delegación, codPersona, tipoRevision, resultado, rango fechaCita) e idRegPersona como query param nativo.
+  - `freematica_get_vigilancia_salud` — detalle por idReg opaco.
+
+- **Personal tools** (`src/tools/personal.ts`): 2 nuevas tools de RRHH.
+  - `freematica_list_personal` — lista paginada con filtros FIQL: empresa, delegación, codPersona, nombre (parcial), apellido (parcial), NIF, situación, departamento, sección, activo (boolean → `VSSPER_ACTIVO==S/N`).
+  - `freematica_get_persona` — detalle por idReg opaco.
+
+- **Calendarios tools** (`src/tools/calendarios.ts`): 2 nuevas tools de calendarios laborales.
+  - `freematica_list_calendarios` — lista paginada de calendarios.
+  - `freematica_list_calendario_periodos` — periodos de un calendario concreto (path param idCalendario + paginación).
+
+- **FreematicaClient** (`src/clients/freematica-client.ts`): 7 nuevos métodos:
+  `getFichaPrevCliente`, `listVigilanciaSalud`, `getVigilanciaSalud`,
+  `listPersonal`, `getPersona`, `listCalendarios`, `listCalendarioPeriodos`.
+
+- **Tests** (`tests/tools/prl.test.ts`, `tests/tools/personal.test.ts`, `tests/tools/calendarios.test.ts`): suites completas con nock — happy path + 4xx/5xx por tool. Test específico del `.refine()` de `FichaPrevClienteRefinedSchema` (8 casos).
+
+- **Tests cliente** (`tests/clients/freematica-client.test.ts`): 25 nuevos tests de los 7 métodos nuevos del cliente.
+
+- **server.ts**: versión bumped a `0.5.0`, se registran los 3 grupos nuevos de tools (15 tools totales).
+
+#### Tests summary
+
+- Total: 299 tests, todos en verde
+- Coverage de archivos nuevos: 100% statements/lines
+=======
 ### Added — Contabilidad (TD-120)
 
 #### Tools nuevas
@@ -184,6 +234,7 @@ Total de catálogos: 18 → **24**.
 | `src/tools/cartera.ts` | 100% | 100% | 100% |
 | `src/tools/facturas-ventas.ts` | 100% | 100% | 100% |
 | `src/clients/freematica-client.ts` | 100% | 100% | 100% |
+>>>>>>> origin/development
 
 ---
 
