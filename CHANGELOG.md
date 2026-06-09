@@ -2,6 +2,43 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0] — 2026-06-09
+
+### Added — Contabilidad (TD-120)
+
+#### Tools nuevas
+
+- **`freematica_list_cuentas_contables`** (`src/tools/contabilidad.ts`): lista el plan de cuentas contables desde `GET /pcon/v2/cuentas`. Soporta filtros FIQL: `codPlan` (COD_PLAN), `prefijoCuenta` (prefix match léxico sobre COD_CTA usando `=ge=`/`=lt=`), `activa` (CTA_ACTIVA==1 o ==0), `grupoCuenta` (COD_GRUPO_CTA).
+
+- **`freematica_list_cuentas_analiticas`** (`src/tools/contabilidad.ts`): lista el catálogo de cuentas analíticas desde `GET /pcon/v2/cuentas-analiticas`. Filtros FIQL: `codPlan`, `prefijoCuenta` (sobre COD_CTA_ANL), `activa` (CTA_ACTIVA_ANL), `grupoCuenta` (COD_GRUPO_ANL), `area` (AREA_ANL), `delegacion` (DELEG).
+
+- **`freematica_export_asientos`** (`src/tools/contabilidad.ts`): exporta asientos contables en batch desde `GET /pcon/v2/export-asientos`.
+  - Parámetros nativos obligatorios: `empresa` (4 chars exactos), `cal` (4 chars exactos).
+  - Parámetro nativo opcional: `periodo` (max 2 chars).
+  - Filtros FIQL: `fechaDesde`/`fechaHasta` (sobre ASI_FCHASI), `diario` (ASI_DIARIO), `borrador` (ASI_BORR).
+  - **Protección de tamaño**: si la respuesta JSON supera `FREEMATICA_MAX_RESPONSE_SIZE_MB` (default 10 MB), los items se truncan con búsqueda binaria y se añade `warning` a la respuesta. Se loguea `warn` con metadatos.
+  - Description advierte explícitamente de usar rangos de fecha cortos.
+
+#### Nuevos métodos en FreematicaClient
+
+- `listCuentasContables(opts)` → `GET /pcon/v2/cuentas`
+- `listCuentasAnaliticas(opts)` → `GET /pcon/v2/cuentas-analiticas`
+- `exportAsientos(opts)` → `GET /pcon/v2/export-asientos` con validación de tamaño y truncado
+
+#### Nueva variable de entorno
+
+- **`FREEMATICA_MAX_RESPONSE_SIZE_MB`** (default: 10, min: 1, max: 500): límite de tamaño de respuesta para `freematica_export_asientos`. Si se supera, los datos se truncan con warning en lugar de error. Documentada en `src/config.ts` y README.
+
+#### Tests
+
+- `tests/tools/contabilidad.test.ts`: 36 tests (happy path, filtros FIQL, Zod schema, truncado, 500s).
+- `tests/clients/contabilidad-client.test.ts`: 30 tests (client methods, filtros, edge cases, truncado por env var).
+- Cobertura de `src/tools/contabilidad.ts`: 100% statements/lines/functions.
+- Cobertura de `src/clients/freematica-client.ts`: 99.44%.
+- Total tests: 298 (todos en verde).
+
+---
+
 ## [0.5.0-rc.1] — 2026-06-09
 
 ### Fixes post code-review (TD-117)
