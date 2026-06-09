@@ -14,7 +14,7 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 | Tool | Endpoint Freemática | Descripción |
 |---|---|---|
 | `freematica_list_materiales_asignados_servicios` | `GET /pvss/v2/contratos-servicios-material` | Lista de material asignado a servicios |
-| `freematica_get_master_data` | (19 endpoints según `catalog`) | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario) |
+| `freematica_get_master_data` | (24 endpoints según `catalog`) | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario, financiero) |
 | `freematica_list_clientes` | `GET /pgrl/v2/clientes` | Lista paginada de clientes |
 | `freematica_get_cliente` | `GET /pgrl/v2/clientes/{idReg}` | Detalle de un cliente |
 | `freematica_list_contactos_clientes` | `GET /pgrl/v2/contactos-clientes` | Lista paginada de contactos |
@@ -76,7 +76,7 @@ Setear `MCP_TRANSPORT=http` en las variables de entorno del proceso, junto a las
 
 ## Datos maestros disponibles
 
-La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de los 19 valores siguientes. Cada uno mapea a un endpoint específico de Freemática.
+La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de los 24 valores siguientes. Cada uno mapea a un endpoint específico de Freemática.
 
 | `catalog` | Endpoint Freemática | Contenido |
 |---|---|---|
@@ -89,6 +89,8 @@ La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de l
 | `tipos-oportunidad-negocio` | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial |
 | `tipos-impuestos` | `GET /pgrl/v2/tipos-impuestos` | IVA, IRPF, retenciones |
 | `naturalezas-abono` | `GET /pven/v1/naturalezas-abono` | Naturalezas de abono comercial |
+| `incidencecode` | `GET /pvss/v2/incidencecode` | Códigos de incidencia en servicios |
+| `claves-facturacion` | `GET /pvss/v2/claves-facturacion` | Claves de facturación de servicios |
 | **Geográficos** | | |
 | `paises` | `GET /pgrl/v1/paises` | Países |
 | `nacionalidades` | `GET /pgrl/v1/nacionalidades` | Nacionalidades |
@@ -99,11 +101,16 @@ La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de l
 | `delegaciones` | `GET /pgrl/v1/delegaciones/agrupcod` | Delegaciones (listado global) |
 | `lineas-negocio` | `GET /pgrl/v2/lineas-negocio` | Líneas de negocio |
 | `cargos-clientes` | `GET /pgrl/v2/cargos-clientes` | Cargos de contactos |
+| `calendarios` | `GET /pgrl/v1/calendarios` | Calendarios laborales |
+| `series` | `GET /pgrl/v2/series` | Series de numeración de documentos |
 | **Inventario** | | |
 | `familias` | `GET /part/v1/familias` | Familias de artículos |
 | `subfamilias` | `GET /part/v1/subfamilias` | Subfamilias |
+| `lineas` | `GET /part/v1/lineas` | Líneas de artículos |
+| **Financiero** | | |
+| `bancos` | `GET /pgrl/v2/bancos` | Entidades bancarias |
 
-Respuesta: `{ catalog, items, count }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
+Respuesta: `{ catalog, items, count, total }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
 
 ## Paginación
 
