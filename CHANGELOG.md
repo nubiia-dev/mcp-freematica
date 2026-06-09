@@ -2,6 +2,20 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0-rc.2] — 2026-06-09
+
+### Fixed — Post code-review (TD-120)
+
+- **Version mismatch** (`package.json`, `src/server.ts`, `src/index.ts`): alineadas las tres referencias de versión a `0.5.0-rc.2`. El log de stdio también actualizado de `v0.4.1` a `v0.5.0-rc.2`.
+
+- **`loadMaxResponseSizeMb()` no respetaba validación Zod** (`src/clients/freematica-client.ts`): la función leía `FREEMATICA_MAX_RESPONSE_SIZE_MB` sin aplicar las restricciones `min(1).max(500).int()` del schema en `config.ts`. Añadidos bounds check (`< 1 || > 500`) y validación `Number.isInteger()`. Valores fuera de rango devuelven el default de 10 MB.
+
+- **Asunción `borrador` FIQL sin documentar** (`src/clients/freematica-client.ts`): añadido JSDoc prominente en el bloque `if (opts.borrador !== undefined)` explicando que `ASI_BORR != ''` / `ASI_BORR == ''` es la convención empíricamente observada para campos nullable en Freemática FIQL, no verificada contra la API real. Añadido TODO para verificación futura.
+
+- **Respuesta truncada no incluía campo `total`** (`src/tools/contabilidad.ts`): el payload del branch truncado omitía `total`, impidiendo que el cliente supiera cuántos registros existen en la API. Añadido `total: result.total` al payload. Nuevo test `respuesta truncada incluye campo total con el total real de la API` verifica el comportamiento.
+
+---
+
 ## [0.5.0] — 2026-06-09
 
 ### Added — Contabilidad (TD-120)

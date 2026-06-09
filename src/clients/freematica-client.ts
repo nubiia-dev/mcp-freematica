@@ -237,10 +237,24 @@ export class FreematicaClient extends BaseClient {
       andGroups.push({ ASI_DIARIO: opts.diario });
     }
     if (opts.borrador !== undefined) {
-      // ASI_BORR no nulo → borrador; nulo → definitivo
-      // Freemática no tiene operador IS NULL en FIQL, usamos campo con valor literal
-      // borrador=true  → ASI_BORR != '' (campo tiene valor)
-      // borrador=false → ASI_BORR == '' (campo vacío/nulo representado como '')
+      /**
+       * ASUNCIÓN EMPÍRICA — convención para campo nullable en Freemática FIQL
+       *
+       * La API de Freemática no expone un operador IS NULL nativo en FIQL. La
+       * convención observada en otras tablas del sistema es representar el valor
+       * nulo/ausente como cadena vacía `''` en las expresiones `=eq=` / `=ne=`.
+       *
+       * Para `ASI_BORR`:
+       *   - borrador=true  → `ASI_BORR!=''`  (campo tiene algún valor → asiento en borrador)
+       *   - borrador=false → `ASI_BORR==''`  (campo vacío / null → asiento definitivo)
+       *
+       * Esta convención NO ha sido verificada contra la API real de Freemática.
+       * Si en pruebas funcionales el filtro no funciona correctamente, puede que
+       * el centinela sea el literal `null` en lugar de `''`, o que el campo
+       * use un valor boolean/entero como en CTA_ACTIVA.
+       *
+       * TODO(TD-???): verificar contra API real cuando esté disponible.
+       */
       andGroups.push({ ASI_BORR: { op: opts.borrador ? 'ne' : 'eq', value: '' } });
     }
 
@@ -351,13 +365,19 @@ export interface ExportAsientosResult extends ListResult<Record<string, unknown>
  * `FREEMATICA_MAX_RESPONSE_SIZE_MB`. Si no está definida o es inválida,
  * devuelve el default de 10 MB.
  *
- * @returns Límite en megabytes.
+ * Esta función aplica las mismas restricciones que el schema Zod definido en
+ * `config.ts` para `FREEMATICA_MAX_RESPONSE_SIZE_MB` (min: 1, max: 500, int):
+ * - Debe ser un número entero.
+ * - Debe estar en el rango [1, 500].
+ * Si cualquiera de esas condiciones falla, se devuelve el default de 10 MB.
+ *
+ * @returns Límite en megabytes (entero en [1, 500]).
  */
 function loadMaxResponseSizeMb(): number {
   const raw = process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'];
   if (raw === undefined || raw === '') return 10;
   const parsed = Number(raw);
-  if (isNaN(parsed) || parsed <= 0) return 10;
+  if (isNaN(parsed) || !Number.isInteger(parsed) || parsed < 1 || parsed > 500) return 10;
   return parsed;
 }
 

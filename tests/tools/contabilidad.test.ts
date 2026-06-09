@@ -527,13 +527,14 @@ describe('freematica_export_asientos', () => {
   });
 
   it('respuesta grande > MAX_RESPONSE_SIZE_MB → trunca con warning', async () => {
-    // Configurar límite muy pequeño: 1 byte
-    process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'] = '0.00001'; // ~10 bytes
+    // Configurar límite de 1 MB (mínimo válido según schema Zod).
+    // Items de ~6 KB c/u para superar el límite con 200 registros (~1.2 MB total).
+    process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'] = '1';
 
     // Generar items grandes que superen el límite
-    const largeItems = Array.from({ length: 100 }, (_, i) => ({
+    const largeItems = Array.from({ length: 200 }, (_, i) => ({
       ASI_NUMERO: `${i}`,
-      PADDING: 'X'.repeat(100), // cada item ~120 bytes
+      PADDING: 'X'.repeat(6000), // cada item ~6 KB
     }));
 
     nock(BASE_URL)
@@ -549,11 +550,41 @@ describe('freematica_export_asientos', () => {
 
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0].text);
-    // Con límite de ~10 bytes, todos los items deben truncarse a 0
     expect(parsed.truncated).toBe(true);
     expect(typeof parsed.warning).toBe('string');
     expect(parsed.warning).toContain('truncada');
     expect(parsed.items.length).toBeLessThan(largeItems.length);
+  });
+
+  it('respuesta truncada incluye campo total con el total real de la API', async () => {
+    // Configurar límite de 1 MB (mínimo válido según schema Zod).
+    // Items de ~6 KB c/u para superar el límite con 200 registros (~1.2 MB total).
+    process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'] = '1';
+
+    const totalReal = 250;
+    const largeItems = Array.from({ length: 200 }, (_, i) => ({
+      ASI_NUMERO: `${i}`,
+      PADDING: 'X'.repeat(6000),
+    }));
+
+    nock(BASE_URL)
+      .get('/pcon/v2/export-asientos')
+      .query({ empresa: '0001', cal: 'GRAL' })
+      .reply(200, listEnv(largeItems, totalReal));
+
+    const server = buildServer();
+    const result = await callTool(server, EXPORT_ASIENTOS_TOOL, {
+      empresa: '0001',
+      cal: 'GRAL',
+    });
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.truncated).toBe(true);
+    // El campo total debe reflejar el total real reportado por la API,
+    // no solo la cantidad de items truncados devueltos
+    expect(parsed.total).toBe(totalReal);
+    expect(parsed.count).toBeLessThan(totalReal);
   });
 
   it('respuesta dentro del límite → no trunca (sin warning)', async () => {

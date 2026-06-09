@@ -378,12 +378,13 @@ describe('FreematicaClient — contabilidad', () => {
     });
 
     it('respuesta > MAX_RESPONSE_SIZE_MB → truncated=true con warning y items reducidos', async () => {
-      // Establecer límite muy pequeño (~10 bytes)
-      process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'] = '0.00001';
+      // Establecer límite de 1 MB (mínimo válido según schema Zod).
+      // Se generan items de ~6 KB c/u para superar el límite con 200 registros (~1.2 MB total).
+      process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'] = '1';
 
-      const largeItems = Array.from({ length: 50 }, (_, i) => ({
+      const largeItems = Array.from({ length: 200 }, (_, i) => ({
         ASI_NUMERO: `${i}`,
-        DATA: 'Y'.repeat(200),
+        DATA: 'Y'.repeat(6000),
       }));
 
       nock(BASE_URL)
@@ -397,7 +398,7 @@ describe('FreematicaClient — contabilidad', () => {
       expect(result.warning).toBeDefined();
       expect(result.warning).toContain('truncada');
       expect(result.items.length).toBeLessThan(largeItems.length);
-      expect(result.total).toBe(50); // total original, no el truncado
+      expect(result.total).toBe(200); // total original, no el truncado
     });
 
     it('respuesta vacía → truncated=false sin warning', async () => {

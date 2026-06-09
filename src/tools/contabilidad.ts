@@ -306,6 +306,7 @@ export function registerContabilidadTools(server: McpServer, client: FreematicaC
           const payload = {
             items: result.items,
             count: result.items.length,
+            total: result.total,
             warning: result.warning,
             truncated: true,
           };
