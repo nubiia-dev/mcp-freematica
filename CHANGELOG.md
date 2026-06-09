@@ -2,6 +2,54 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0-rc.0] — 2026-06-09
+
+### Foundation (TD-117)
+
+#### Added
+
+- **FIQL builder** (`src/clients/fiql-builder.ts`): función pura `buildFiql(filters)` que genera cadenas FIQL válidas para el API de Freemática.
+  - Operadores soportados: `==`, `!=`, `=gt=`, `=lt=`, `=ge=`, `=le=`, `=in=(v1,v2,...)`
+  - Separadores: `;` (AND), `,` (OR)
+  - Composición explícita con `{ and: [...], or: [...] }`
+  - Escape automático de caracteres reservados FIQL en valores: `;` → `%3B`, `,` → `%2C`, `(` → `%28`, `)` → `%29`, `"` → `%22`, `'` → `%27`, espacio → `%20`
+  - Skip de claves con valor `undefined`; retorna `""` si todos los filtros son undefined
+  - Helper `appendRquery(url, fiql)` para añadir `rquery=...` a un objeto `URL`
+
+- **Filter schemas** (`src/schemas/filters.ts`): bloques Zod reutilizables para tools de v0.5.0.
+  - `DateRangeSchema`: `fechaDesde?` y `fechaHasta?` en formato ISO 8601
+  - `IdentityFiltersSchema`: `codCliente?`, `grupoCliente?`, `codProveedor?`, `grupoProveedor?`
+  - `BaseFiltersSchema`: composición `PaginationSchema + DateRangeSchema + IdentityFiltersSchema`
+
+- **Hardened base client** (`src/clients/hardened-base-client.ts`): extensión de `BaseClient` con resiliencia de producción.
+  - **Timeout configurable** vía `FREEMATICA_TIMEOUT_MS` (default 30s) usando `AbortController`
+  - **Retry con backoff exponencial** para errores 5xx y de red: delays 500ms → 1000ms → 2000ms + jitter 0..200ms. Configurable vía `FREEMATICA_MAX_RETRIES` (default 3). Los errores 4xx nunca se reintentan.
+  - **Circuit breaker in-memory**: abre tras `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD` (default 5) fallos consecutivos; permanece abierto `FREEMATICA_CIRCUIT_BREAKER_TIMEOUT_MS` (default 30s) y luego pasa a half-open. Sin dependencias externas.
+  - Logging estructurado por petición: `requestId`, `method`, `path`, `duration_ms`, `status`, `attempt`
+
+- **Logger estructurado** (`src/logger.ts`): singleton pino con sanitización de credenciales.
+  - Nivel configurable vía `LOG_LEVEL` (default `info`)
+  - `sanitizeHeaders()`: elimina todos los headers `x-auth-*` antes de loguear
+  - Serializer `req` que nunca emite headers de autenticación ni body completo
+  - `AUTH_HEADER_NAMES` exportado para uso en tests y otros módulos
+
+- **Variables de entorno nuevas** (documentadas en `.env.example` y `src/config.ts`):
+  - `FREEMATICA_TIMEOUT_MS` (default 30000)
+  - `FREEMATICA_MAX_RETRIES` (default 3)
+  - `LOG_LEVEL` (default `info`, enum: `trace|debug|info|warn|error|fatal`)
+  - `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD` (default 5)
+  - `FREEMATICA_CIRCUIT_BREAKER_TIMEOUT_MS` (default 30000)
+
+- **Tests** nuevos (todos pasando):
+  - `tests/fiql-builder.test.ts`: 44 tests unitarios (happy path + escape + operadores + edge cases)
+  - `tests/fiql-builder.property.test.ts`: 9 propiedades con fast-check, 200 runs cada una
+  - `tests/hardened-client.test.ts`: 15 tests con nock (retry 5xx, no-retry 4xx, timeout, circuit breaker)
+  - `tests/logger.test.ts`: 12 tests de sanitización de headers y exports del logger
+
+- **Dependencias nuevas**:
+  - Runtime: `pino`, `uuid`
+  - Dev: `pino-pretty`, `fast-check`, `@types/uuid`
+
 ## [0.4.1] — 2026-05-20
 
 ### Fixed
