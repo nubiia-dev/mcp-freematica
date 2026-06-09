@@ -21,6 +21,13 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 | `freematica_list_oportunidades_negocio` | `GET /pcrm/v2/oportunidades-negocio` | Lista paginada de oportunidades |
 | `freematica_get_oportunidad_negocio` | `GET /pcrm/v2/oportunidades-negocio/{idReg}` | Detalle de oportunidad |
 | `freematica_get_oportunidad_negocio_datos_ampliados` | `GET /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados` | Datos ampliados (puede 404) |
+| `freematica_list_cartera_clientes` | `GET /pcar/v1/cartera-clientes` | Lista paginada de cartera de clientes (cobros, impagados). Filtros: empresa, codCliente, grupoCliente, representante, formaPago, modoPago, fechaDoc, fechaVencimiento, estado, soloImpagados, referencia |
+| `freematica_get_cartera_cliente` | `GET /pcar/v1/cartera-clientes/{idReg}` | Detalle de un documento de cartera |
+| `freematica_list_facturas_cabecera` | `GET /pven/v1/facturas-cabecera` | Lista paginada de facturas de ventas (cabecera). Filtros: empresa, codCliente, representante, fechaFactura, serie, numFactura, formaPago, traspasadoContabilidad, delegacion |
+| `freematica_get_factura_cabecera` | `GET /pven/v1/facturas-cabecera/{idReg}` | Detalle de una factura |
+| `freematica_list_factura_lineas` | `GET /pven/v1/facturas-cabecera/{idReg}/lineas` | Líneas de detalle de una factura. Filtros: codArticulo, codFamilia, codSubfamilia, delegacion |
+| `freematica_list_factura_iva` | `GET /pven/v1/facturas-cabecera/{idReg}/iva` | Líneas de IVA de una factura. Filtro: tipoIva |
+| `freematica_list_factura_vencimientos` | `GET /pven/v1/facturas-cabecera/{idReg}/vencimientos` | Vencimientos de cobro de una factura. Filtros: fechaVencimiento, modoPago |
 
 ## Modos de transporte
 
