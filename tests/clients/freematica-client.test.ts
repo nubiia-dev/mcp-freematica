@@ -368,6 +368,23 @@ describe('FreematicaClient', () => {
       expect(result).toEqual({ items: fake, total: 100 });
       expect(scope.isDone()).toBe(true);
     });
+  });
+
+  // ---------------------------------------------------------------------------
+  // listFacturasCompras (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  describe('listFacturasCompras', () => {
+    it('returns { items, total } from /pcmp/v2/facturas-compras with pagination', async () => {
+      const fake = [{ FCC_CODEMP: '1', FCC_NUMFRA: '2024001' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query({ items: '10', page: '2' })
+        .reply(200, listEnv(fake, 100));
+      const result = await client.listFacturasCompras({ items: 10, page: 2 });
+      expect(result).toEqual({ items: fake, total: 100 });
+      expect(scope.isDone()).toBe(true);
+    });
 
     it('sends FIQL rquery with empresa and activo=S', async () => {
       const fake = [{ VSSPER_EMP: '1', VSSPER_ACTIVO: 'S' }];
@@ -376,6 +393,38 @@ describe('FreematicaClient', () => {
         .query({ items: '20', page: '1', rquery: 'VSSPER_EMP==1;VSSPER_ACTIVO==S' })
         .reply(200, listEnv(fake, 1));
       const result = await client.listPersonal({ items: 20, page: 1, empresa: '1', activo: true });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes exportado as native query param', async () => {
+      const fake = [{ FCC_CODEMP: '1' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query({ items: '20', page: '1', exportado: 'not_exported' })
+        .reply(200, listEnv(fake, 5));
+      const result = await client.listFacturasCompras({
+        items: 20,
+        page: 1,
+        exportado: 'not_exported',
+      });
+      expect(result).toEqual({ items: fake, total: 5 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL rquery for empresa and codProveedor', async () => {
+      const fake = [{ FCC_CODEMP: '1', FCC_CODPRO: 'P001' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => String(q.rquery ?? '').includes('FCC_CODEMP==1') &&
+                    String(q.rquery ?? '').includes('FCC_CODPRO==P001'))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({
+        items: 20,
+        page: 1,
+        empresa: '1',
+        codProveedor: 'P001',
+      });
       expect(result).toEqual({ items: fake, total: 1 });
       expect(scope.isDone()).toBe(true);
     });
@@ -402,6 +451,116 @@ describe('FreematicaClient', () => {
     });
   });
 
+  describe('listFacturasCompras (TD-119)', () => {
+    it('passes FIQL for delegacion and lineaNegocio', async () => {
+      const fake = [{ FCC_DELEG: 'MAD', FCC_LIN_NEGOCIO: 'LN01' }];
+      nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => String(q.rquery ?? '').includes('FCC_DELEG==MAD') &&
+                    String(q.rquery ?? '').includes('FCC_LIN_NEGOCIO==LN01'))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({
+        items: 20,
+        page: 1,
+        delegacion: 'MAD',
+        lineaNegocio: 'LN01',
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    // BUG FIX: FCC_FCHFAC_HASTA es un campo sintético que no existe en Freemática.
+    // El filtro de fecha hasta debe usar el campo real FCC_FCHFAC con operador =le=.
+
+    it('passes FCC_FCHFAC=ge= only when fechaDesde is set (no fechaHasta)', async () => {
+      const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return rq.includes('FCC_FCHFAC=ge=2024-01-01') && !rq.includes('FCC_FCHFAC=le=');
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({ items: 20, page: 1, fechaDesde: '2024-01-01' });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FCC_FCHFAC=le= only when fechaHasta is set (no fechaDesde)', async () => {
+      const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return rq.includes('FCC_FCHFAC=le=2024-01-31') && !rq.includes('FCC_FCHFAC=ge=');
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({ items: 20, page: 1, fechaHasta: '2024-01-31' });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes BOTH FCC_FCHFAC=ge= AND FCC_FCHFAC=le= when fechaDesde+fechaHasta are set (bug fix)', async () => {
+      // Verifica el bug fix: antes se generaba FCC_FCHFAC_HASTA (campo inexistente).
+      // Ahora ambos filtros usan el campo real FCC_FCHFAC con distintos operadores.
+      const fake = [{ FCC_FCHFAC: '2024-01-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return (
+            rq.includes('FCC_FCHFAC=ge=2024-01-01') &&
+            rq.includes('FCC_FCHFAC=le=2024-01-31') &&
+            !rq.includes('FCC_FCHFAC_HASTA')
+          );
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({
+        items: 20,
+        page: 1,
+        fechaDesde: '2024-01-01',
+        fechaHasta: '2024-01-31',
+      });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL for serie and numFactura', async () => {
+      const fake = [{ FCC_SERIEFRA: 'A', FCC_NUMFRA: '2024999' }];
+      nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query(q => String(q.rquery ?? '').includes('FCC_SERIEFRA==A') &&
+                    String(q.rquery ?? '').includes('FCC_NUMFRA==2024999'))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listFacturasCompras({
+        items: 20,
+        page: 1,
+        serie: 'A',
+        numFactura: '2024999',
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('propagates invalid_token on 401', async () => {
+      nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '401', errorMessage: 'Unauthorized', data: null });
+      await expect(client.listFacturasCompras({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'invalid_token',
+      });
+    });
+
+    it('propagates server_error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+      await expect(client.listFacturasCompras({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'server_error',
+      });
+    });
+  });
+
   // ---------------------------------------------------------------------------
   // Personal — getPersona
   // ---------------------------------------------------------------------------
@@ -419,6 +578,28 @@ describe('FreematicaClient', () => {
         .get('/pers/v2/personal/BADID')
         .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
       await expect(client.getPersona('BADID')).rejects.toMatchObject({ code: 'not_found' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // getFacturaCompra (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  describe('getFacturaCompra', () => {
+    it('returns the factura object for idReg', async () => {
+      const fake = { FCC_CODEMP: '1', FCC_NUMFRA: '2024001', FCC_CODPRO: 'P001' };
+      nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras/MV9fMTAwMA%3D%3D')
+        .reply(200, detailEnv(fake));
+      const result = await client.getFacturaCompra('MV9fMTAwMA==');
+      expect(result).toEqual(fake);
+    });
+
+    it('propagates not_found on 404', async () => {
+      nock(BASE_URL)
+        .get('/pcmp/v2/facturas-compras/BADID')
+        .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+      await expect(client.getFacturaCompra('BADID')).rejects.toMatchObject({ code: 'not_found' });
     });
   });
 
@@ -491,6 +672,251 @@ describe('FreematicaClient', () => {
       await expect(
         client.listCalendarioPeriodos('NOCAL', { items: 5, page: 1 }),
       ).rejects.toMatchObject({ code: 'not_found' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // listProveedores (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  describe('listProveedores', () => {
+    it('returns { items, total } from /pgrl/v2/proveedores with pagination', async () => {
+      const fake = [{ COD_PRO: 'P001', NOMBRE_PRO: 'Proveedor A' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v2/proveedores')
+        .query({ items: '10', page: '1' })
+        .reply(200, listEnv(fake, 50));
+      const result = await client.listProveedores({ items: 10, page: 1 });
+      expect(result).toEqual({ items: fake, total: 50 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL for codProveedor and nif', async () => {
+      const fake = [{ COD_PRO: 'P001' }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/proveedores')
+        .query({ items: '20', page: '1', rquery: 'COD_PRO==P001;NIF==12345678A' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listProveedores({
+        items: 20,
+        page: 1,
+        codProveedor: 'P001',
+        nif: '12345678A',
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('passes FECHA_BAJA==null for activo=true', async () => {
+      const fake = [{ COD_PRO: 'P001', FECHA_BAJA: null }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/proveedores')
+        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA==null'))
+        .reply(200, listEnv(fake, 10));
+      const result = await client.listProveedores({ items: 20, page: 1, activo: true });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('passes FECHA_BAJA!=null for activo=false', async () => {
+      const fake = [{ COD_PRO: 'P099', FECHA_BAJA: '2023-01-01' }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/proveedores')
+        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA!=null'))
+        .reply(200, listEnv(fake, 3));
+      const result = await client.listProveedores({ items: 20, page: 1, activo: false });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('propagates invalid_token on 401', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v2/proveedores')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '401', errorMessage: 'Unauthorized', data: null });
+      await expect(client.listProveedores({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'invalid_token',
+      });
+    });
+
+    it('propagates server_error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v2/proveedores')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+      await expect(client.listProveedores({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'server_error',
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // getProveedor (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  describe('getProveedor', () => {
+    it('returns the proveedor object for idReg', async () => {
+      const fake = { COD_PRO: 'P001', NOMBRE_PRO: 'Proveedor A', NIF: '12345678A' };
+      nock(BASE_URL)
+        .get('/pgrl/v2/proveedores/MV9fUDAwMQ%3D%3D')
+        .reply(200, detailEnv(fake));
+      const result = await client.getProveedor('MV9fUDAwMQ==');
+      expect(result).toEqual(fake);
+    });
+
+    it('propagates not_found on 404', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v2/proveedores/BADID')
+        .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+      await expect(client.getProveedor('BADID')).rejects.toMatchObject({ code: 'not_found' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // listLocalizacionesCobroClientes (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  describe('listLocalizacionesCobroClientes', () => {
+    it('returns { items, total } from /pgrl/v2/localizaciones-cobro-clientes', async () => {
+      const fake = [{ COD_CLI: 'C001', COD_FORMA_COBRO: 'TRANS' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-cobro-clientes')
+        .query({ items: '10', page: '1' })
+        .reply(200, listEnv(fake, 200));
+      const result = await client.listLocalizacionesCobroClientes({ items: 10, page: 1 });
+      expect(result).toEqual({ items: fake, total: 200 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL rquery for codCliente', async () => {
+      const fake = [{ COD_CLI: 'C001' }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-cobro-clientes')
+        .query({ items: '20', page: '1', rquery: 'COD_CLI==C001' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listLocalizacionesCobroClientes({
+        items: 20,
+        page: 1,
+        codCliente: 'C001',
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('propagates server_error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-cobro-clientes')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+      await expect(
+        client.listLocalizacionesCobroClientes({ items: 20, page: 1 }),
+      ).rejects.toMatchObject({ code: 'server_error' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // listLocalizacionesPagoProveedores (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  describe('listLocalizacionesPagoProveedores', () => {
+    it('returns { items, total } from /pgrl/v2/localizaciones-pago-proveedores', async () => {
+      const fake = [{ COD_PRO: 'P001', COD_FORMA_PAGO: 'TRANS' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-pago-proveedores')
+        .query({ items: '10', page: '1' })
+        .reply(200, listEnv(fake, 50));
+      const result = await client.listLocalizacionesPagoProveedores({ items: 10, page: 1 });
+      expect(result).toEqual({ items: fake, total: 50 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL rquery for codProveedor', async () => {
+      const fake = [{ COD_PRO: 'P001' }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-pago-proveedores')
+        .query({ items: '20', page: '1', rquery: 'COD_PRO==P001' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listLocalizacionesPagoProveedores({
+        items: 20,
+        page: 1,
+        codProveedor: 'P001',
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('propagates server_error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-pago-proveedores')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+      await expect(
+        client.listLocalizacionesPagoProveedores({ items: 20, page: 1 }),
+      ).rejects.toMatchObject({ code: 'server_error' });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // listLocalizacionesServicioClientes (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  describe('listLocalizacionesServicioClientes', () => {
+    it('returns { items, total } from /pgrl/v2/localizaciones-servicio-clientes', async () => {
+      const fake = [{ COD_CLI: 'C001', COD_PAIS: 'ES', COD_REPRES: 'R01' }];
+      const scope = nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-servicio-clientes')
+        .query({ items: '10', page: '1' })
+        .reply(200, listEnv(fake, 500));
+      const result = await client.listLocalizacionesServicioClientes({ items: 10, page: 1 });
+      expect(result).toEqual({ items: fake, total: 500 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL rquery for codCliente', async () => {
+      const fake = [{ COD_CLI: 'C001' }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-servicio-clientes')
+        .query({ items: '20', page: '1', rquery: 'COD_CLI==C001' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listLocalizacionesServicioClientes({
+        items: 20,
+        page: 1,
+        codCliente: 'C001',
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('passes FECHA_BAJA==null for activo=true', async () => {
+      const fake = [{ COD_CLI: 'C001', FECHA_BAJA: null }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-servicio-clientes')
+        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA==null'))
+        .reply(200, listEnv(fake, 5));
+      const result = await client.listLocalizacionesServicioClientes({
+        items: 20,
+        page: 1,
+        activo: true,
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('passes FECHA_BAJA!=null for activo=false', async () => {
+      const fake = [{ COD_CLI: 'C001', FECHA_BAJA: '2023-06-01' }];
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-servicio-clientes')
+        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA!=null'))
+        .reply(200, listEnv(fake, 2));
+      const result = await client.listLocalizacionesServicioClientes({
+        items: 20,
+        page: 1,
+        activo: false,
+      });
+      expect(result.items).toEqual(fake);
+    });
+
+    it('propagates server_error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pgrl/v2/localizaciones-servicio-clientes')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+      await expect(
+        client.listLocalizacionesServicioClientes({ items: 20, page: 1 }),
+      ).rejects.toMatchObject({ code: 'server_error' });
     });
   });
 });
