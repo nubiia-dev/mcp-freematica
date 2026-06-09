@@ -110,7 +110,7 @@ La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de l
 | **Financiero** | | |
 | `bancos` | `GET /pgrl/v2/bancos` | Entidades bancarias |
 
-Respuesta: `{ catalog, items, count }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
+Respuesta: `{ catalog, items, count, total }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
 
 ## Paginación
 

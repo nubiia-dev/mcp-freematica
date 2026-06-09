@@ -32,7 +32,7 @@ const CATALOG_DESCRIPTIONS = [
   'delegaciones (agrupadas por código — listado global)',
   'lineas-negocio',
   'cargos-clientes (puestos de contactos)',
-  'calendarios (calendarios laborales)',
+  'calendarios (calendarios laborales — solo lookup; para detalle y períodos usar freematica_list_calendarios)',
   'series (series de numeración de documentos)',
   // Inventario
   'familias (de artículos)',

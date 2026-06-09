@@ -173,6 +173,49 @@ describe('registerMasterDataTools', () => {
     expect(parsed.count).toBe(1);
   });
 
+  it('handler resolves series to /pgrl/v2/series endpoint', async () => {
+    const fakeData = [
+      { idreg: 1, nombre: 'A' },
+      { idreg: 2, nombre: 'B' },
+    ];
+    nock(BASE_URL).get('/pgrl/v2/series').reply(200, fakeEnvelope(fakeData));
+
+    const { server } = buildServer();
+    const handler = getHandler(server);
+
+    const result = (await handler({ catalog: 'series' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.catalog).toBe('series');
+    expect(parsed.items).toEqual(fakeData);
+    expect(parsed.count).toBe(2);
+    expect(parsed.total).toBe(2);
+  });
+
+  it('handler resolves claves-facturacion to /pvss/v2/claves-facturacion endpoint', async () => {
+    const fakeData = [{ idreg: 1, nombre: 'CLAVE-01' }];
+    nock(BASE_URL).get('/pvss/v2/claves-facturacion').reply(200, fakeEnvelope(fakeData));
+
+    const { server } = buildServer();
+    const handler = getHandler(server);
+
+    const result = (await handler({ catalog: 'claves-facturacion' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.catalog).toBe('claves-facturacion');
+    expect(parsed.items).toEqual(fakeData);
+    expect(parsed.count).toBe(1);
+    expect(parsed.total).toBe(1);
+  });
+
   /**
    * Exhaustive check: every catalog in the enum can be called and resolves
    * to the correct endpoint without error.
