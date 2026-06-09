@@ -1,6 +1,16 @@
 import { BaseClient } from './base-client.js';
 import { buildFiql, appendRquery, type FiqlGroup } from './fiql-builder.js';
 import { CATALOG_ENDPOINTS, type MasterDataCatalog } from '../schemas/master-data.js';
+import {
+  ESTADO_CARTERA_FIQL_MAP,
+  type ListCarteraFilters,
+} from '../schemas/cartera.js';
+import type {
+  ListFacturasCabeceraFilters,
+  ListFacturaLineasFilters,
+  ListFacturaIvaFilters,
+  ListFacturaVencimientosFilters,
+} from '../schemas/facturas-ventas.js';
 import type { FreematicaListData } from '../types/api-envelope.js';
 import type { Cliente } from '../types/clientes.js';
 import type { ContactoCliente } from '../types/contactos-clientes.js';
@@ -303,6 +313,464 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Facturas de compras (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de facturas de compras con filtros FIQL + query params nativos.
+   *
+   * El campo `exportado` es un enum nativo del endpoint (no FIQL): `all` | `not_exported`.
+   * El resto de filtros se envían mediante el query param `rquery` (FIQL).
+   *
+   * Endpoint: GET /pcmp/v2/facturas-compras
+   */
+  async listFacturasCompras(
+    opts: ListOptions & {
+      fechaDesde?: string;
+      fechaHasta?: string;
+      empresa?: string;
+      codProveedor?: string;
+      serie?: string;
+      numFactura?: string;
+      formaPago?: string;
+      traspasadoContabilidad?: boolean;
+      delegacion?: string;
+      lineaNegocio?: string;
+      exportado?: 'all' | 'not_exported';
+    } = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pcmp/v2/facturas-compras');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.exportado !== undefined) url.searchParams.set('exportado', opts.exportado);
+
+    // Construir grupos AND para el filtro de fecha (ambos usan FCC_FCHFAC con distinto operador).
+    // FCC_FCHFAC_HASTA NO existe en el schema Freemática; no se puede usar como campo sintético.
+    // La solución correcta es la composición AND: dos expresiones con el mismo campo real.
+    const dateGroups: import('./fiql-builder.js').FiqlGroup[] = [];
+    if (opts.fechaDesde !== undefined) {
+      dateGroups.push({ FCC_FCHFAC: { op: 'ge', value: opts.fechaDesde } });
+    }
+    if (opts.fechaHasta !== undefined) {
+      dateGroups.push({ FCC_FCHFAC: { op: 'le', value: opts.fechaHasta } });
+    }
+
+    // Resto de filtros escalares en un grupo plano
+    const scalarGroup: import('./fiql-builder.js').FiqlGroup = {
+      FCC_CODEMP: opts.empresa,
+      FCC_CODPRO: opts.codProveedor,
+      FCC_SERIEFRA: opts.serie,
+      FCC_NUMFRA: opts.numFactura,
+      FCC_FPAGO: opts.formaPago,
+      FCC_TRASP_CONTAB:
+        opts.traspasadoContabilidad !== undefined
+          ? String(opts.traspasadoContabilidad)
+          : undefined,
+      FCC_DELEG: opts.delegacion,
+      FCC_LIN_NEGOCIO: opts.lineaNegocio,
+    };
+
+    const fiql = buildFiql({ and: [...dateGroups, scalarGroup] });
+    appendRquery(url, fiql);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cartera de clientes (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de documentos de cartera de clientes con filtros FIQL.
+   *
+   * Endpoint: GET /pcar/v1/cartera-clientes
+   *
+   * Construye la FIQL a partir de los filtros tipados y la añade como `rquery`
+   * usando `appendRquery()` (patrón canónico del foundation TD-117).
+   *
+   * El filtro `soloImpagados=true` genera `CARCL_FECIMPAG!=null`, donde el
+   * valor `'null'` es la convención centinela de Freemática para indicar "sin
+   * valor" en campos de fecha opcionales (assumption empírica: observado en
+   * datos reales de la API; documentado para futuras implementaciones).
+   * El operador `ne` se pasa vía `buildFiql` para garantizar escaping
+   * consistente con el resto de filtros.
+   *
+   * El filtro `estado` mapea a los valores numéricos de `CARCL_SITCAR`
+   * (1=pendiente, 2=cancelado, 3=derivado).
+   *
+   * @param opts - Filtros tipados del schema `ListCarteraFiltersSchema`.
+   * @returns Lista paginada de documentos de cartera.
+   */
+  async listCarteraClientes(opts: ListCarteraFilters = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('/pcar/v1/cartera-clientes', 'http://x');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    // Build FIQL parts. Each scalar filter is a separate buildFiql call so that
+    // two range constraints on the same field (e.g. CARCL_FECDOC =ge= X and
+    // CARCL_FECDOC =le= Y) don't overwrite each other in a single object.
+    const parts: string[] = [];
+
+    // Equality filters (all go into one group → joined with AND)
+    const eqGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
+    if (opts.empresa !== undefined) eqGroup['CARCL_EMP'] = opts.empresa;
+    if (opts.codCliente !== undefined) eqGroup['CARCL_CODAUX'] = opts.codCliente;
+    if (opts.grupoCliente !== undefined) eqGroup['CARCL_GRUPAUX'] = opts.grupoCliente;
+    if (opts.representante !== undefined) eqGroup['CARCL_CODREP'] = opts.representante;
+    if (opts.formaPago !== undefined) eqGroup['CARCL_CODFPAG'] = opts.formaPago;
+    if (opts.modoPago !== undefined) eqGroup['CARCL_CODMPAG'] = opts.modoPago;
+    if (opts.estado !== undefined) eqGroup['CARCL_SITCAR'] = ESTADO_CARTERA_FIQL_MAP[opts.estado];
+    if (opts.referencia !== undefined) eqGroup['CARCL_REFCAR'] = opts.referencia;
+
+    const eqFiql = buildFiql(eqGroup);
+    if (eqFiql) parts.push(eqFiql);
+
+    // Range filters: each gets its own buildFiql call to preserve both endpoints
+    if (opts.fechaDocDesde !== undefined) parts.push(buildFiql({ CARCL_FECDOC: { op: 'ge', value: opts.fechaDocDesde } }));
+    if (opts.fechaDocHasta !== undefined) parts.push(buildFiql({ CARCL_FECDOC: { op: 'le', value: opts.fechaDocHasta } }));
+    if (opts.fechaVencimientoDesde !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
+    if (opts.fechaVencimientoHasta !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
+
+    // soloImpagados: 'null' es el centinela de Freemática para fecha sin valor.
+    // Se pasa por buildFiql (op 'ne') igual que el resto de filtros para
+    // garantizar escaping uniforme y legibilidad del código.
+    if (opts.soloImpagados === true) {
+      parts.push(buildFiql({ CARCL_FECIMPAG: { op: 'ne', value: 'null' } }));
+    }
+
+    appendRquery(url, parts.join(';'));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de una factura de compra por `idReg` opaco.
+   *
+   * Endpoint: GET /pcmp/v2/facturas-compras/{idReg}
+   */
+  async getFacturaCompra(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcmp/v2/facturas-compras/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Detalle de un documento de cartera de clientes por `idReg` opaco.
+   *
+   * Endpoint: GET /pcar/v1/cartera-clientes/{idreg}
+   *
+   * @param idReg - Identificador opaco (base64) del documento.
+   * @returns Documento de cartera completo.
+   */
+  async getCarteraCliente(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcar/v1/cartera-clientes/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Proveedores (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de proveedores con filtros FIQL.
+   *
+   * El filtro `activo` mapea a FECHA_BAJA:
+   * - `true`  → FECHA_BAJA es nula (proveedor activo). Se usa el operador `=is-null=true` si el
+   *             API lo soporta; como fallback se omite el filtro y se filtra post-process.
+   *             En Freemática el convenio estándar es: activo=true → `FECHA_BAJA==null` (FIQL `==null`).
+   * - `false` → FECHA_BAJA tiene valor (proveedor de baja).
+   *
+   * El filtro `nombre` usa operador FIQL `=lk=` para búsqueda parcial (LIKE).
+   *
+   * Endpoint: GET /pgrl/v2/proveedores
+   */
+  async listProveedores(
+    opts: ListOptions & {
+      codProveedor?: string;
+      grupoProveedor?: string;
+      nif?: string;
+      nombre?: string;
+      activo?: boolean;
+      tipoIdent?: string;
+      codProvincia?: string;
+      codPais?: string;
+    } = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pgrl/v2/proveedores');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    // Construir filtros FIQL — activo se traduce a FECHA_BAJA
+    const filters: Record<string, unknown> = {
+      COD_PRO: opts.codProveedor,
+      COD_GRUPO_PRO: opts.grupoProveedor,
+      NIF: opts.nif,
+      CMP_TIPO_IDENT: opts.tipoIdent,
+      COD_PROVINCIA: opts.codProvincia,
+      COD_PAIS: opts.codPais,
+    };
+
+    if (opts.nombre !== undefined) {
+      filters['NOMBRE_PRO'] = { op: 'lk', value: opts.nombre };
+    }
+
+    if (opts.activo === true) {
+      // Activos: FECHA_BAJA nula. FIQL: FECHA_BAJA==null
+      filters['FECHA_BAJA'] = 'null';
+    } else if (opts.activo === false) {
+      // Dados de baja: FECHA_BAJA tiene valor (not null). FIQL: FECHA_BAJA!=null
+      filters['FECHA_BAJA'] = { op: 'ne', value: 'null' };
+    }
+
+    const fiql = buildFiql(filters as Parameters<typeof buildFiql>[0]);
+    appendRquery(url, fiql);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Facturas de ventas (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de cabeceras de facturas de ventas con filtros FIQL.
+   *
+   * Endpoint: GET /pven/v1/facturas-cabecera
+   *
+   * @param opts - Filtros tipados del schema `ListFacturasCabeceraFiltersSchema`.
+   * @returns Lista paginada de cabeceras de facturas.
+   */
+  async listFacturasCabecera(opts: ListFacturasCabeceraFilters = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('/pven/v1/facturas-cabecera', 'http://x');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    const fiqlParts: string[] = [];
+
+    // Standard equality filters
+    const eqGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
+    if (opts.empresa !== undefined) eqGroup['FVC_EMP'] = opts.empresa;
+    if (opts.codCliente !== undefined) eqGroup['FVC_CODAUX'] = opts.codCliente;
+    if (opts.representante !== undefined) eqGroup['FVC_CODREP'] = opts.representante;
+    if (opts.serie !== undefined) eqGroup['FVC_SERFAC'] = opts.serie;
+    if (opts.numFactura !== undefined) eqGroup['FVC_NUMFAC'] = opts.numFactura;
+    if (opts.formaPago !== undefined) eqGroup['FVC_CODFPAG'] = opts.formaPago;
+    if (opts.delegacion !== undefined) eqGroup['FVC_DELEG'] = opts.delegacion;
+
+    const eqFiql = buildFiql(eqGroup);
+    if (eqFiql) fiqlParts.push(eqFiql);
+
+    // Date range filters
+    if (opts.fechaFacturaDesde !== undefined) fiqlParts.push(buildFiql({ FVC_FECFAC: { op: 'ge', value: opts.fechaFacturaDesde } }));
+    if (opts.fechaFacturaHasta !== undefined) fiqlParts.push(buildFiql({ FVC_FECFAC: { op: 'le', value: opts.fechaFacturaHasta } }));
+
+    // Boolean: traspasadoContabilidad
+    if (opts.traspasadoContabilidad !== undefined) {
+      fiqlParts.push(buildFiql({ FVC_TRSCONT: opts.traspasadoContabilidad ? 'S' : 'N' }));
+    }
+
+    appendRquery(url, fiqlParts.join(';'));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de un proveedor por `idReg` opaco.
+   *
+   * Endpoint: GET /pgrl/v2/proveedores/{idReg}
+   */
+  async getProveedor(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pgrl/v2/proveedores/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Localizaciones (v0.5.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de localizaciones de cobro de clientes.
+   *
+   * Filtros soportados: codCliente (COD_CLI), grupoCliente (GRUPO_CLI), formaPago (COD_FORMA_COBRO).
+   *
+   * Endpoint: GET /pgrl/v2/localizaciones-cobro-clientes
+   */
+  async listLocalizacionesCobroClientes(
+    opts: ListOptions & {
+      codCliente?: string;
+      grupoCliente?: string;
+      formaPago?: string;
+    } = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResourceWithFiql('/pgrl/v2/localizaciones-cobro-clientes', opts, {
+      COD_CLI: opts.codCliente,
+      GRUPO_CLI: opts.grupoCliente,
+      COD_FORMA_COBRO: opts.formaPago,
+    });
+  }
+
+  /**
+   * Lista paginada de localizaciones de pago de proveedores.
+   *
+   * Filtros soportados: codProveedor (COD_PRO), grupoProveedor (COD_GRUPO_PRO), formaPago (COD_FORMA_PAGO).
+   *
+   * Endpoint: GET /pgrl/v2/localizaciones-pago-proveedores
+   */
+  async listLocalizacionesPagoProveedores(
+    opts: ListOptions & {
+      codProveedor?: string;
+      grupoProveedor?: string;
+      formaPago?: string;
+    } = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResourceWithFiql('/pgrl/v2/localizaciones-pago-proveedores', opts, {
+      COD_PRO: opts.codProveedor,
+      COD_GRUPO_PRO: opts.grupoProveedor,
+      COD_FORMA_PAGO: opts.formaPago,
+    });
+  }
+
+  /**
+   * Lista paginada de localizaciones de servicio de clientes.
+   *
+   * Filtros soportados: codCliente (COD_CLI), grupoCliente (GRUPO_CLI), codPais (COD_PAIS),
+   * codProvincia (COD_PROVINCIA), representante (COD_REPRES), activo (FECHA_BAJA nulo/no nulo).
+   *
+   * Endpoint: GET /pgrl/v2/localizaciones-servicio-clientes
+   */
+  async listLocalizacionesServicioClientes(
+    opts: ListOptions & {
+      codCliente?: string;
+      grupoCliente?: string;
+      codPais?: string;
+      codProvincia?: string;
+      representante?: string;
+      activo?: boolean;
+    } = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const fiqlFilters: Record<string, unknown> = {
+      COD_CLI: opts.codCliente,
+      GRUPO_CLI: opts.grupoCliente,
+      COD_PAIS: opts.codPais,
+      COD_PROVINCIA: opts.codProvincia,
+      COD_REPRES: opts.representante,
+    };
+
+    if (opts.activo === true) {
+      fiqlFilters['FECHA_BAJA'] = 'null';
+    } else if (opts.activo === false) {
+      fiqlFilters['FECHA_BAJA'] = { op: 'ne', value: 'null' };
+    }
+
+    return this.listResourceWithFiql(
+      '/pgrl/v2/localizaciones-servicio-clientes',
+      opts,
+      fiqlFilters as Parameters<typeof buildFiql>[0],
+    );
+  }
+
+  /**
+   * Detalle de una factura de ventas (cabecera) por `idReg` opaco.
+   *
+   * Endpoint: GET /pven/v1/facturas-cabecera/{idreg}
+   *
+   * @param idReg - Identificador opaco (base64) de la factura.
+   * @returns Factura cabecera completa.
+   */
+  async getFacturaCabecera(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pven/v1/facturas-cabecera/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de líneas de una factura de ventas con filtros FIQL.
+   *
+   * Endpoint: GET /pven/v1/facturas-cabecera/{idreg}/lineas
+   *
+   * @param idReg - idReg opaco de la factura cabecera.
+   * @param opts - Filtros tipados del schema `ListFacturaLineasFiltersSchema`.
+   * @returns Lista paginada de líneas de factura.
+   */
+  async listFacturaLineas(idReg: string, opts: ListFacturaLineasFilters = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL(`/pven/v1/facturas-cabecera/${encodeURIComponent(idReg)}/lineas`, 'http://x');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    const fiqlGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
+    if (opts.codArticulo !== undefined) fiqlGroup['FVL_CODART'] = opts.codArticulo;
+    if (opts.codFamilia !== undefined) fiqlGroup['FVL_CODFAM'] = opts.codFamilia;
+    if (opts.codSubfamilia !== undefined) fiqlGroup['FVL_CODSFAM'] = opts.codSubfamilia;
+    if (opts.delegacion !== undefined) fiqlGroup['FVL_DELEG'] = opts.delegacion;
+
+    appendRquery(url, buildFiql(fiqlGroup));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Lista paginada de líneas de IVA de una factura de ventas con filtros FIQL.
+   *
+   * Endpoint: GET /pven/v1/facturas-cabecera/{idreg}/iva
+   *
+   * @param idReg - idReg opaco de la factura cabecera.
+   * @param opts - Filtros tipados del schema `ListFacturaIvaFiltersSchema`.
+   * @returns Lista paginada de líneas de IVA.
+   */
+  async listFacturaIva(idReg: string, opts: ListFacturaIvaFilters = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL(`/pven/v1/facturas-cabecera/${encodeURIComponent(idReg)}/iva`, 'http://x');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    const fiqlGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
+    if (opts.tipoIva !== undefined) fiqlGroup['FVI_TIPIVA'] = opts.tipoIva;
+
+    appendRquery(url, buildFiql(fiqlGroup));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Lista paginada de vencimientos de una factura de ventas con filtros FIQL.
+   *
+   * Endpoint: GET /pven/v1/facturas-cabecera/{idreg}/vencimientos
+   *
+   * @param idReg - idReg opaco de la factura cabecera.
+   * @param opts - Filtros tipados del schema `ListFacturaVencimientosFiltersSchema`.
+   * @returns Lista paginada de vencimientos.
+   */
+  async listFacturaVencimientos(idReg: string, opts: ListFacturaVencimientosFilters = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL(`/pven/v1/facturas-cabecera/${encodeURIComponent(idReg)}/vencimientos`, 'http://x');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    const fiqlParts: string[] = [];
+    if (opts.modoPago !== undefined) fiqlParts.push(buildFiql({ FVV_CODMPAG: opts.modoPago }));
+    if (opts.fechaVencimientoDesde !== undefined) fiqlParts.push(buildFiql({ FVV_FECVCTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
+    if (opts.fechaVencimientoHasta !== undefined) fiqlParts.push(buildFiql({ FVV_FECVCTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
+
+    appendRquery(url, fiqlParts.join(';'));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------
 
@@ -313,6 +781,32 @@ export class FreematicaClient extends BaseClient {
     const query = params.toString();
     const url = query ? `${path}?${query}` : path;
     const data = await this.get<FreematicaListData<T>>(url);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Helper genérico para endpoints de lista que soportan paginación + filtros FIQL
+   * vía query param `rquery`.
+   *
+   * @param path - Path base del endpoint (sin query string).
+   * @param opts - Opciones de paginación.
+   * @param fiqlFields - Mapa de nombre de campo FIQL → valor. Los valores `undefined` se omiten.
+   * @returns Lista de items con total.
+   */
+  private async listResourceWithFiql<T>(
+    path: string,
+    opts: ListOptions,
+    fiqlFields: Record<string, unknown>,
+  ): Promise<ListResult<T>> {
+    const url = new URL(`https://placeholder${path}`);
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    const fiql = buildFiql(fiqlFields as Parameters<typeof buildFiql>[0]);
+    appendRquery(url, fiql);
+
+    const fullPath = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<T>>(fullPath);
     return { items: data.items, total: Number(data.total) };
   }
 }

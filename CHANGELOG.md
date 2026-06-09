@@ -50,6 +50,140 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 - Cobertura de `src/tools/contabilidad.ts`: 100% statements/lines/functions.
 - Cobertura de `src/clients/freematica-client.ts`: 99.44%.
 - Total tests: 298 (todos en verde).
+### Fixed — Post code-review (TD-119)
+
+#### Fixed — Critical (bug funcional)
+
+- **`FCC_FCHFAC_HASTA` no existe en Freemática** (`src/clients/freematica-client.ts`): el campo `FCC_FCHFAC_HASTA` era sintético e inventado; el filtro `fechaHasta` quedaba silenciosamente ignorado. Fix: la composición AND usa ahora el mismo campo real `FCC_FCHFAC` con operador `=le=` para el límite superior y `=ge=` para el inferior. Rquery resultante: `FCC_FCHFAC=ge=YYYY-MM-DD;FCC_FCHFAC=le=YYYY-MM-DD`.
+
+#### Fixed — Menor
+
+- **Type cast incorrecto en `listLocalizacionesServicioClientes`** (`src/clients/freematica-client.ts:335`): `fiqlFilters as Record<string, string | undefined>` reemplazado por `fiqlFilters as Parameters<typeof buildFiql>[0]`, coherente con el patrón de `listProveedores`.
+
+- **Version mismatch en `server.ts`**: `version` bumped de `'0.5.0'` a `'0.5.0-rc.2'` para alinear con `package.json` y `CHANGELOG`.
+
+#### Documented
+
+- **Operador `=lk=`** (`src/clients/fiql-builder.ts`): JSDoc actualizado para indicar explícitamente que `=lk=` es una **extensión no estándar de Freemática** (no parte de FIQL spec); sin evidencia documental en la colección Postman. Se mantiene el operador con documentación clara.
+
+#### Tests añadidos
+
+- `tests/fiql-builder.test.ts`: 5 tests nuevos para el operador `=lk=` (happy path, escape de reservados, injection prevention).
+- `tests/fiql-builder.property.test.ts`: regex `FIQL_OP_RE` actualizado para incluir `=lk=`.
+- `tests/tools/facturas-compras.test.ts`: 3 tests nuevos: `fechaDesde` solo, `fechaHasta` solo, y `fechaDesde+fechaHasta` simultáneos (regresión del bug fix). **Total: 15 tests** (+2 netos respecto a rc.1).
+- `tests/clients/freematica-client.test.ts`: 3 tests nuevos equivalentes a nivel cliente. **Total: 45 tests** (+3 netos).
+- **Total global: 315 tests, todos en verde**.
+
+---
+
+### Added — Dominio financiero compras + proveedores + localizaciones (TD-119)
+
+#### Tools nuevas (7)
+
+- **`freematica_list_facturas_compras`** (`src/tools/facturas-compras.ts`): lista paginada de facturas de compras con filtros FIQL (empresa, proveedor, serie, numFactura, formaPago, traspasadoContabilidad, delegacion, lineaNegocio, rango fechas) + query param nativo `exportado` (`all` | `not_exported`). Endpoint: `GET /pcmp/v2/facturas-compras`.
+
+- **`freematica_get_factura_compra`** (`src/tools/facturas-compras.ts`): detalle de una factura de compra por `idReg` opaco. Endpoint: `GET /pcmp/v2/facturas-compras/{idReg}`.
+
+- **`freematica_list_proveedores`** (`src/tools/proveedores.ts`): lista paginada de proveedores con filtros FIQL (codProveedor, grupoProveedor, nif, tipoIdent, codProvincia, codPais). Búsqueda parcial por `nombre` mediante operador `=lk=`. Filtro `activo` mapea `FECHA_BAJA==null` (activos) / `FECHA_BAJA!=null` (bajas). Endpoint: `GET /pgrl/v2/proveedores`.
+
+- **`freematica_get_proveedor`** (`src/tools/proveedores.ts`): detalle de un proveedor por `idReg` opaco. Endpoint: `GET /pgrl/v2/proveedores/{idReg}`.
+
+- **`freematica_list_localizaciones_cobro_clientes`** (`src/tools/localizaciones.ts`): localizaciones de cobro de clientes (domiciliación bancaria). Filtros: codCliente, grupoCliente, formaPago (COD_FORMA_COBRO). Endpoint: `GET /pgrl/v2/localizaciones-cobro-clientes`.
+
+- **`freematica_list_localizaciones_pago_proveedores`** (`src/tools/localizaciones.ts`): localizaciones de pago de proveedores. Filtros: codProveedor, grupoProveedor, formaPago (COD_FORMA_PAGO). Endpoint: `GET /pgrl/v2/localizaciones-pago-proveedores`.
+
+- **`freematica_list_localizaciones_servicio_clientes`** (`src/tools/localizaciones.ts`): localizaciones de servicio de clientes. Filtros: codCliente, grupoCliente, codPais, codProvincia, representante, activo (FECHA_BAJA nulo/no nulo). Endpoint: `GET /pgrl/v2/localizaciones-servicio-clientes`.
+
+#### Cambios en cliente y builder
+
+- **`FreematicaClient`** (`src/clients/freematica-client.ts`): 7 métodos nuevos (`listFacturasCompras`, `getFacturaCompra`, `listProveedores`, `getProveedor`, `listLocalizacionesCobroClientes`, `listLocalizacionesPagoProveedores`, `listLocalizacionesServicioClientes`). Nuevo helper privado `listResourceWithFiql` que centraliza la lógica de paginación + FIQL rquery.
+
+- **`FiqlOp`** (`src/clients/fiql-builder.ts`): añadido operador `lk` → `=lk=` para búsqueda parcial (LIKE). Compatible con la extensión Freemática para campos de texto libre.
+
+- **`server.ts`**: versión bumped a `0.5.0`. Registradas las 3 nuevas familias de tools (facturas-compras, proveedores, localizaciones). Total tools: 15.
+
+#### Tests (TD-119)
+
+- `tests/tools/facturas-compras.test.ts`: 13 tests (registro, happy path, filtros FIQL, exportado nativo, errores 404/500/401).
+- `tests/tools/proveedores.test.ts`: 13 tests (registro, happy path, filtros FIQL, =lk= nombre, activo/baja FIQL, errores).
+- `tests/tools/localizaciones.test.ts`: 19 tests (3 tools: cobro clientes, pago proveedores, servicio clientes — happy path + filtros FIQL + errores).
+- `tests/clients/freematica-client.test.ts`: +28 nuevos tests para los 7 métodos añadidos al cliente.
+- `tests/server.test.ts`: actualizado de 8 → 15 tools registradas.
+- **Total: 305 tests, todos en verde**.
+### Master-data verification + new catalogs (TD-122)
+
+#### Verified
+
+- **`lineas-negocio`** (`/pgrl/v2/lineas-negocio`): confirmado presente en `MASTER_DATA_CATALOGS` desde v0.4.1. Test unitario y documentación README ya reflejaban el catálogo correctamente.
+
+#### Added — 6 new master-data catalogs
+
+Nuevos catálogos identificados en la Postman collection que cumplen el criterio de "sin parámetros requeridos adicionales":
+
+| Catálogo | Endpoint | Sección |
+|---|---|---|
+| `incidencecode` | `GET /pvss/v2/incidencecode` | Tipos / clasificaciones |
+| `claves-facturacion` | `GET /pvss/v2/claves-facturacion` | Tipos / clasificaciones |
+| `calendarios` | `GET /pgrl/v1/calendarios` | Organizativos |
+| `series` | `GET /pgrl/v2/series` | Organizativos |
+| `lineas` | `GET /part/v1/lineas` | Inventario |
+| `bancos` | `GET /pgrl/v2/bancos` | Financiero (nueva sección) |
+
+Total de catálogos: 18 → **24**.
+
+#### Changed
+
+- `src/schemas/master-data.ts`: enum reordenado en secciones con comentarios (tipos, geográficos, organizativos, inventario, **financiero**). Añadido JSDoc con instrucciones para añadir futuros catálogos.
+- `src/tools/master-data.ts`: `CATALOG_DESCRIPTIONS` ampliado con los 6 nuevos catálogos. Comentario JSDoc actualizado (18 → 24).
+- `README.md`: tabla "Datos maestros disponibles" actualizada (18 → 24 filas, nueva sección "Financiero"). Header de tools actualizado (19 → 24 endpoints).
+
+#### Tests
+
+- `tests/schemas/master-data.test.ts`: actualizado a 24 catálogos. Añadidos tests de presencia para `lineas-negocio` y los 6 nuevos. Añadido test exhaustivo de endpoints.
+- `tests/tools/master-data.test.ts`: añadidos 4 tests de integración nock (lineas-negocio, bancos, calendarios, incidencecode) + test exhaustivo que mocka y verifica cada uno de los 24 catálogos.
+- **Total tests: 254 (todos en verde)**
+
+### Added — Cartera Clientes + Facturas Ventas (TD-118)
+
+#### Nuevas tools (7)
+
+- **`freematica_list_cartera_clientes`** (`GET /pcar/v1/cartera-clientes`): lista paginada de documentos de cartera de clientes con filtros FIQL completos.
+  - Filtros: `empresa` (CARCL_EMP), `codCliente` (CARCL_CODAUX), `grupoCliente` (CARCL_GRUPAUX), `representante` (CARCL_CODREP), `formaPago` (CARCL_CODFPAG), `modoPago` (CARCL_CODMPAG)
+  - Rangos de fecha: `fechaDocDesde/Hasta` (CARCL_FECDOC), `fechaVencimientoDesde/Hasta` (CARCL_FECVCTO)
+  - `estado`: enum `pendiente | cancelado | derivado` → `CARCL_SITCAR==1/2/3`
+  - `soloImpagados`: boolean → `CARCL_FECIMPAG!=null`
+  - `referencia`: exacto → `CARCL_REFCAR`
+- **`freematica_get_cartera_cliente`** (`GET /pcar/v1/cartera-clientes/{idreg}`): detalle de un documento por `idReg` opaco.
+- **`freematica_list_facturas_cabecera`** (`GET /pven/v1/facturas-cabecera`): lista paginada de cabeceras de facturas de ventas con filtros FIQL.
+  - Filtros: `empresa` (FVC_EMP), `codCliente` (FVC_CODAUX), `representante` (FVC_CODREP), `serie` (FVC_SERFAC), `numFactura` (FVC_NUMFAC), `formaPago` (FVC_CODFPAG), `delegacion` (FVC_DELEG)
+  - Rangos de fecha: `fechaFacturaDesde/Hasta` (FVC_FECFAC)
+  - `traspasadoContabilidad`: boolean → `FVC_TRSCONT==S/N`
+- **`freematica_get_factura_cabecera`** (`GET /pven/v1/facturas-cabecera/{idreg}`): detalle de una factura por `idReg` opaco.
+- **`freematica_list_factura_lineas`** (`GET /pven/v1/facturas-cabecera/{idreg}/lineas`): líneas de detalle de una factura. Filtros: `codArticulo` (FVL_CODART), `codFamilia` (FVL_CODFAM), `codSubfamilia` (FVL_CODSFAM), `delegacion` (FVL_DELEG).
+- **`freematica_list_factura_iva`** (`GET /pven/v1/facturas-cabecera/{idreg}/iva`): líneas de IVA de una factura. Filtro: `tipoIva` (FVI_TIPIVA).
+- **`freematica_list_factura_vencimientos`** (`GET /pven/v1/facturas-cabecera/{idreg}/vencimientos`): vencimientos de cobro de una factura. Filtros: `fechaVencimientoDesde/Hasta` (FVV_FECVCTO), `modoPago` (FVV_CODMPAG).
+
+#### Nuevos schemas Zod
+
+- **`src/schemas/cartera.ts`**: `ListCarteraFiltersSchema` con `EstadoCarteraEnum` (pendiente/cancelado/derivado) y mapa FIQL `ESTADO_CARTERA_FIQL_MAP`.
+- **`src/schemas/facturas-ventas.ts`**: `ListFacturasCabeceraFiltersSchema`, `ListFacturaLineasFiltersSchema`, `ListFacturaIvaFiltersSchema`, `ListFacturaVencimientosFiltersSchema`.
+
+#### Tests
+
+- `tests/tools/cartera.test.ts`: 13 tests (registro, happy path con filtros FIQL, errores 404 + 500)
+- `tests/tools/facturas-ventas.test.ts`: 23 tests (registro, happy path con filtros FIQL para las 5 tools, errores 404 + 500)
+- `tests/clients/freematica-client-cartera.test.ts`: 34 tests (métodos del cliente: list/get cartera, list/get facturas cabecera, lineas, iva, vencimientos)
+- **Total: 302 tests, todos en verde**
+
+#### Coverage nuevos archivos
+
+| Archivo | Statements | Functions | Lines |
+|---------|-----------|-----------|-------|
+| `src/schemas/cartera.ts` | 100% | 100% | 100% |
+| `src/schemas/facturas-ventas.ts` | 100% | 100% | 100% |
+| `src/tools/cartera.ts` | 100% | 100% | 100% |
+| `src/tools/facturas-ventas.ts` | 100% | 100% | 100% |
+| `src/clients/freematica-client.ts` | 100% | 100% | 100% |
 
 ---
 
