@@ -63,6 +63,24 @@ const HardeningConfigSchema = z.object({
     .min(1000)
     .max(3_600_000)
     .default(30_000),
+
+  /**
+   * Tamaño máximo de respuesta aceptado por freematica_export_asientos en
+   * megabytes. Si la respuesta del API supera este umbral, los datos se
+   * truncan y se añade un campo `warning` a la respuesta de la tool.
+   *
+   * Se recomienda usar rangos de fecha cortos (max. 1 mes) para evitar
+   * alcanzar este límite.
+   *
+   * Por defecto: 10 (10 MB).
+   * Mínimo: 1 MB. Máximo: 500 MB.
+   */
+  FREEMATICA_MAX_RESPONSE_SIZE_MB: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(500)
+    .default(10),
 });
 
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;

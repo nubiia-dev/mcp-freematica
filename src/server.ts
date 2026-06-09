@@ -4,6 +4,7 @@ import { FREEMATICA_MCP_INSTRUCTIONS } from './server-instructions.js';
 import { registerCarteraTools } from './tools/cartera.js';
 import { registerClientesTools } from './tools/clientes.js';
 import { registerContactosClientesTools } from './tools/contactos-clientes.js';
+import { registerContabilidadTools } from './tools/contabilidad.js';
 import { registerContratosTools } from './tools/contratos.js';
 import { registerFacturasComprasTools } from './tools/facturas-compras.js';
 import { registerFacturasVentasTools } from './tools/facturas-ventas.js';
@@ -32,6 +33,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerFacturasComprasTools(server, opts.client);
   registerProveedoresTools(server, opts.client);
   registerLocalizacionesTools(server, opts.client);
+  registerContabilidadTools(server, opts.client);
 
   return server;
 }

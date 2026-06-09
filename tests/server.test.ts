@@ -19,10 +19,11 @@ function registeredToolNames(server: ReturnType<typeof createFreematicaServer>):
 }
 
 describe('createFreematicaServer', () => {
-  it('registers all 22 expected tools', () => {
+  it('registers all 25 expected tools', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT });
     const names = registeredToolNames(server);
     expect(names).toEqual([
+      'freematica_export_asientos',
       'freematica_get_cartera_cliente',
       'freematica_get_cliente',
       'freematica_get_factura_cabecera',
@@ -34,6 +35,8 @@ describe('createFreematicaServer', () => {
       'freematica_list_cartera_clientes',
       'freematica_list_clientes',
       'freematica_list_contactos_clientes',
+      'freematica_list_cuentas_analiticas',
+      'freematica_list_cuentas_contables',
       'freematica_list_factura_iva',
       'freematica_list_factura_lineas',
       'freematica_list_factura_vencimientos',
