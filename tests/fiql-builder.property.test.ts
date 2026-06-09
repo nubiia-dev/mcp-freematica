@@ -76,8 +76,8 @@ function splitFiqlTerms(fiql: string): string[] {
   return terms;
 }
 
-/** Regex de operadores FIQL válidos. */
-const FIQL_OP_RE = /^(.+?)(==|!=|=gt=|=lt=|=ge=|=le=|=in=)(.*)$/;
+/** Regex de operadores FIQL válidos (incluye =lk= extensión Freemática). */
+const FIQL_OP_RE = /^(.+?)(==|!=|=gt=|=lt=|=ge=|=le=|=in=|=lk=)(.*)$/;
 
 /**
  * Verifica que un término FIQL individual tenga estructura válida.

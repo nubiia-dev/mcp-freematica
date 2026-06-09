@@ -22,8 +22,23 @@
  *   El `==` en un valor se convierte en `%3D%3D` automáticamente.
  */
 
-/** Operadores escalares soportados. */
-export type FiqlOp = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le' | 'in';
+/**
+ * Operadores escalares soportados.
+ *
+ * - `eq`  → `==`       Igual (por defecto)
+ * - `ne`  → `!=`       Distinto
+ * - `gt`  → `=gt=`     Mayor que
+ * - `lt`  → `=lt=`     Menor que
+ * - `ge`  → `=ge=`     Mayor o igual
+ * - `le`  → `=le=`     Menor o igual
+ * - `in`  → `=in=`     En lista (valor: array)
+ * - `lk`  → `=lk=`     Like / búsqueda parcial. **EXTENSIÓN NO ESTÁNDAR de Freemática.**
+ *             El operador `=lk=` no forma parte de la especificación FIQL original.
+ *             Se usa para búsquedas de texto parcial en campos como `NOMBRE_PRO`.
+ *             No hay evidencia documental en la colección Postman; se asume por convención
+ *             del API Freemática. Si el API no lo soporta, usar `==` con wildcards `%`.
+ */
+export type FiqlOp = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le' | 'in' | 'lk';
 
 /** Valor escalar (primitivo o con operador explícito). */
 export type FiqlValue =
@@ -56,6 +71,7 @@ const OP_MAP: Record<FiqlOp, string> = {
   ge: '=ge=',
   le: '=le=',
   in: '=in=',
+  lk: '=lk=',
 };
 
 /**

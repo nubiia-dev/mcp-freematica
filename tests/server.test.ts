@@ -19,35 +19,32 @@ function registeredToolNames(server: ReturnType<typeof createFreematicaServer>):
 }
 
 describe('createFreematicaServer', () => {
-  it('registers all 15 expected tools', () => {
+  it('registers all 22 expected tools', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT });
     const names = registeredToolNames(server);
     expect(names).toEqual([
-      // Cartera clientes (TD-118)
       'freematica_get_cartera_cliente',
-      // Clientes
       'freematica_get_cliente',
-      // Facturas ventas (TD-118)
       'freematica_get_factura_cabecera',
-      // Master data
+      'freematica_get_factura_compra',
       'freematica_get_master_data',
-      // Oportunidades
       'freematica_get_oportunidad_negocio',
       'freematica_get_oportunidad_negocio_datos_ampliados',
-      // Cartera clientes (TD-118)
+      'freematica_get_proveedor',
       'freematica_list_cartera_clientes',
-      // Clientes
       'freematica_list_clientes',
       'freematica_list_contactos_clientes',
-      // Facturas ventas (TD-118)
       'freematica_list_factura_iva',
       'freematica_list_factura_lineas',
       'freematica_list_factura_vencimientos',
       'freematica_list_facturas_cabecera',
-      // Contratos
+      'freematica_list_facturas_compras',
+      'freematica_list_localizaciones_cobro_clientes',
+      'freematica_list_localizaciones_pago_proveedores',
+      'freematica_list_localizaciones_servicio_clientes',
       'freematica_list_materiales_asignados_servicios',
-      // Oportunidades
       'freematica_list_oportunidades_negocio',
+      'freematica_list_proveedores',
     ]);
   });
 });
