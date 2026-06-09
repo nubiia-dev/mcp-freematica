@@ -17,7 +17,9 @@
  *
  * Caracteres que requieren escape en valores FIQL:
  *   `;` `,` `(` `)` `"` `'` espacios → percent-encoding (%3B, %2C, %28, %29, %22, %27, %20)
- *   El propio `==` en un valor → %3D%3D (raramente necesario pero cubierto)
+ *   `=` → %3D  (evita ambigüedad con operadores FIQL del tipo `=op=`)
+ *   `!` → %21  (evita ambigüedad con el operador `!=`)
+ *   El `==` en un valor se convierte en `%3D%3D` automáticamente.
  */
 
 /** Operadores escalares soportados. */
@@ -61,9 +63,15 @@ const OP_MAP: Record<FiqlOp, string> = {
  *
  * Según la gramática FIQL, los caracteres `;` `,` `(` `)` son delimitadores
  * de la expresión. Las comillas `"` y `'` se usan en comparadores. El espacio
- * también debe codificarse.
+ * también debe codificarse. Los caracteres `=` y `!` forman los operadores
+ * FIQL (`==`, `!=`, `=gt=`, etc.) y DEBEN escaparse en valores para evitar
+ * ambigüedad semántica en el parser del servidor.
+ *
+ * Ejemplos de ambigüedad sin escape:
+ *   `CAMPO==x=gt=0`  → parser puede interpretar `x=gt=0` como sub-operador
+ *   `CAMPO==123==EVIL` → parser puede ver un doble operador
  */
-const FIQL_RESERVED_RE = /[;,()"' ]/g;
+const FIQL_RESERVED_RE = /[;,()"' =!]/g;
 
 const RESERVED_ENCODE_MAP: Record<string, string> = {
   ';': '%3B',
@@ -73,6 +81,8 @@ const RESERVED_ENCODE_MAP: Record<string, string> = {
   '"': '%22',
   "'": '%27',
   ' ': '%20',
+  '=': '%3D',
+  '!': '%21',
 };
 
 /**
@@ -147,13 +157,38 @@ function groupToExpressions(group: FiqlGroup): string[] {
 /**
  * Detecta si el objeto es una composición `{ and?, or? }` o un grupo plano.
  *
+ * La detección es estricta: para ser considerada composición, las claves
+ * `and`/`or` DEBEN tener un valor `Array` (o `undefined`). Si `and`/`or`
+ * contienen un valor no-array (ej. `string`, `number`) se tratan como
+ * nombres de campo ordinarios del grupo plano, evitando el bug de type
+ * confusion donde `{ and: 'string' }` iteraría char a char el string.
+ *
+ * ### Aclaración semántica sobre claves `and` / `or`
+ *
+ * Si tu modelo tiene un campo real llamado `and` o `or` con un valor escalar
+ * (string/number/boolean), pásalo como grupo plano: `{ and: 'valor' }` se
+ * trata como `AND==valor`. No hay ambigüedad siempre que el valor no sea un
+ * Array de FiqlGroup.
+ *
  * @param filters - Input del builder.
- * @returns `true` si es composición explícita con `and`/`or`.
+ * @returns `true` si es composición explícita con `and`/`or` en formato array.
  */
 function isComposition(
   filters: FiqlFilters,
 ): filters is { and?: FiqlGroup[]; or?: FiqlGroup[] } {
-  return 'and' in filters || 'or' in filters;
+  // Si `and` está presente pero no es array (ni undefined) → grupo plano
+  if ('and' in filters && (filters as Record<string, unknown>)['and'] !== undefined && !Array.isArray((filters as Record<string, unknown>)['and'])) {
+    return false;
+  }
+  // Si `or` está presente pero no es array (ni undefined) → grupo plano
+  if ('or' in filters && (filters as Record<string, unknown>)['or'] !== undefined && !Array.isArray((filters as Record<string, unknown>)['or'])) {
+    return false;
+  }
+  // Es composición si al menos una clave es un array
+  return (
+    ('and' in filters && Array.isArray((filters as Record<string, unknown>)['and'])) ||
+    ('or' in filters && Array.isArray((filters as Record<string, unknown>)['or']))
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -199,8 +234,11 @@ function isComposition(
  * ### Reglas
  * - Los valores `undefined` se omiten silenciosamente.
  * - Si todos los filtros son `undefined` o el objeto está vacío → retorna `""`.
- * - Los caracteres reservados FIQL (`;`, `,`, `(`, `)`, `"`, `'`, espacio)
+ * - Los caracteres reservados FIQL (`;`, `,`, `(`, `)`, `"`, `'`, espacio, `=`, `!`)
  *   en los valores se percent-encodean automáticamente.
+ * - Las claves `and`/`or` sólo activan composición si su valor es un `Array`.
+ *   Si el valor es un string, number u otro tipo primitivo, se tratan como
+ *   nombres de campo ordinarios (ej. `{ and: 'val' }` → `AND==val`).
  *
  * @param filters - Filtros en formato FiqlFilters.
  * @returns Cadena FIQL. Vacía si no hay ningún filtro activo.

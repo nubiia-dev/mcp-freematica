@@ -160,6 +160,28 @@ describe('buildFiql', () => {
       const result = buildFiql({ NOMBRE: 'Ángel' });
       expect(result).toBe('NOMBRE==Ángel');
     });
+
+    // Critical fix: = and ! must be escaped to prevent FIQL operator injection
+    it('escapes = in values (prevents operator injection like ==EVIL)', () => {
+      const result = buildFiql({ CAMPO: '123==EVIL' });
+      expect(result).toBe('CAMPO==123%3D%3DEVIL');
+    });
+
+    it('escapes = in values (prevents FIQL operator misread like x=gt=0)', () => {
+      const result = buildFiql({ CAMPO: 'x=gt=0' });
+      expect(result).toBe('CAMPO==x%3Dgt%3D0');
+    });
+
+    it('escapes ! in values (prevents != operator injection)', () => {
+      const result = buildFiql({ CAMPO: 'a!=b' });
+      expect(result).toBe('CAMPO==a%21%3Db');
+    });
+
+    it('escapes combined ==, !=, =gt= in one value', () => {
+      const val = '==!=x=gt=';
+      const result = buildFiql({ OP: val });
+      expect(result).toBe('OP==%3D%3D%21%3Dx%3Dgt%3D');
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -200,6 +222,49 @@ describe('buildFiql', () => {
         or: [{ ESTADO: 'activo' }, { ESTADO: 'pendiente' }],
       });
       expect(result).toBe('EMPRESA==1;ESTADO==activo,ESTADO==pendiente');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Type confusion guard: and/or with non-array values (Critical fix)
+  // ---------------------------------------------------------------------------
+
+  describe('type guard: and/or with non-array values are treated as field names', () => {
+    /**
+     * Antes del fix, `{ and: 'COD_CLI==injection' }` pasaba isComposition()
+     * y luego `for (const group of filters.and)` iteraba el string char a char,
+     * produciendo basura silenciosa como `0==C;0==O;0==D;...`.
+     *
+     * Ahora: si `and`/`or` tienen un valor non-array, se tratan como campo
+     * plano ordinario.
+     */
+    it('treats { and: string } as a plain field (NOT composition)', () => {
+      // El campo "and" con valor string se trata como campo plano
+      const result = buildFiql({ and: 'valor' } as Parameters<typeof buildFiql>[0]);
+      // Debe producir una expresión simple campo==valor, no basura
+      expect(result).toBe('and==valor');
+    });
+
+    it('does not iterate string char by char when and: string is passed', () => {
+      // Regresión contra el bug original: char-by-char iteration
+      const result = buildFiql({ and: 'COD_CLI%3D%3Dinjection' } as Parameters<typeof buildFiql>[0]);
+      // Debe ser una sola expresión, no decenas de 0==C;0==O;...
+      expect(result.split(';').length).toBe(1);
+    });
+
+    it('treats { or: number } as a plain field (NOT composition)', () => {
+      const result = buildFiql({ or: 123 } as Parameters<typeof buildFiql>[0]);
+      expect(result).toBe('or==123');
+    });
+
+    it('{ and: [...] } still works as composition (correct array path)', () => {
+      const result = buildFiql({ and: [{ CAMPO: 'val' }] });
+      expect(result).toBe('CAMPO==val');
+    });
+
+    it('{ or: [...] } still works as composition (correct array path)', () => {
+      const result = buildFiql({ or: [{ ESTADO: 'activo' }, { ESTADO: 'baja' }] });
+      expect(result).toBe('ESTADO==activo,ESTADO==baja');
     });
   });
 
