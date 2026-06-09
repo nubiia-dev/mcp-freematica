@@ -80,12 +80,52 @@ function reqSerializer(
 }
 
 /**
+ * Crea una instancia del logger pino con la configuración estándar.
+ *
+ * La función acepta opcionalmente un stream destino para permitir testing:
+ * en tests se puede pasar un stream writable en memoria para verificar que
+ * los headers sensibles NUNCA aparecen en el output.
+ *
+ * Configurado con:
+ * - Nivel configurable vía `LOG_LEVEL` (default: `info`)
+ * - Serializer `req` que sanitiza headers x-auth-* automáticamente
+ *
+ * @param destination - Stream destino opcional (por defecto: `pino.destination(1)` = stdout).
+ * @returns Instancia del logger pino.
+ *
+ * @example
+ * // Logger de producción (singleton)
+ * import { logger } from './logger.js';
+ *
+ * @example
+ * // Logger de test con stream en memoria
+ * import { createLogger } from './logger.js';
+ * import { Writable } from 'node:stream';
+ * const chunks: string[] = [];
+ * const dest = new Writable({ write(chunk, _, cb) { chunks.push(chunk.toString()); cb(); } });
+ * const testLogger = createLogger(dest);
+ * testLogger.info({ headers: { 'x-auth-token': 'SECRET' } }, 'req');
+ * // Verificar que 'SECRET' no aparece en chunks
+ */
+export function createLogger(destination?: pino.DestinationStream): pino.Logger {
+  return pino(
+    {
+      level: resolveLogLevel(),
+      serializers: {
+        req: reqSerializer,
+        err: pino.stdSerializers.err,
+      },
+    },
+    destination,
+  );
+}
+
+/**
  * Logger singleton de la aplicación.
  *
  * Configurado con:
  * - Nivel configurable vía `LOG_LEVEL` (default: `info`)
  * - Serializer `req` que sanitiza headers x-auth-* automáticamente
- * - `pino-pretty` en desarrollo si está disponible
  *
  * Uso:
  * ```ts
@@ -93,10 +133,4 @@ function reqSerializer(
  * logger.info({ requestId: 'uuid', method: 'GET', path: '/clientes' }, 'HTTP request');
  * ```
  */
-export const logger = pino({
-  level: resolveLogLevel(),
-  serializers: {
-    req: reqSerializer,
-    err: pino.stdSerializers.err,
-  },
-});
+export const logger = createLogger();
