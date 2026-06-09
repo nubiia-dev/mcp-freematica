@@ -7,7 +7,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import nock from 'nock';
 import { HardenedBaseClient } from '../src/clients/hardened-base-client.js';
-import { FreematicaError } from '../src/clients/base-client.js';
 
 const BASE_URL = 'https://api.example.com/restsat/api';
 const AUTH_HEADERS = {
@@ -157,15 +156,29 @@ describe('HardenedBaseClient', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('does NOT retry on HTTP 429 rate limit', async () => {
-      const client = makeClient({ maxRetries: 3, timeoutMs: 5000 });
-      const scope = nock(BASE_URL).get('/rate').reply(429, '', { 'retry-after': '60' });
+    it('retries on HTTP 429 and succeeds on second attempt (honoring Retry-After)', async () => {
+      // 429 es ahora reintentable (Opción A): se reintenta honrando Retry-After
+      const client = makeClient({ maxRetries: 2, timeoutMs: 5000 });
+
+      nock(BASE_URL).get('/rate').reply(429, '', { 'retry-after': '1' });
+      nock(BASE_URL).get('/rate').reply(200, envelope({ ok: true }));
+
+      const result = await client.testGet<{ ok: boolean }>('/rate');
+      expect(result).toEqual({ ok: true });
+    }, 10000);
+
+    it('throws rate_limit_exceeded after exhausting all retries on 429', async () => {
+      const client = makeClient({ maxRetries: 2, timeoutMs: 5000 });
+
+      // 3 respuestas 429 (1 inicial + 2 retries)
+      nock(BASE_URL).get('/rate').reply(429, '', { 'retry-after': '1' });
+      nock(BASE_URL).get('/rate').reply(429, '', { 'retry-after': '1' });
+      nock(BASE_URL).get('/rate').reply(429, '', { 'retry-after': '1' });
 
       await expect(client.testGet('/rate')).rejects.toMatchObject({
         code: 'rate_limit_exceeded',
       });
-      expect(scope.isDone()).toBe(true);
-    });
+    }, 15000);
 
     it('does NOT retry on envelope errorCode 404', async () => {
       const client = makeClient({ maxRetries: 3, timeoutMs: 5000 });
@@ -183,7 +196,7 @@ describe('HardenedBaseClient', () => {
   // ---------------------------------------------------------------------------
 
   describe('timeout', () => {
-    it('throws a FreematicaError when request exceeds timeoutMs', async () => {
+    it('throws network_error with timed out message when request exceeds timeoutMs', async () => {
       // Cliente con timeout muy pequeño y sin retries para que falle rápido
       const client = makeClient({ timeoutMs: 100, maxRetries: 0 });
 
@@ -193,11 +206,11 @@ describe('HardenedBaseClient', () => {
         .delay(2000)
         .reply(200, envelope({ ok: true }));
 
-      // El error puede ser network_error (AbortError mapeado) o unexpected_error
-      // dependiendo de cómo Axios propague el AbortController signal
-      await expect(client.testGet('/slow')).rejects.toSatisfy(
-        (err: unknown) => err instanceof FreematicaError,
-      );
+      // Un timeout es un error de red: debe mapearse a network_error con mensaje timed out
+      await expect(client.testGet('/slow')).rejects.toMatchObject({
+        code: 'network_error',
+        message: expect.stringContaining('timed out'),
+      });
     }, 10000);
   });
 

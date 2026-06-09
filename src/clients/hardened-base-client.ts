@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { BaseClient, FreematicaError, type BaseClientConfig } from './base-client.js';
 import type { FreematicaEnvelope } from '../types/api-envelope.js';
 import { logger } from '../logger.js';
-import { AxiosError } from 'axios';
 
 // ---------------------------------------------------------------------------
 // Types & constants
@@ -97,8 +96,21 @@ class CircuitBreaker {
   }
 
   /**
-   * Registra un fallo: incrementa contador y abre el circuito si se supera
-   * el umbral.
+   * Registra un fallo lógico (operación post-retry-exhaustion) e incrementa
+   * el contador de fallos consecutivos. Abre el circuito si se supera el umbral.
+   *
+   * ### Semántica de "fallo lógico"
+   *
+   * El circuit breaker cuenta **operaciones fallidas después de agotar todos
+   * los reintentos**, NO intentos HTTP individuales. Con los valores por defecto
+   * (threshold=5, maxRetries=3), se pueden producir hasta 5 × (3 + 1) = **20
+   * peticiones HTTP upstream** antes de que el breaker se abra. Esto es
+   * intencionado: los blips transitorios (errores 5xx esporádicos que se
+   * resuelven en el segundo intento) NO deben abrir el circuito.
+   *
+   * Ajusta via:
+   * - `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD` (default 5)
+   * - `FREEMATICA_MAX_RETRIES` (default 3)
    */
   recordFailure(): void {
     this.consecutiveFailures++;
@@ -155,6 +167,14 @@ class CircuitBreaker {
  *   el circuito durante `timeoutMs` ms. Luego pasa a half-open.
  *   Configurable vía `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD` (default 5) y
  *   `FREEMATICA_CIRCUIT_BREAKER_TIMEOUT_MS` (default 30000).
+ *
+ *   **IMPORTANTE — Semántica de conteo del circuit breaker**: el breaker cuenta
+ *   operaciones lógicas fallidas (post-retry-exhaustion), NO intentos HTTP
+ *   individuales. Con threshold=5 y maxRetries=3, hacen falta hasta
+ *   5 × (3 + 1) = 20 fallos HTTP upstream para abrir el circuito.
+ *   Los blips transitorios que se resuelven en el primer reintento NO cuentan.
+ *   Ajusta `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD` y `FREEMATICA_MAX_RETRIES`
+ *   según la tolerancia a fallos de tu sistema.
  *
  * - **Logging estructurado con pino**: cada petición se loguea con
  *   `requestId`, `method`, `path`, `duration_ms`, `status`. Los headers
@@ -223,18 +243,40 @@ export class HardenedBaseClient extends BaseClient {
   /**
    * Determina si un error de Freemática debe reintentarse.
    *
-   * Solo se reintentan:
+   * Se reintentan:
    * - `server_error` (5xx)
    * - `network_error` (ECONNREFUSED, ETIMEDOUT, etc.)
+   * - `rate_limit_exceeded` (429): se reintenta honrando el header `Retry-After`
+   *   cuando está disponible en `FreematicaError.retryAfter`. Si no hay valor,
+   *   se usa el backoff exponencial estándar.
    *
-   * Los errores 4xx (`invalid_token`, `forbidden`, `not_found`,
-   * `rate_limit_exceeded`) NO se reintentan.
+   * Los errores 4xx restantes (`invalid_token`, `forbidden`, `not_found`)
+   * NO se reintentan ya que no son transitorios.
    *
    * @param err - Error a evaluar.
    * @returns `true` si debe reintentarse.
    */
   private isRetryable(err: FreematicaError): boolean {
-    return err.code === 'server_error' || err.code === 'network_error';
+    return err.code === 'server_error' || err.code === 'network_error' || err.code === 'rate_limit_exceeded';
+  }
+
+  /**
+   * Calcula el delay de reintento para un error dado.
+   *
+   * Si el error es `rate_limit_exceeded` y tiene `retryAfter` definido y > 0,
+   * usa `retryAfter * 1000` ms en lugar del backoff exponencial. Esto honra
+   * el header `Retry-After` del servidor y evita martillear la API con
+   * backoffs arbitrarios.
+   *
+   * @param err - Error que causó el reintento.
+   * @param attempt - Número de intento (0-based, se pasa attempt-1 al llamador).
+   * @returns Delay en ms.
+   */
+  private retryDelay(err: FreematicaError, attempt: number): number {
+    if (err.code === 'rate_limit_exceeded' && err.retryAfter !== undefined && err.retryAfter > 0) {
+      return err.retryAfter * 1000;
+    }
+    return this.backoffDelay(attempt);
   }
 
   /**
@@ -266,10 +308,10 @@ export class HardenedBaseClient extends BaseClient {
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       const start = Date.now();
 
-      if (attempt > 0) {
-        const delay = this.backoffDelay(attempt - 1);
+      if (attempt > 0 && lastError !== undefined) {
+        const delay = this.retryDelay(lastError, attempt - 1);
         logger.debug(
-          { requestId, attempt, delay_ms: delay },
+          { requestId, attempt, delay_ms: delay, reason: lastError.code },
           'Retrying request after backoff delay',
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
@@ -305,9 +347,15 @@ export class HardenedBaseClient extends BaseClient {
       } catch (err) {
         const duration = Date.now() - start;
 
-        // Mapear AbortError (timeout) a FreematicaError
+        // Mapear AbortError/ERR_CANCELED (timeout via AbortController) a network_error.
+        // Axios transforma el AbortSignal abort en un AxiosError con code='ERR_CANCELED'
+        // (o en algunos entornos un Error con name='AbortError'). Ambos indican timeout.
         let freematicaErr: FreematicaError;
-        if (err instanceof Error && err.name === 'AbortError') {
+        const isAbort =
+          (err instanceof Error && err.name === 'AbortError') ||
+          (err instanceof Error && (err as { code?: string }).code === 'ERR_CANCELED') ||
+          (err instanceof Error && err.message.toLowerCase().includes('cancel'));
+        if (isAbort) {
           freematicaErr = new FreematicaError(
             'network_error',
             `Request timed out after ${this.requestTimeoutMs}ms`,
@@ -365,6 +413,9 @@ export class HardenedBaseClient extends BaseClient {
    * Ejecuta la petición HTTP usando el AxiosInstance del padre con soporte
    * para AbortSignal.
    *
+   * Usa los métodos `mapEnvelopeError` y `mapAxiosError` heredados de
+   * `BaseClient` (ahora `protected`) para evitar duplicación de lógica.
+   *
    * @param method - Método HTTP.
    * @param path - Ruta del endpoint.
    * @param body - Body opcional.
@@ -386,71 +437,17 @@ export class HardenedBaseClient extends BaseClient {
       });
       const envelope = res.data;
       if (envelope?.errorCode !== '200') {
-        throw this.mapEnvelopeErrorPublic(envelope);
+        throw this.mapEnvelopeError(envelope);
       }
       return envelope.data;
     } catch (err) {
       if (err instanceof FreematicaError) throw err;
-      // AbortError propagado directamente
+      // AbortError y ERR_CANCELED (Axios) propagados directamente para que el
+      // catch del retry loop los mapee a network_error con mensaje "timed out"
       if (err instanceof Error && err.name === 'AbortError') throw err;
-      throw this.mapAxiosErrorPublic(err);
+      if (err instanceof Error && (err as { code?: string }).code === 'ERR_CANCELED') throw err;
+      throw this.mapAxiosError(err);
     }
-  }
-
-  /**
-   * Versión accesible del mapeo de errores de envelope.
-   *
-   * Replica la lógica privada de `BaseClient.mapEnvelopeError` para uso
-   * interno en `requestWithSignal`.
-   */
-  private mapEnvelopeErrorPublic(
-    env: FreematicaEnvelope<unknown> | undefined,
-  ): FreematicaError {
-    const code = env?.errorCode ?? 'unknown';
-    const msg = env?.errorMessage || `API error (envelope errorCode=${code})`;
-    if (code === '401') return new FreematicaError('invalid_token', msg);
-    if (code === '403') return new FreematicaError('forbidden', msg);
-    if (code === '404') return new FreematicaError('not_found', msg);
-    if (code === '429') return new FreematicaError('rate_limit_exceeded', msg);
-    if (code.startsWith('5')) return new FreematicaError('server_error', msg);
-    return new FreematicaError('unexpected_error', msg);
-  }
-
-  /**
-   * Versión accesible del mapeo de errores de Axios.
-   *
-   * Replica la lógica privada de `BaseClient.mapAxiosError` para uso interno.
-   */
-  private mapAxiosErrorPublic(err: unknown): FreematicaError {
-    if (err instanceof AxiosError) {
-      if (err.response) {
-        const status = err.response.status;
-        if (status === 401) return new FreematicaError('invalid_token', 'Authentication failed (401)');
-        if (status === 403) return new FreematicaError('forbidden', 'Insufficient permissions (403)');
-        if (status === 404) return new FreematicaError('not_found', 'Resource not found (404)');
-        if (status === 429) {
-          const retryAfterHeader = err.response.headers['retry-after'];
-          const retryAfter = retryAfterHeader ? Number(retryAfterHeader) : undefined;
-          return new FreematicaError(
-            'rate_limit_exceeded',
-            `Rate limit exceeded${retryAfter ? ` (retry after ${retryAfter}s)` : ''}`,
-            retryAfter,
-          );
-        }
-        if (status >= 500) {
-          return new FreematicaError('server_error', `Upstream server error (${status})`);
-        }
-      }
-      if (
-        err.code === 'ECONNREFUSED' ||
-        err.code === 'ETIMEDOUT' ||
-        err.code === 'ENOTFOUND'
-      ) {
-        return new FreematicaError('network_error', `Network error: ${err.message}`);
-      }
-    }
-    const msg = err instanceof Error ? err.message : String(err);
-    return new FreematicaError('unexpected_error', `Unexpected error: ${msg}`);
   }
 
   /**
