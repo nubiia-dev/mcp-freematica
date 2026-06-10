@@ -12,6 +12,7 @@ import { registerFacturasVentasTools } from './tools/facturas-ventas.js';
 import { registerLocalizacionesTools } from './tools/localizaciones.js';
 import { registerMasterDataTools } from './tools/master-data.js';
 import { registerOportunidadesNegocioTools } from './tools/oportunidades-negocio.js';
+import { registerPedidosComprasTools } from './tools/pedidos-compras.js';
 import { registerPersonalTools } from './tools/personal.js';
 import { registerPrlTools } from './tools/prl.js';
 import { registerProveedoresTools } from './tools/proveedores.js';
@@ -22,7 +23,7 @@ export interface CreateFreematicaServerOptions {
 
 export function createFreematicaServer(opts: CreateFreematicaServerOptions): McpServer {
   const server = new McpServer(
-    { name: 'freematica-mcp', version: '0.5.0' },
+    { name: 'freematica-mcp', version: '0.5.1' },
     { instructions: FREEMATICA_MCP_INSTRUCTIONS },
   );
 
@@ -34,6 +35,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerCarteraTools(server, opts.client);
   registerFacturasVentasTools(server, opts.client);
   registerFacturasComprasTools(server, opts.client);
+  registerPedidosComprasTools(server, opts.client);
   registerProveedoresTools(server, opts.client);
   registerLocalizacionesTools(server, opts.client);
   registerContabilidadTools(server, opts.client);

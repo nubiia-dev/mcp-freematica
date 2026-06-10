@@ -919,4 +919,264 @@ describe('FreematicaClient', () => {
       ).rejects.toMatchObject({ code: 'server_error' });
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // listPedidosCompra (v0.5.1) — TD-152
+  // ---------------------------------------------------------------------------
+
+  describe('listPedidosCompra', () => {
+    it('returns { items, total } from /pcmp/v2/pedidos with pagination', async () => {
+      const fake = [{ ALCC_NUMDOC: 1001, ALCC_DELEG: 'MAD1' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query({ items: '10', page: '2' })
+        .reply(200, listEnv(fake, 100));
+      const result = await client.listPedidosCompra({ items: 10, page: 2 });
+      expect(result).toEqual({ items: fake, total: 100 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes empresa as native query param codEmpresa (NOT FIQL)', async () => {
+      const fake = [{ ALCC_NUMDOC: 2001 }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query({ items: '20', page: '1', codEmpresa: '1000' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({ items: 20, page: 1, empresa: '1000' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes codProveedor as native query param (NOT FIQL)', async () => {
+      const fake = [{ ALCC_NUMDOC: 3001 }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query({ items: '20', page: '1', codProveedor: 'P001' })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({ items: 20, page: 1, codProveedor: 'P001' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes fechaPedidoDesde as desdeFecha and fechaPedidoHasta as hastaFecha', async () => {
+      const fake = [{ ALCC_FCHPED: '2025-06-01' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query({
+          items: '20',
+          page: '1',
+          desdeFecha: '2025-01-01',
+          hastaFecha: '2025-12-31',
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({
+        items: 20,
+        page: 1,
+        fechaPedidoDesde: '2025-01-01',
+        fechaPedidoHasta: '2025-12-31',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL rquery for delegacion and formaPago', async () => {
+      const fake = [{ ALCC_DELEG: 'MAD1', ALCC_FPAGO: 'TRF' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q =>
+          String(q.rquery ?? '').includes('ALCC_DELEG==MAD1') &&
+          String(q.rquery ?? '').includes('ALCC_FPAGO==TRF')
+        )
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({
+        items: 20,
+        page: 1,
+        delegacion: 'MAD1',
+        formaPago: 'TRF',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL for numPedido (number → string in FIQL)', async () => {
+      const fake = [{ ALCC_NUMDOC: 12345678 }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q => String(q.rquery ?? '').includes('ALCC_NUMDOC==12345678'))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({ items: 20, page: 1, numPedido: 12345678 });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL for referencia ALCC_REFERENCIA==X', async () => {
+      const fake = [{ ALCC_REFERENCIA: 'REF-001' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q => String(q.rquery ?? '').includes('ALCC_REFERENCIA==REF-001'))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({ items: 20, page: 1, referencia: 'REF-001' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes FIQL for fechaEntrega range (ge + le)', async () => {
+      const fake = [{ ALCC_FCHENTREGA: '2025-06-15' }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return (
+            rq.includes('ALCC_FCHENTREGA=ge=2025-01-01') &&
+            rq.includes('ALCC_FCHENTREGA=le=2025-12-31')
+          );
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({
+        items: 20,
+        page: 1,
+        fechaEntregaDesde: '2025-01-01',
+        fechaEntregaHasta: '2025-12-31',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('estado=pendiente generates ALCC_PED_BLOQ==\'\';ALCC_PED_RECIB==\'\' in rquery', async () => {
+      const fake = [{ ALCC_NUMDOC: 5001 }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q => {
+          const rq = String(q.rquery ?? '');
+          return rq.includes("ALCC_PED_BLOQ==''") && rq.includes("ALCC_PED_RECIB==''");
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({ items: 20, page: 1, estado: 'pendiente' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it("estado=bloqueado generates ALCC_PED_BLOQ!='' in rquery", async () => {
+      const fake = [{ ALCC_NUMDOC: 5002 }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q => String(q.rquery ?? '').includes("ALCC_PED_BLOQ!=''"))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({ items: 20, page: 1, estado: 'bloqueado' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it("estado=recibido generates ALCC_PED_RECIB!='' in rquery", async () => {
+      const fake = [{ ALCC_NUMDOC: 5003 }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q => String(q.rquery ?? '').includes("ALCC_PED_RECIB!=''"))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({ items: 20, page: 1, estado: 'recibido' });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('passes ALL native params AND FIQL rquery in the same request', async () => {
+      const fake = [{ ALCC_NUMDOC: 9999 }];
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query(q => {
+          const hasNatives =
+            q.codEmpresa === '1000' &&
+            q.codProveedor === 'PROV01' &&
+            q.desdeFecha === '2025-01-01' &&
+            q.hastaFecha === '2025-12-31';
+          const rq = String(q.rquery ?? '');
+          const hasFiql =
+            rq.includes('ALCC_DELEG==BCN1') &&
+            rq.includes("ALCC_PED_RECIB!=''");
+          return hasNatives && hasFiql;
+        })
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listPedidosCompra({
+        items: 20,
+        page: 1,
+        empresa: '1000',
+        codProveedor: 'PROV01',
+        fechaPedidoDesde: '2025-01-01',
+        fechaPedidoHasta: '2025-12-31',
+        delegacion: 'BCN1',
+        estado: 'recibido',
+      });
+      expect(result).toEqual({ items: fake, total: 1 });
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates invalid_token on 401', async () => {
+      nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '401', errorMessage: 'Unauthorized', data: null });
+      await expect(client.listPedidosCompra({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'invalid_token',
+      });
+    });
+
+    it('propagates server_error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pcmp/v2/pedidos')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+      await expect(client.listPedidosCompra({ items: 20, page: 1 })).rejects.toMatchObject({
+        code: 'server_error',
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // getPedidoCompra (v0.5.1) — TD-152
+  // ---------------------------------------------------------------------------
+
+  describe('getPedidoCompra', () => {
+    it('returns the composite pedido object for idReg (not flattened)', async () => {
+      const fake = {
+        VoPedidosCompraCab: { ALCC_NUMDOC: 1001, ALCC_DELEG: 'MAD1' },
+        cabecera_proveedor: { COD_PRO: 'P001', NOMBRE_PRO: 'Proveedor A' },
+        lineas: [
+          { ALCC_LIN: 1, ALCC_CANT: 5 },
+          { ALCC_LIN: 2, ALCC_CANT: 2 },
+        ],
+      };
+      nock(BASE_URL)
+        .get('/pcmp/v2/pedidos/MV9fMTAwMA%3D%3D')
+        .reply(200, detailEnv(fake));
+      const result = await client.getPedidoCompra('MV9fMTAwMA==');
+      expect(result).toEqual(fake);
+      // Verify structure is NOT flattened
+      expect(result).toHaveProperty('VoPedidosCompraCab');
+      expect(result).toHaveProperty('cabecera_proveedor');
+      expect(result).toHaveProperty('lineas');
+    });
+
+    it('url-encodes idReg with special characters (== → %3D%3D)', async () => {
+      const fake = { VoPedidosCompraCab: { ALCC_NUMDOC: 2001 }, cabecera_proveedor: {}, lineas: [] };
+      const scope = nock(BASE_URL)
+        .get('/pcmp/v2/pedidos/ABCDEF%3D%3D')
+        .reply(200, detailEnv(fake));
+      const result = await client.getPedidoCompra('ABCDEF==');
+      expect(result).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('propagates not_found on 404 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pcmp/v2/pedidos/BADID')
+        .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+      await expect(client.getPedidoCompra('BADID')).rejects.toMatchObject({ code: 'not_found' });
+    });
+
+    it('propagates server_error on 500 envelope', async () => {
+      nock(BASE_URL)
+        .get('/pcmp/v2/pedidos/BADID')
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+      await expect(client.getPedidoCompra('BADID')).rejects.toMatchObject({ code: 'server_error' });
+    });
+  });
 });
