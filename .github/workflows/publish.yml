@@ -32,6 +32,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Build
+        run: npm run build
+
       - name: Test with coverage
         run: npm run test:coverage
 
@@ -55,9 +58,6 @@ jobs:
 
       - name: Security audit
         run: npm audit --audit-level=high
-
-      - name: Build
-        run: npm run build
 
       - name: Publish to GitHub Packages
         run: npm publish
