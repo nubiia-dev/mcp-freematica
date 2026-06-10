@@ -21,14 +21,25 @@
 import 'dotenv/config';
 import { writeFileSync } from 'node:fs';
 import { FreematicaClient } from '../src/clients/freematica-client.js';
-import { loadConfig } from '../src/config.js';
+import { loadAuthConfig, loadHardeningConfig } from '../src/config.js';
 
 // ---------------------------------------------------------------------------
 // Configuración
 // ---------------------------------------------------------------------------
 
-const config = loadConfig();
-const client = new FreematicaClient(config);
+const auth = loadAuthConfig();
+const harden = loadHardeningConfig();
+const client = new FreematicaClient({
+  baseUrl: auth.FREEMATICA_BASE_URL,
+  authHeaders: {
+    'x-auth-token': auth.FREEMATICA_AUTH_TOKEN,
+    'x-auth-company': auth.FREEMATICA_AUTH_COMPANY,
+    'x-auth-organization': auth.FREEMATICA_AUTH_ORGANIZATION,
+    'x-auth-app': auth.FREEMATICA_AUTH_APP,
+    'x-auth-session': auth.FREEMATICA_AUTH_SESSION,
+  },
+  timeoutMs: harden.FREEMATICA_TIMEOUT_MS,
+});
 
 // Calcular primer y último día del mes indicado (o del mes en curso)
 const mesParam = process.env['MES'];

@@ -34,10 +34,23 @@ Todos los examples siguen el mismo patron:
 
 ```typescript
 // 1. Cargar configuracion desde variables de entorno
-const config = loadConfig(); // lanza si falta alguna var obligatoria
+import { loadAuthConfig, loadHardeningConfig } from '../src/config.js';
 
-// 2. Crear cliente Freemática
-const client = new FreematicaClient(config);
+const auth = loadAuthConfig();     // lanza si falta alguna var obligatoria
+const harden = loadHardeningConfig();
+
+// 2. Crear cliente Freemática con BaseClientConfig
+const client = new FreematicaClient({
+  baseUrl: auth.FREEMATICA_BASE_URL,
+  authHeaders: {
+    'x-auth-token': auth.FREEMATICA_AUTH_TOKEN,
+    'x-auth-company': auth.FREEMATICA_AUTH_COMPANY,
+    'x-auth-organization': auth.FREEMATICA_AUTH_ORGANIZATION,
+    'x-auth-app': auth.FREEMATICA_AUTH_APP,
+    'x-auth-session': auth.FREEMATICA_AUTH_SESSION,
+  },
+  timeoutMs: harden.FREEMATICA_TIMEOUT_MS,
+});
 
 // 3. Llamar a los endpoints necesarios
 const result = await client.listCarteraClientes({ soloImpagados: true, ... });
@@ -45,6 +58,21 @@ const result = await client.listCarteraClientes({ soloImpagados: true, ... });
 // 4. Procesar y mostrar resultados
 console.table(result.items.slice(0, 10));
 ```
+
+## Verificacion de tipos
+
+Los examples usan `dotenv` (devDependency) para cargar el `.env`. Para verificar que compilan sin errores de TypeScript:
+
+```bash
+# Verificar todos los examples de una vez
+npx tsc --noEmit --moduleResolution bundler --module esnext --target esnext \
+  examples/01-analisis-morosidad.ts
+
+# O usar tsx (que ignora errores de tipo pero valida imports):
+npx tsx examples/01-analisis-morosidad.ts
+```
+
+Los examples estan excluidos del tsconfig.test.json para no afectar la cobertura de tests.
 
 ## Variables de entorno necesarias
 
