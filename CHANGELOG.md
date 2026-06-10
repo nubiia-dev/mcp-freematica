@@ -2,6 +2,40 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.1] — 2026-06-09
+
+### Tools de pedidos de compra (TD-152)
+
+#### Added
+
+- **`freematica_list_pedidos_compra`** (`src/tools/pedidos-compras.ts`): lista paginada de pedidos de compra desde `GET /pcmp/v2/pedidos`.
+  - Parámetros nativos: `empresa` (codEmpresa), `codProveedor`, `fechaPedidoDesde` (desdeFecha), `fechaPedidoHasta` (hastaFecha).
+  - Filtros FIQL: `codDocumento` (ALCC_CODDOC), `delegacion` (ALCC_DELEG), `formaPago` (ALCC_CODFPAG), `tipoIva` (ALCC_CODTIP), `lineaNegocio` (ALCC_LINEA), `numPedido` (ALCC_NUMDOC), `articuloPrincipal` (ALCC_CODART), `rango fechaEntregaDesde/Hasta` (ALCC_FCHENTREGA).
+  - Filtro `estado`: enum `pendiente | bloqueado | recibido` mapeado a FIQL compuesto sobre `ALCC_PED_BLOQ` y `ALCC_PED_RECIB` usando la convención empírica `''` (empty string) como centinela de null.
+
+- **`freematica_get_pedido_compra`** (`src/tools/pedidos-compras.ts`): detalle de un pedido por `idReg` opaco. Devuelve estructura compuesta `{ VoPedidosCompraCab, cabecera_proveedor, lineas[] }`. Endpoint: `GET /pcmp/v2/pedidos/{idReg}`.
+
+- **`src/schemas/pedidos-compras.ts`**: `EstadoPedidoEnum`, `buildEstadoPedidoFiql()` y `ListPedidosCompraFiltersSchema` con constraints tipados (empresa=4 chars exactos, delegacion=4, formaPago=3, tipoIva=4).
+
+- **`FreematicaClient`** (`src/clients/freematica-client.ts`): métodos `listPedidosCompra(opts)` y `getPedidoCompra(idReg)`.
+
+#### Tests
+
+- `tests/tools/pedidos-compras.test.ts`: 31 tests (registro, happy path con todos los filtros nativos y FIQL, estado enum, errores 404/500/401).
+- `tests/clients/freematica-client.test.ts`: +17 tests de los 2 métodos nuevos del cliente.
+- `tests/coverage-gaps.test.ts`: +4 tests de ramas `catch (err instanceof Error)` de ambas tools.
+- **Total: 648 tests, todos en verde**.
+
+#### Coverage
+
+- `src/schemas/pedidos-compras.ts`: 100% statements, 100% branches
+- `src/tools/pedidos-compras.ts`: 100% statements, 84.61% branches
+- `src/tools/**`: 71.28% branches (umbral mínimo: 70%)
+
+**Total tools registradas:** 34 (vs 32 en v0.5.0).
+
+---
+
 ## [0.5.0] — 2026-06-10
 
 ### Release de la épica TD-116 — Ampliación dominio financiero/PRL + hardening
