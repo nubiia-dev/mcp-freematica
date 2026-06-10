@@ -252,6 +252,41 @@ npm run build      # compila a dist/
 npm start          # ejecuta dist/index.js
 ```
 
+## Testing
+
+### Tests unitarios e integración
+
+```bash
+# Ejecutar todos los tests
+npm test
+
+# Ejecutar con coverage report
+npm test -- --coverage
+
+# Ejecutar un archivo concreto
+npm test -- tests/fiql-builder.property.test.ts
+```
+
+Los tests están en `tests/` organizados por tipo:
+- `tests/clients/` — tests de los clientes HTTP (con nock)
+- `tests/schemas/` — tests de los schemas Zod
+- `tests/tools/` — tests de los handlers MCP (unit + integration)
+- `tests/fiql-builder.*.test.ts` — tests unitarios y property-based del FIQL builder
+- `tests/pagination-edge-cases.test.ts` — edge cases del adapter de paginación
+- `tests/coverage-gaps.test.ts` — cobertura específica de ramas no cubiertas
+
+**Coverage thresholds** (configurados en `vitest.config.ts`):
+- Global statements: ≥85%
+- src/clients/: ≥90%
+- src/schemas/: ≥90%
+- src/tools/: ≥85%
+
+### Testing manual con MCP Inspector
+
+Para probar el servidor MCP de forma interactiva, usa [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
+
+Ver instrucciones detalladas en [docs/testing-e2e.md](docs/testing-e2e.md).
+
 ## Endpoints HTTP
 
 | Método | Path | Descripción |
