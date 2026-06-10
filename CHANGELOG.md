@@ -10,7 +10,7 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 - **`freematica_list_pedidos_compra`** (`src/tools/pedidos-compras.ts`): lista paginada de pedidos de compra desde `GET /pcmp/v2/pedidos`.
   - Parámetros nativos: `empresa` (codEmpresa), `codProveedor`, `fechaPedidoDesde` (desdeFecha), `fechaPedidoHasta` (hastaFecha).
-  - Filtros FIQL: `codDocumento` (ALCC_CODDOC), `delegacion` (ALCC_DELEG), `formaPago` (ALCC_CODFPAG), `tipoIva` (ALCC_CODTIP), `lineaNegocio` (ALCC_LINEA), `numPedido` (ALCC_NUMDOC), `articuloPrincipal` (ALCC_CODART), `rango fechaEntregaDesde/Hasta` (ALCC_FCHENTREGA).
+  - Filtros FIQL: `numPedido` (ALCC_NUMDOC), `codDocumento` (ALCC_CODDOC), `delegacion` (ALCC_DELEG), `formaPago` (ALCC_FPAGO), `tipoIva` (ALCC_TIPO_IVA), `codCliente` (ALCC_COD_CLIENTE), `codInstalador` (ALCC_COD_INSTALADOR), `codMantenedor` (ALCC_COD_MANTENEDOR), `referencia` (ALCC_REFERENCIA), `rango fechaEntregaDesde/Hasta` (ALCC_FCHENTREGA).
   - Filtro `estado`: enum `pendiente | bloqueado | recibido` mapeado a FIQL compuesto sobre `ALCC_PED_BLOQ` y `ALCC_PED_RECIB` usando la convención empírica `''` (empty string) como centinela de null.
 
 - **`freematica_get_pedido_compra`** (`src/tools/pedidos-compras.ts`): detalle de un pedido por `idReg` opaco. Devuelve estructura compuesta `{ VoPedidosCompraCab, cabecera_proveedor, lineas[] }`. Endpoint: `GET /pcmp/v2/pedidos/{idReg}`.
