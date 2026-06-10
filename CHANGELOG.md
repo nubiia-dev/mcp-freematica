@@ -7,21 +7,25 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 ### Testing gap + property-based tests + coverage (TD-123)
 
 #### Tests añadidos
+
 - `tests/pagination-edge-cases.test.ts`: edge cases del adapter de paginación (página vacía, total=0, items=null, page más allá del último).
 - `tests/coverage-gaps.test.ts`: tests para los métodos `post`, `put`, `delete` del `BaseClient` y para las ramas `catch (err instanceof Error)` genéricas de todas las tools.
 - `tests/fiql-builder.property.test.ts`: properties adicionales — idempotencia de escape, presencia literal de keys, separadores AND/OR en composiciones, operadores en output, safety con inputs maliciosos, manejo de `in` con array vacío.
 - `docs/testing-e2e.md`: documentación manual para verificación con MCP Inspector.
 
 #### Coverage
+
 - Global statements: **99.4%** (antes 95.36%)
 - `src/clients/`: **98.12%** statements / 87.76% branch
 - `src/schemas/`: **99.68%** statements / 100% branch
 - `src/tools/`: **100%** statements / 70.37% branch
 
 #### Total tests
+
 - **595** tests (antes 548), todos en verde.
 
 #### Limpieza
+
 - Eliminados marcadores residuales de conflict en `CHANGELOG.md` provenientes de merges anteriores de la épica TD-116.
 
 ---
@@ -40,6 +44,7 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 - Tests nuevos: +4 (3 client-level + 1 tool-level fecha range)
 - Total: 303 tests, todos en verde
+
 ### Fixed — Post code-review (TD-120)
 
 - **Version mismatch** (`package.json`, `src/server.ts`, `src/index.ts`): alineadas las tres referencias de versión a `0.5.0-rc.2`. El log de stdio también actualizado de `v0.4.1` a `v0.5.0-rc.2`.
@@ -85,6 +90,7 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 - Total: 299 tests, todos en verde
 - Coverage de archivos nuevos: 100% statements/lines
+
 ### Added — Contabilidad (TD-120)
 
 #### Tools nuevas
@@ -117,6 +123,7 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 - Cobertura de `src/tools/contabilidad.ts`: 100% statements/lines/functions.
 - Cobertura de `src/clients/freematica-client.ts`: 99.44%.
 - Total tests: 298 (todos en verde).
+
 ### Fixed — Post code-review (TD-119)
 
 #### Fixed — Critical (bug funcional)
@@ -177,6 +184,7 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 - `tests/clients/freematica-client.test.ts`: +28 nuevos tests para los 7 métodos añadidos al cliente.
 - `tests/server.test.ts`: actualizado de 8 → 15 tools registradas.
 - **Total: 305 tests, todos en verde**.
+
 ### Master-data verification + new catalogs (TD-122)
 
 #### Verified
@@ -187,14 +195,14 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 Nuevos catálogos identificados en la Postman collection que cumplen el criterio de "sin parámetros requeridos adicionales":
 
-| Catálogo | Endpoint | Sección |
-|---|---|---|
-| `incidencecode` | `GET /pvss/v2/incidencecode` | Tipos / clasificaciones |
-| `claves-facturacion` | `GET /pvss/v2/claves-facturacion` | Tipos / clasificaciones |
-| `calendarios` | `GET /pgrl/v1/calendarios` | Organizativos |
-| `series` | `GET /pgrl/v2/series` | Organizativos |
-| `lineas` | `GET /part/v1/lineas` | Inventario |
-| `bancos` | `GET /pgrl/v2/bancos` | Financiero (nueva sección) |
+| Catálogo             | Endpoint                          | Sección                    |
+| -------------------- | --------------------------------- | -------------------------- |
+| `incidencecode`      | `GET /pvss/v2/incidencecode`      | Tipos / clasificaciones    |
+| `claves-facturacion` | `GET /pvss/v2/claves-facturacion` | Tipos / clasificaciones    |
+| `calendarios`        | `GET /pgrl/v1/calendarios`        | Organizativos              |
+| `series`             | `GET /pgrl/v2/series`             | Organizativos              |
+| `lineas`             | `GET /part/v1/lineas`             | Inventario                 |
+| `bancos`             | `GET /pgrl/v2/bancos`             | Financiero (nueva sección) |
 
 Total de catálogos: 18 → **24**.
 
@@ -244,13 +252,13 @@ Total de catálogos: 18 → **24**.
 
 #### Coverage nuevos archivos
 
-| Archivo | Statements | Functions | Lines |
-|---------|-----------|-----------|-------|
-| `src/schemas/cartera.ts` | 100% | 100% | 100% |
-| `src/schemas/facturas-ventas.ts` | 100% | 100% | 100% |
-| `src/tools/cartera.ts` | 100% | 100% | 100% |
-| `src/tools/facturas-ventas.ts` | 100% | 100% | 100% |
-| `src/clients/freematica-client.ts` | 100% | 100% | 100% |
+| Archivo                            | Statements | Functions | Lines |
+| ---------------------------------- | ---------- | --------- | ----- |
+| `src/schemas/cartera.ts`           | 100%       | 100%      | 100%  |
+| `src/schemas/facturas-ventas.ts`   | 100%       | 100%      | 100%  |
+| `src/tools/cartera.ts`             | 100%       | 100%      | 100%  |
+| `src/tools/facturas-ventas.ts`     | 100%       | 100%      | 100%  |
+| `src/clients/freematica-client.ts` | 100%       | 100%      | 100%  |
 
 ---
 
@@ -341,20 +349,25 @@ Total de catálogos: 18 → **24**.
 ## [0.4.1] — 2026-05-20
 
 ### Fixed
+
 - **Catálogo `delegaciones`**: el endpoint `/pgrl/v1/delegaciones` y `/pgrl/v2/delegaciones` requieren un query param `empresa` no documentado en Postman. Cambiado a `/pgrl/v1/delegaciones/agrupcod` (listado global agrupado por código) — verificado empíricamente que funciona sin parámetros adicionales.
 
 ### Removed
+
 - **Catálogo `tipos-marcajes`** eliminado del enum: el endpoint `/pkai/v1/tiposmarcajes` requiere un query param `sTipoMarcaje` no documentado en Postman. No tenemos manera de generalizarlo en el patrón `freematica_get_master_data(catalog)`. Se reintroducirá cuando descubramos los valores válidos de ese parámetro o un endpoint alternativo.
 
 ### Notes
+
 - Tested end-to-end against the real Freemática API. 17/18 catálogos OK + 6 commercial tools OK + idReg pattern OK + page=0 boundary OK + not_found graceful.
 
 ## [0.4.0] — 2026-05-20
 
 ### Fixed
+
 - **Envelope unwrap**: el API REST de Freemática envuelve todas las respuestas en `{ errorCode, errorMessage, data }`. El `BaseClient` desempaqueta ahora `data` automáticamente y mapea `errorCode != "200"` a `FreematicaError` (con códigos como `invalid_token`, `not_found`, `server_error`, etc.). Las tools v0.3.x estaban devolviendo el wrapper completo en `items` — bug silencioso al no haber sido consumidas en producción.
 
 ### Added
+
 - 6 tools comerciales nuevas:
   - `freematica_list_clientes` (paginada)
   - `freematica_get_cliente`
@@ -367,26 +380,31 @@ Total de catálogos: 18 → **24**.
 - `FreematicaListData<T>` y `FreematicaEnvelope<T>` types.
 
 ### Changed (breaking — no consumed yet)
+
 - Tools existentes (`freematica_list_materiales_asignados_servicios`, `freematica_get_master_data`) devuelven ahora `{ items, count, total, ... }` (antes era el wrapper completo de Freemática mal mapeado).
 - `FreematicaClient.getMaterialesAsignadosServicios()` y `getMasterData()` devuelven `Promise<{ items, total }>` en vez de `Promise<T[]>`.
 
 ### Notes
+
 - Probado empíricamente contra el API real de Freemática. Confirmado que `grupoCli` documentado en Postman no funciona en producción — no se expone como filtro.
 
 ## [0.3.1] — 2026-05-19
 
 ### Fixed
+
 - Catálogo `delegaciones`: el endpoint cambia de `/pgrl/v2/delegaciones` (devolvía HTTP 400 en producción) a `/pgrl/v1/delegaciones`. El Postman documenta ambas versiones; v1 funciona, v2 no.
 
 ## [0.3.0] — 2026-05-19
 
 ### Added
+
 - Nueva tool `freematica_get_master_data` que expone 19 catálogos de datos maestros del API de Freemática (tipos, geográficos, organizativos, inventario) a través de un único enum `catalog`.
 - `src/schemas/master-data.ts` con `MASTER_DATA_CATALOGS` (enum de 19 valores) y `CATALOG_ENDPOINTS` (mapeo a endpoints REST). Una sola fuente de verdad para añadir catálogos futuros.
 - `FreematicaClient.getMasterData(catalog)` que resuelve el endpoint via el record.
 - Sección "Datos maestros disponibles" en README con la tabla catálogo → endpoint.
 
 ### Changed
+
 - `createFreematicaServer` ahora registra dos tools (la existente + la nueva).
 - `server-instructions.ts` ampliado con la nueva tool y un patrón de uso (resolver IDs crípticos a nombres humanos).
 - Version reportada en `/health` y en el `serverInfo` MCP actualizada a `0.3.0`.
@@ -394,23 +412,27 @@ Total de catálogos: 18 → **24**.
 ## [0.2.0] — 2026-05-19
 
 ### Added
+
 - Soporte para transporte **stdio** (default). Selección vía CLI `--transport=` o env `MCP_TRANSPORT`.
 - `src/transports/stdio.ts` con `startStdio({ client })`.
 - Smoke test E2E del modo stdio (spawn de `dist/index.js`, JSON-RPC initialize por stdin).
 - Seccion "Modos de transporte" en el README con ejemplos para Claude Desktop, Claude Code y Nubiia.
 
 ### Changed
+
 - `src/config.ts` refactorizado: `loadAuthConfig()` + `loadHttpConfig()` independientes. `loadConfig()` se mantiene como wrapper retro-compat.
 - `src/index.ts` reescrito para branching stdio/http con dynamic imports (evita cargar Express en modo stdio).
 - CI: `npm run build` se ejecuta antes que `npm test` (el smoke test stdio necesita `dist/`).
 - Version reportada en `/health` y en el `serverInfo` del MCP actualizada a `0.2.0`.
 
 ### Breaking
+
 - **Default del binario cambió de HTTP a stdio.** Si tu entorno (Nubiia u otro) ejecutaba el binario sin configurar transporte, hay que añadir `MCP_TRANSPORT=http` para mantener el comportamiento anterior.
 
 ## [0.1.0] — 2026-05-18
 
 ### Added
+
 - Bootstrap inicial del MCP server.
 - Tool: `freematica_list_materiales_asignados_servicios` → `GET /pvss/v2/contratos-servicios-material`.
 - Transporte HTTP (Streamable) con Express + StreamableHTTPServerTransport.

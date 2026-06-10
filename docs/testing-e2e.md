@@ -59,35 +59,36 @@ MCP Inspector abrirá automáticamente `http://localhost:5173` (o el puerto disp
 
 Al conectar MCP Inspector, en la pestaña **Tools** deberían aparecer las siguientes 25 tools:
 
-| # | Tool | Descripción |
-|---|------|-------------|
-| 1 | `freematica_list_materiales_asignados_servicios` | Lista material asignado a servicios |
-| 2 | `freematica_get_master_data` | Catálogos de datos maestros (24 tipos) |
-| 3 | `freematica_list_clientes` | Lista paginada de clientes |
-| 4 | `freematica_get_cliente` | Detalle de un cliente por idReg |
-| 5 | `freematica_list_contactos_clientes` | Lista paginada de contactos |
-| 6 | `freematica_list_oportunidades_negocio` | Lista paginada de oportunidades CRM |
-| 7 | `freematica_get_oportunidad_negocio` | Detalle de oportunidad |
-| 8 | `freematica_get_oportunidad_negocio_datos_ampliados` | Datos ampliados de oportunidad |
-| 9 | `freematica_get_ficha_prev_cliente` | Ficha PRL de un cliente |
-| 10 | `freematica_list_vigilancia_salud` | Lista de registros de Vigilancia de la Salud |
-| 11 | `freematica_get_vigilancia_salud` | Detalle de Vigilancia de la Salud |
-| 12 | `freematica_list_personal` | Lista paginada de personas (RRHH) |
-| 13 | `freematica_get_persona` | Detalle de una persona |
-| 14 | `freematica_list_calendarios` | Lista de calendarios laborales |
-| 15 | `freematica_list_calendario_periodos` | Periodos de un calendario |
-| 16 | `freematica_list_cartera_clientes` | Lista de cartera de clientes |
-| 17 | `freematica_get_cartera_cliente` | Detalle de documento de cartera |
-| 18 | `freematica_list_facturas_cabecera` | Lista de facturas de ventas |
-| 19 | `freematica_get_factura_cabecera` | Detalle de una factura |
-| 20 | `freematica_list_factura_lineas` | Líneas de detalle de una factura |
-| 21 | `freematica_list_factura_iva` | Líneas de IVA de una factura |
-| 22 | `freematica_list_factura_vencimientos` | Vencimientos de cobro de una factura |
-| 23 | `freematica_list_localizaciones_cobro_clientes` | Localizaciones de cobro |
-| 24 | `freematica_list_localizaciones_pago_proveedores` | Localizaciones de pago proveedores |
-| 25 | `freematica_list_localizaciones_servicio_clientes` | Localizaciones de servicio |
+| #   | Tool                                                 | Descripción                                  |
+| --- | ---------------------------------------------------- | -------------------------------------------- |
+| 1   | `freematica_list_materiales_asignados_servicios`     | Lista material asignado a servicios          |
+| 2   | `freematica_get_master_data`                         | Catálogos de datos maestros (24 tipos)       |
+| 3   | `freematica_list_clientes`                           | Lista paginada de clientes                   |
+| 4   | `freematica_get_cliente`                             | Detalle de un cliente por idReg              |
+| 5   | `freematica_list_contactos_clientes`                 | Lista paginada de contactos                  |
+| 6   | `freematica_list_oportunidades_negocio`              | Lista paginada de oportunidades CRM          |
+| 7   | `freematica_get_oportunidad_negocio`                 | Detalle de oportunidad                       |
+| 8   | `freematica_get_oportunidad_negocio_datos_ampliados` | Datos ampliados de oportunidad               |
+| 9   | `freematica_get_ficha_prev_cliente`                  | Ficha PRL de un cliente                      |
+| 10  | `freematica_list_vigilancia_salud`                   | Lista de registros de Vigilancia de la Salud |
+| 11  | `freematica_get_vigilancia_salud`                    | Detalle de Vigilancia de la Salud            |
+| 12  | `freematica_list_personal`                           | Lista paginada de personas (RRHH)            |
+| 13  | `freematica_get_persona`                             | Detalle de una persona                       |
+| 14  | `freematica_list_calendarios`                        | Lista de calendarios laborales               |
+| 15  | `freematica_list_calendario_periodos`                | Periodos de un calendario                    |
+| 16  | `freematica_list_cartera_clientes`                   | Lista de cartera de clientes                 |
+| 17  | `freematica_get_cartera_cliente`                     | Detalle de documento de cartera              |
+| 18  | `freematica_list_facturas_cabecera`                  | Lista de facturas de ventas                  |
+| 19  | `freematica_get_factura_cabecera`                    | Detalle de una factura                       |
+| 20  | `freematica_list_factura_lineas`                     | Líneas de detalle de una factura             |
+| 21  | `freematica_list_factura_iva`                        | Líneas de IVA de una factura                 |
+| 22  | `freematica_list_factura_vencimientos`               | Vencimientos de cobro de una factura         |
+| 23  | `freematica_list_localizaciones_cobro_clientes`      | Localizaciones de cobro                      |
+| 24  | `freematica_list_localizaciones_pago_proveedores`    | Localizaciones de pago proveedores           |
+| 25  | `freematica_list_localizaciones_servicio_clientes`   | Localizaciones de servicio                   |
 
 Si alguna tool no aparece, revisar:
+
 1. Que el build está actualizado: `npm run build`
 2. Que las variables de entorno son correctas
 3. Los logs de stderr del servidor (MCP Inspector los muestra en la consola)
@@ -108,6 +109,7 @@ Los siguientes ejemplos muestran inputs esperados para cada tool. Estos son **no
 ```
 
 **Output esperado (estructura):**
+
 ```json
 {
   "items": [...],
@@ -203,6 +205,7 @@ Resetear el circuit breaker reiniciando el servidor.
 Los headers `x-auth-*` NUNCA deben aparecer en los logs del servidor.
 
 Para verificar:
+
 1. Activar logs de nivel `debug`: `LOG_LEVEL=debug node dist/index.js`
 2. Ejecutar cualquier tool call
 3. Revisar los logs de stderr — no deben contener valores de `x-auth-token`, `x-auth-company`, etc.

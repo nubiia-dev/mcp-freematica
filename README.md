@@ -7,34 +7,88 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 - TypeScript + Node.js ≥20
 - `@modelcontextprotocol/sdk` (stdio + Streamable HTTP transports)
 - Express + axios + zod
+- pino (logging estructurado)
 - Vitest + nock para tests
 
 ## Tools expuestas
 
-| Tool | Endpoint Freemática | Descripción |
-|---|---|---|
-| `freematica_list_materiales_asignados_servicios` | `GET /pvss/v2/contratos-servicios-material` | Lista de material asignado a servicios |
-| `freematica_get_master_data` | (24 endpoints según `catalog`) | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario, financiero) |
-| `freematica_list_clientes` | `GET /pgrl/v2/clientes` | Lista paginada de clientes |
-| `freematica_get_cliente` | `GET /pgrl/v2/clientes/{idReg}` | Detalle de un cliente |
-| `freematica_list_contactos_clientes` | `GET /pgrl/v2/contactos-clientes` | Lista paginada de contactos |
-| `freematica_list_oportunidades_negocio` | `GET /pcrm/v2/oportunidades-negocio` | Lista paginada de oportunidades |
-| `freematica_get_oportunidad_negocio` | `GET /pcrm/v2/oportunidades-negocio/{idReg}` | Detalle de oportunidad |
-| `freematica_get_oportunidad_negocio_datos_ampliados` | `GET /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados` | Datos ampliados (puede 404) |
-| `freematica_get_ficha_prev_cliente` | `GET /pprl/v2/ficha-prev-cliente` | Ficha PRL de un cliente (filtros: codCliente, grupoCliente, codLocalizacionServicio, codigoFicha) |
-| `freematica_list_vigilancia_salud` | `GET /pprl/v1/vigilancia-salud` | Lista paginada de registros de Vigilancia de la Salud con filtros FIQL y rango de fecha de cita |
-| `freematica_get_vigilancia_salud` | `GET /pprl/v1/vigilancia-salud/{idreg}` | Detalle de un registro de Vigilancia de la Salud por idReg opaco |
-| `freematica_list_personal` | `GET /pers/v2/personal` | Lista paginada de personas (RRHH) con filtros FIQL (empresa, delegación, nombre, NIF, activo...) |
-| `freematica_get_persona` | `GET /pers/v2/personal/{idreg}` | Detalle de una persona por idReg opaco |
-| `freematica_list_calendarios` | `GET /pgrl/v1/calendarios` | Lista paginada de calendarios laborales |
-| `freematica_list_calendario_periodos` | `GET /pgrl/v1/calendarios/{idreg}/periodos` | Periodos de un calendario laboral concreto |
-| `freematica_list_cartera_clientes` | `GET /pcar/v1/cartera-clientes` | Lista paginada de cartera de clientes (cobros, impagados). Filtros: empresa, codCliente, grupoCliente, representante, formaPago, modoPago, fechaDoc, fechaVencimiento, estado, soloImpagados, referencia |
-| `freematica_get_cartera_cliente` | `GET /pcar/v1/cartera-clientes/{idReg}` | Detalle de un documento de cartera |
-| `freematica_list_facturas_cabecera` | `GET /pven/v1/facturas-cabecera` | Lista paginada de facturas de ventas (cabecera). Filtros: empresa, codCliente, representante, fechaFactura, serie, numFactura, formaPago, traspasadoContabilidad, delegacion |
-| `freematica_get_factura_cabecera` | `GET /pven/v1/facturas-cabecera/{idReg}` | Detalle de una factura |
-| `freematica_list_factura_lineas` | `GET /pven/v1/facturas-cabecera/{idReg}/lineas` | Líneas de detalle de una factura. Filtros: codArticulo, codFamilia, codSubfamilia, delegacion |
-| `freematica_list_factura_iva` | `GET /pven/v1/facturas-cabecera/{idReg}/iva` | Líneas de IVA de una factura. Filtro: tipoIva |
-| `freematica_list_factura_vencimientos` | `GET /pven/v1/facturas-cabecera/{idReg}/vencimientos` | Vencimientos de cobro de una factura. Filtros: fechaVencimiento, modoPago |
+| Tool                                                 | Endpoint Freemática                                          | Descripción                                                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `freematica_list_materiales_asignados_servicios`     | `GET /pvss/v2/contratos-servicios-material`                  | Lista de material asignado a servicios                                                             |
+| `freematica_get_master_data`                         | (24 endpoints según `catalog`)                               | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario, financiero) |
+| `freematica_list_clientes`                           | `GET /pgrl/v2/clientes`                                      | Lista paginada de clientes                                                                         |
+| `freematica_get_cliente`                             | `GET /pgrl/v2/clientes/{idReg}`                              | Detalle de un cliente                                                                              |
+| `freematica_list_contactos_clientes`                 | `GET /pgrl/v2/contactos-clientes`                            | Lista paginada de contactos                                                                        |
+| `freematica_list_oportunidades_negocio`              | `GET /pcrm/v2/oportunidades-negocio`                         | Lista paginada de oportunidades                                                                    |
+| `freematica_get_oportunidad_negocio`                 | `GET /pcrm/v2/oportunidades-negocio/{idReg}`                 | Detalle de oportunidad                                                                             |
+| `freematica_get_oportunidad_negocio_datos_ampliados` | `GET /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados` | Datos ampliados (puede 404)                                                                        |
+| `freematica_get_ficha_prev_cliente`                  | `GET /pprl/v2/ficha-prev-cliente`                            | Ficha PRL de un cliente                                                                            |
+| `freematica_list_vigilancia_salud`                   | `GET /pprl/v1/vigilancia-salud`                              | Lista paginada de registros de Vigilancia de la Salud                                              |
+| `freematica_get_vigilancia_salud`                    | `GET /pprl/v1/vigilancia-salud/{idreg}`                      | Detalle de un registro de Vigilancia de la Salud                                                   |
+| `freematica_list_personal`                           | `GET /pers/v2/personal`                                      | Lista paginada de personas (RRHH)                                                                  |
+| `freematica_get_persona`                             | `GET /pers/v2/personal/{idreg}`                              | Detalle de una persona                                                                             |
+| `freematica_list_calendarios`                        | `GET /pgrl/v1/calendarios`                                   | Lista paginada de calendarios laborales                                                            |
+| `freematica_list_calendario_periodos`                | `GET /pgrl/v1/calendarios/{idreg}/periodos`                  | Periodos de un calendario laboral                                                                  |
+| `freematica_list_cartera_clientes`                   | `GET /pcar/v1/cartera-clientes`                              | Lista paginada de cartera de clientes (cobros, impagados)                                          |
+| `freematica_get_cartera_cliente`                     | `GET /pcar/v1/cartera-clientes/{idReg}`                      | Detalle de un documento de cartera                                                                 |
+| `freematica_list_facturas_cabecera`                  | `GET /pven/v1/facturas-cabecera`                             | Lista paginada de facturas de ventas (cabecera)                                                    |
+| `freematica_get_factura_cabecera`                    | `GET /pven/v1/facturas-cabecera/{idReg}`                     | Detalle de una factura de venta                                                                    |
+| `freematica_list_factura_lineas`                     | `GET /pven/v1/facturas-cabecera/{idReg}/lineas`              | Líneas de detalle de una factura de venta                                                          |
+| `freematica_list_factura_iva`                        | `GET /pven/v1/facturas-cabecera/{idReg}/iva`                 | Líneas de IVA de una factura de venta                                                              |
+| `freematica_list_factura_vencimientos`               | `GET /pven/v1/facturas-cabecera/{idReg}/vencimientos`        | Vencimientos de cobro de una factura de venta                                                      |
+| `freematica_list_facturas_compras`                   | `GET /pcom/v1/facturas-cabecera`                             | Lista paginada de facturas de compras                                                              |
+| `freematica_get_factura_compra`                      | `GET /pcom/v1/facturas-cabecera/{idReg}`                     | Detalle de una factura de compra                                                                   |
+| `freematica_list_proveedores`                        | `GET /pgrl/v2/proveedores`                                   | Lista paginada de proveedores                                                                      |
+| `freematica_get_proveedor`                           | `GET /pgrl/v2/proveedores/{idReg}`                           | Detalle de un proveedor                                                                            |
+| `freematica_list_localizaciones_cobro_clientes`      | `GET /pgrl/v2/localizaciones-cobro-clientes`                 | Localizaciones de cobro de clientes (SEPA, domiciliaciones)                                        |
+| `freematica_list_localizaciones_pago_proveedores`    | `GET /pgrl/v2/localizaciones-pago-proveedores`               | Localizaciones de pago de proveedores                                                              |
+| `freematica_list_localizaciones_servicio_clientes`   | `GET /pgrl/v2/localizaciones-servicio-clientes`              | Localizaciones de servicio de clientes                                                             |
+| `freematica_list_cuentas_contables`                  | `GET /pcon/v2/cuentas`                                       | Plan de cuentas contables (COD_CTA, COD_PLAN, etc.)                                                |
+| `freematica_list_cuentas_analiticas`                 | `GET /pcon/v2/cuentas-analiticas`                            | Catálogo de cuentas analíticas                                                                     |
+| `freematica_export_asientos`                         | `GET /pcon/v2/asientos`                                      | Exporta asientos contables de un período (CSV/JSON)                                                |
+
+## Filtros tipados (FIQL interno)
+
+El MCP expone **parámetros tipados con zod** al consumidor (Claude/LLM). Internamente, el cliente los traduce a sintaxis FIQL antes de llamar al API de Freemática. El consumidor nunca ve ni escribe FIQL.
+
+### Ejemplo
+
+```typescript
+// El LLM llama:
+freematica_list_cartera_clientes({
+  empresa: '0001',
+  fechaDocDesde: '2026-01-01',
+  estado: 'pendiente',
+});
+
+// El MCP construye internamente:
+// rquery=CARCL_EMP==0001;CARCL_FECDOC=ge=2026-01-01;CARCL_SITCAR==1
+```
+
+### Ventajas del patrón
+
+- El LLM solo necesita conocer los parámetros tipados con nombres semánticos en español.
+- La complejidad de la sintaxis FIQL queda encapsulada en el adapter interno (`src/clients/fiql-builder.ts`).
+- Los errores de validación son claros: "empresa debe ser string", no "FIQL parse error".
+- Los filtros booleanos (`soloImpagados: true`) se traducen automáticamente al operador FIQL correcto.
+
+### Más ejemplos
+
+```typescript
+// Facturas pendientes de traspaso a contabilidad:
+freematica_list_facturas_cabecera({
+  empresa: '0001',
+  traspasadoContabilidad: false,
+});
+// → rquery=FAC_CODEMP==0001;FAC_TRASP_CONTAB==0
+
+// Proveedores activos que contienen "GARCIA" en el nombre:
+freematica_list_proveedores({
+  nombre: 'GARCIA',
+  activo: true,
+});
+// → rquery=NOMBRE_PRO=lk=GARCIA;FECHA_BAJA==null
+```
 
 ## Modos de transporte
 
@@ -44,10 +98,10 @@ El binario soporta dos transportes seleccionables. La selección sigue este orde
 2. Variable de entorno: `MCP_TRANSPORT=<modo>`
 3. Default: `stdio`
 
-| Modo | Cuándo usar | Comando |
-|---|---|---|
-| `stdio` | Claude Desktop, Claude Code, ejecución local | `mcp-freematica` (default) o `mcp-freematica --transport=stdio` |
-| `http`  | Nubiia, deploy como servicio web | `mcp-freematica --transport=http` o `MCP_TRANSPORT=http mcp-freematica` |
+| Modo    | Cuándo usar                                  | Comando                                                                 |
+| ------- | -------------------------------------------- | ----------------------------------------------------------------------- |
+| `stdio` | Claude Desktop, Claude Code, ejecución local | `mcp-freematica` (default) o `mcp-freematica --transport=stdio`         |
+| `http`  | Nubiia, deploy como servicio web             | `mcp-freematica --transport=http` o `MCP_TRANSPORT=http mcp-freematica` |
 
 ### Configurar en Claude Desktop (stdio)
 
@@ -71,7 +125,7 @@ Edita `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-Reinicia Claude Desktop y la tool `freematica_list_materiales_asignados_servicios` aparecerá disponible.
+Reinicia Claude Desktop y las tools de `freematica_*` aparecerán disponibles.
 
 ### Configurar en Claude Code (stdio)
 
@@ -86,43 +140,43 @@ claude mcp add freematica npx -y @serlimar/mcp-freematica \
 
 ### Configurar en Nubiia (HTTP)
 
-Setear `MCP_TRANSPORT=http` en las variables de entorno del proceso, junto a las 5 `FREEMATICA_AUTH_*`. Resto de variables (puerto, origins) opcionales — ver tabla en "Configuración".
+Setear `MCP_TRANSPORT=http` en las variables de entorno del proceso, junto a las 5 `FREEMATICA_AUTH_*`. Resto de variables (puerto, origins) opcionales — ver tabla en "Configuración avanzada".
 
 ## Datos maestros disponibles
 
 La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de los 24 valores siguientes. Cada uno mapea a un endpoint específico de Freemática.
 
-| `catalog` | Endpoint Freemática | Contenido |
-|---|---|---|
-| **Tipos / clasificaciones** | | |
-| `tipos-contrato` | `GET /ppre/v2/tipos-contrato` | Tipos de contrato comercial |
-| `tipo-instalacion` | `GET /ppre/v1/tipo-instalacion` | Tipos de instalación física |
-| `clases-servicios` | `GET /pvss/v1/clases-servicios` | Clases de servicio operativas |
-| `tipos-casos` | `GET /pcrm/v2/tipos-casos` | Tipos de caso CRM |
-| `subtipos-casos` | `GET /pcrm/v2/subtipos-casos` | Subtipos de caso CRM |
-| `tipos-oportunidad-negocio` | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial |
-| `tipos-impuestos` | `GET /pgrl/v2/tipos-impuestos` | IVA, IRPF, retenciones |
-| `naturalezas-abono` | `GET /pven/v1/naturalezas-abono` | Naturalezas de abono comercial |
-| `incidencecode` | `GET /pvss/v2/incidencecode` | Códigos de incidencia en servicios |
-| `claves-facturacion` | `GET /pvss/v2/claves-facturacion` | Claves de facturación de servicios |
-| **Geográficos** | | |
-| `paises` | `GET /pgrl/v1/paises` | Países |
-| `nacionalidades` | `GET /pgrl/v1/nacionalidades` | Nacionalidades |
-| `provincias` | `GET /pgrl/v1/provincias` | Provincias |
-| `poblaciones` | `GET /pgrl/v2/poblaciones` | Municipios |
-| **Organizativos** | | |
-| `empresas` | `GET /pgrl/v1/empresas` | Empresas |
-| `delegaciones` | `GET /pgrl/v1/delegaciones/agrupcod` | Delegaciones (listado global) |
-| `lineas-negocio` | `GET /pgrl/v2/lineas-negocio` | Líneas de negocio |
-| `cargos-clientes` | `GET /pgrl/v2/cargos-clientes` | Cargos de contactos |
-| `calendarios` | `GET /pgrl/v1/calendarios` | Calendarios laborales |
-| `series` | `GET /pgrl/v2/series` | Series de numeración de documentos |
-| **Inventario** | | |
-| `familias` | `GET /part/v1/familias` | Familias de artículos |
-| `subfamilias` | `GET /part/v1/subfamilias` | Subfamilias |
-| `lineas` | `GET /part/v1/lineas` | Líneas de artículos |
-| **Financiero** | | |
-| `bancos` | `GET /pgrl/v2/bancos` | Entidades bancarias |
+| `catalog`                   | Endpoint Freemática                      | Contenido                          |
+| --------------------------- | ---------------------------------------- | ---------------------------------- |
+| **Tipos / clasificaciones** |                                          |                                    |
+| `tipos-contrato`            | `GET /ppre/v2/tipos-contrato`            | Tipos de contrato comercial        |
+| `tipo-instalacion`          | `GET /ppre/v1/tipo-instalacion`          | Tipos de instalación física        |
+| `clases-servicios`          | `GET /pvss/v1/clases-servicios`          | Clases de servicio operativas      |
+| `tipos-casos`               | `GET /pcrm/v2/tipos-casos`               | Tipos de caso CRM                  |
+| `subtipos-casos`            | `GET /pcrm/v2/subtipos-casos`            | Subtipos de caso CRM               |
+| `tipos-oportunidad-negocio` | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial     |
+| `tipos-impuestos`           | `GET /pgrl/v2/tipos-impuestos`           | IVA, IRPF, retenciones             |
+| `naturalezas-abono`         | `GET /pven/v1/naturalezas-abono`         | Naturalezas de abono comercial     |
+| `incidencecode`             | `GET /pvss/v2/incidencecode`             | Códigos de incidencia en servicios |
+| `claves-facturacion`        | `GET /pvss/v2/claves-facturacion`        | Claves de facturación de servicios |
+| **Geográficos**             |                                          |                                    |
+| `paises`                    | `GET /pgrl/v1/paises`                    | Países                             |
+| `nacionalidades`            | `GET /pgrl/v1/nacionalidades`            | Nacionalidades                     |
+| `provincias`                | `GET /pgrl/v1/provincias`                | Provincias                         |
+| `poblaciones`               | `GET /pgrl/v2/poblaciones`               | Municipios                         |
+| **Organizativos**           |                                          |                                    |
+| `empresas`                  | `GET /pgrl/v1/empresas`                  | Empresas                           |
+| `delegaciones`              | `GET /pgrl/v1/delegaciones/agrupcod`     | Delegaciones (listado global)      |
+| `lineas-negocio`            | `GET /pgrl/v2/lineas-negocio`            | Líneas de negocio                  |
+| `cargos-clientes`           | `GET /pgrl/v2/cargos-clientes`           | Cargos de contactos                |
+| `calendarios`               | `GET /pgrl/v1/calendarios`               | Calendarios laborales              |
+| `series`                    | `GET /pgrl/v2/series`                    | Series de numeración de documentos |
+| **Inventario**              |                                          |                                    |
+| `familias`                  | `GET /part/v1/familias`                  | Familias de artículos              |
+| `subfamilias`               | `GET /part/v1/subfamilias`               | Subfamilias                        |
+| `lineas`                    | `GET /part/v1/lineas`                    | Líneas de artículos                |
+| **Financiero**              |                                          |                                    |
+| `bancos`                    | `GET /pgrl/v2/bancos`                    | Entidades bancarias                |
 
 Respuesta: `{ catalog, items, count, total }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
 
@@ -135,7 +189,7 @@ Todas las tools `freematica_list_*` aceptan dos parámetros opcionales:
 
 La respuesta incluye siempre `total` (total de elementos en el dataset) para que el LLM pueda iterar páginas.
 
-> ⚠️ El parámetro está bloqueado en `page ≥ 1` porque el API real de Freemática trata `page=0` como "devuelve TODO el dataset" (varios MB en endpoints grandes como `clientes`). Verificado empíricamente.
+> El parámetro está bloqueado en `page >= 1` porque el API real de Freemática trata `page=0` como "devuelve TODO el dataset" (varios MB en endpoints grandes como `clientes`). Verificado empíricamente.
 
 ## IDs opacos en endpoints de detalle
 
@@ -144,6 +198,7 @@ Las tools `freematica_get_*` requieren un `id` que **NO** es el código natural 
 Si pasas un código natural, el API responde `not_found`.
 
 Patrón típico de uso desde el LLM:
+
 1. `freematica_list_clientes(page=1, items=20)` → encontrar el cliente que interesa.
 2. Tomar el campo `idReg` de ese item.
 3. `freematica_get_cliente(id="<idReg>")` → detalle completo.
@@ -152,19 +207,32 @@ Patrón típico de uso desde el LLM:
 
 El servidor lee toda su configuración de **variables de entorno** al arrancar. Si falta alguna obligatoria, el proceso muere con un mensaje claro listando qué falta — no acepta requests hasta que la configuración sea válida.
 
-### Variables de entorno
+### Variables de entorno obligatorias
 
-| Variable | Obligatoria | Default | Descripción |
-|---|---|---|---|
-| `FREEMATICA_AUTH_TOKEN` | ✅ | — | Header `x-auth-token` para autenticar con la API de Freemática. |
-| `FREEMATICA_AUTH_COMPANY` | ✅ | — | Header `x-auth-company`. Identifica la empresa dentro del API. |
-| `FREEMATICA_AUTH_ORGANIZATION` | ✅ | — | Header `x-auth-organization`. Identifica la organización. |
-| `FREEMATICA_AUTH_APP` | ✅ | — | Header `x-auth-app`. Identifica la aplicación que consume (p.ej. `pvss`). |
-| `FREEMATICA_AUTH_SESSION` | ✅ | — | Header `x-auth-session`. Identifica la sesión activa. |
-| `FREEMATICA_BASE_URL` | ❌ | `https://api-p01.clientservicepanel.com/restsat/api` | Base URL del API de Freemática. Cambiar solo si Freemática cambia el host o se usa un entorno alternativo. |
-| `MCP_TRANSPORT` | ❌ | `stdio` | Transporte: `stdio` (default, para Claude Desktop/Code) o `http` (para Nubiia). Equivale al flag `--transport=`. |
-| `MCP_PORT` | ❌ (solo HTTP) | `3000` | Puerto TCP donde el servidor MCP expone `/mcp` y `/health`. Ignorado en modo stdio. |
-| `MCP_ALLOWED_ORIGINS` | ❌ (solo HTTP) | `*` | CORS: lista de orígenes permitidos separados por coma, o `*` para todos. En producción restringir al dominio de Nubiia. Ignorado en modo stdio. |
+| Variable                       | Descripción                                                               |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `FREEMATICA_AUTH_TOKEN`        | Header `x-auth-token` para autenticar con la API de Freemática.           |
+| `FREEMATICA_AUTH_COMPANY`      | Header `x-auth-company`. Identifica la empresa dentro del API.            |
+| `FREEMATICA_AUTH_ORGANIZATION` | Header `x-auth-organization`. Identifica la organización.                 |
+| `FREEMATICA_AUTH_APP`          | Header `x-auth-app`. Identifica la aplicación que consume (p.ej. `pvss`). |
+| `FREEMATICA_AUTH_SESSION`      | Header `x-auth-session`. Identifica la sesión activa.                     |
+
+### Configuración avanzada
+
+Variables de entorno opcionales para tuning de comportamiento en producción:
+
+| Variable                                | Default                                              | Descripción                                                                                                                                     |
+| --------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FREEMATICA_BASE_URL`                   | `https://api-p01.clientservicepanel.com/restsat/api` | Base URL del API de Freemática. Cambiar solo si Freemática cambia el host o se usa un entorno alternativo.                                      |
+| `FREEMATICA_TIMEOUT_MS`                 | `30000`                                              | Timeout por petición en milisegundos. Si el upstream no responde en este tiempo, el request se cancela con `network_error`.                     |
+| `FREEMATICA_MAX_RETRIES`                | `3`                                                  | Número máximo de reintentos para errores 5xx y errores de red. Los errores 4xx nunca se reintentan.                                             |
+| `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD`  | `5`                                                  | Número de operaciones lógicas fallidas consecutivas (post-retry-exhaustion) necesarias para abrir el circuit breaker.                           |
+| `FREEMATICA_CIRCUIT_BREAKER_TIMEOUT_MS` | `30000`                                              | Tiempo en ms que el circuit breaker permanece abierto antes de pasar a half-open.                                                               |
+| `FREEMATICA_MAX_RESPONSE_SIZE_MB`       | `10`                                                 | Tamaño máximo de respuesta aceptada del upstream en MB. Respuestas mayores se truncan con aviso en el campo `truncated`.                        |
+| `MCP_TRANSPORT`                         | `stdio`                                              | Transporte: `stdio` (para Claude Desktop/Code) o `http` (para Nubiia). Equivale al flag `--transport=`.                                         |
+| `MCP_PORT`                              | `3000`                                               | Puerto TCP donde el servidor MCP expone `/mcp` y `/health`. Ignorado en modo stdio.                                                             |
+| `MCP_ALLOWED_ORIGINS`                   | `*`                                                  | CORS: lista de orígenes permitidos separados por coma, o `*` para todos. En producción restringir al dominio de Nubiia. Ignorado en modo stdio. |
+| `LOG_LEVEL`                             | `info`                                               | Nivel de log para pino: `fatal`, `error`, `warn`, `info`, `debug`, `trace`. En producción usar `info`. En desarrollo usar `debug`.              |
 
 ### De dónde salen las credenciales `x-auth-*`
 
@@ -172,14 +240,14 @@ Las 5 credenciales `x-auth-*` son **preexistentes** — el Postman collection de
 
 - Pide los 5 valores al responsable técnico de Freemática (o usa los mismos que ya emplea `slm-integration` si están en el gestor de secretos).
 - **NO comitees credenciales reales**. El repositorio tiene `.env.*` en `.gitignore` (excepto `.env.example`).
-- Si las credenciales caducan, el MCP devolverá `invalid_token` en todas las llamadas. Renovarlas implica reiniciar el proceso (no hay refresh automático en v0.1.0).
+- Si las credenciales caducan, el MCP devolverá `invalid_token` en todas las llamadas. Renovarlas implica reiniciar el proceso (no hay refresh automático).
 
 ### Configuración en Nubiia (producción)
 
 Nubiia despliega el servidor MCP y se encarga de inyectar las variables de entorno. En el panel de Nubiia:
 
 1. Crea un MCP server apuntando a la URL del contenedor desplegado (por ejemplo `https://freematica-mcp.serlimar.internal/mcp`).
-2. Añade las 8 variables de entorno listadas arriba (5 obligatorias + 3 opcionales) en la sección de secretos.
+2. Añade las variables de entorno listadas arriba en la sección de secretos.
 3. Recomendado: setear `MCP_ALLOWED_ORIGINS` al dominio exacto desde el que Claude/Nubiia conecta, no `*`.
 4. Verifica con el endpoint `GET /health` que el servidor está vivo antes de habilitar el MCP en Claude.
 
@@ -208,48 +276,84 @@ node --env-file=.env --import tsx src/index.ts
 ### Verificación de la configuración
 
 1. **Sin env vars** — el proceso debe morir inmediatamente con un mensaje listando las 5 variables que faltan:
+
    ```bash
    node dist/index.js
-   # [freematica-mcp] FATAL: [freematica-mcp] Invalid configuration:
+   # [freematica-mcp] FATAL: Invalid configuration:
    #   - FREEMATICA_AUTH_TOKEN: Required
    #   - FREEMATICA_AUTH_COMPANY: Required
    #   ...
    ```
 
-2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.4.1", "sessions": 0 }`:
+2. **Con env vars válidas (modo HTTP)** — arranca con `MCP_TRANSPORT=http` y el proceso queda escuchando; `/health` devuelve `{ "status": "ok", "version": "0.5.0", "sessions": 0 }`:
    ```bash
    MCP_TRANSPORT=http node dist/index.js &
    curl http://localhost:3000/health
    ```
    En modo stdio (default) no hay endpoints HTTP — el server escucha JSON-RPC por stdin/stdout.
 
-3. **Llamada real al API de Freemática** — inicializa sesión MCP y llama la única tool disponible. Si las credenciales son correctas devolverá `items` + `count`; si no, un error con `code: "invalid_token"` o similar:
-   ```bash
-   # 1) Inicializar y capturar el Mcp-Session-Id de los headers de respuesta
-   curl -i -X POST http://localhost:3000/mcp \
-     -H "Content-Type: application/json" \
-     -H "Accept: application/json, text/event-stream" \
-     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"smoke","version":"1.0"}}}'
+## Troubleshooting
 
-   # 2) Llamar la tool (sustituye <SESSION_ID> por el header devuelto)
-   curl -X POST http://localhost:3000/mcp \
-     -H "Content-Type: application/json" \
-     -H "Accept: application/json, text/event-stream" \
-     -H "Mcp-Session-Id: <SESSION_ID>" \
-     -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"freematica_list_materiales_asignados_servicios","arguments":{}}}'
-   ```
+### `invalid_token` en todas las llamadas
+
+Las credenciales `x-auth-*` han caducado o son incorrectas. Pasos:
+
+1. Verificar que las 5 variables `FREEMATICA_AUTH_*` están seteadas correctamente.
+2. Contactar al responsable técnico de Freemática para renovar el token/sesión.
+3. Reiniciar el proceso del MCP tras actualizar las variables (el cliente no refresca credenciales en caliente).
+
+### `network_error` — upstream Freemática caído
+
+El API de Freemática no está respondiendo. Puede ser:
+
+- Mantenimiento programado del upstream.
+- Circuit breaker activo tras varios fallos consecutivos (ver logs: `Circuit breaker opened`).
+- Problema de red entre el servidor y `api-p01.clientservicepanel.com`.
+
+Pasos:
+
+1. Verificar en los logs si hay `circuitBreaker: "open"` — si es así, esperar `FREEMATICA_CIRCUIT_BREAKER_TIMEOUT_MS` ms (default 30s) para que pase a half-open.
+2. Verificar conectividad al upstream: `curl https://api-p01.clientservicepanel.com/`.
+3. Aumentar `FREEMATICA_TIMEOUT_MS` si el upstream es lento (default 30s puede ser insuficiente en algunas redes).
+
+### `rate_limit_exceeded` — throttling de Freemática
+
+Freemática devuelve 429. El MCP reintenta automáticamente honrando el header `Retry-After` si está presente. Si el problema persiste:
+
+1. Reducir la frecuencia de llamadas desde Claude.
+2. Aumentar `FREEMATICA_MAX_RETRIES` (default 3) si los reintentos no son suficientes.
+3. Contactar a Freemática para revisar los límites de rate asignados a la cuenta.
+
+### `Response truncated` en `freematica_export_asientos`
+
+El endpoint de exportación de asientos devuelve demasiados registros para un rango de fechas amplio. Pasos:
+
+1. Usar un rango de fechas más corto: en lugar de un trimestre, exportar mes a mes.
+2. Añadir filtros adicionales: filtrar por empresa, delegación o cuenta específica.
+3. Si el volumen esperado es grande por diseño, aumentar `FREEMATICA_MAX_RESPONSE_SIZE_MB` (default 10 MB).
+
+### El pre-commit hook falla al hacer `git commit`
+
+Lint o formato detectaron errores en los ficheros staged. Pasos:
+
+1. Revisar el output del hook: indicará qué fichero y qué regla falló.
+2. Ejecutar `npm run lint:fix` y `npm run format` para corregir automáticamente.
+3. Hacer `git add` de los ficheros corregidos antes de volver a intentar el commit.
 
 ## Desarrollo
 
 ```bash
 npm install
-npm run dev        # arranca con tsx (hot reload)
-npm test           # ejecuta vitest una vez
-npm run test:watch # watcher
+npm run dev           # arranca con tsx (hot reload)
+npm test              # ejecuta vitest una vez
+npm run test:watch    # watcher
+npm run test:coverage # coverage report
 npm run lint
+npm run lint:fix
+npm run format
 npm run typecheck
-npm run build      # compila a dist/
-npm start          # ejecuta dist/index.js
+npm run build         # compila a dist/
+npm start             # ejecuta dist/index.js
 ```
 
 ## Testing
@@ -268,6 +372,7 @@ npm test -- tests/fiql-builder.property.test.ts
 ```
 
 Los tests están en `tests/` organizados por tipo:
+
 - `tests/clients/` — tests de los clientes HTTP (con nock)
 - `tests/schemas/` — tests de los schemas Zod
 - `tests/tools/` — tests de los handlers MCP (unit + integration)
@@ -276,6 +381,7 @@ Los tests están en `tests/` organizados por tipo:
 - `tests/coverage-gaps.test.ts` — cobertura específica de ramas no cubiertas
 
 **Coverage thresholds** (configurados en `vitest.config.ts`):
+
 - Global statements: ≥85%
 - src/clients/: ≥90%
 - src/schemas/: ≥90%
@@ -289,12 +395,12 @@ Ver instrucciones detalladas en [docs/testing-e2e.md](docs/testing-e2e.md).
 
 ## Endpoints HTTP
 
-| Método | Path | Descripción |
-|---|---|---|
-| POST | `/mcp` | JSON-RPC del MCP (envía `initialize` la primera vez) |
-| GET | `/mcp` | Stream SSE (requiere `Mcp-Session-Id`) |
-| DELETE | `/mcp` | Terminar sesión |
-| GET | `/health` | Healthcheck |
+| Método | Path      | Descripción                                          |
+| ------ | --------- | ---------------------------------------------------- |
+| POST   | `/mcp`    | JSON-RPC del MCP (envía `initialize` la primera vez) |
+| GET    | `/mcp`    | Stream SSE (requiere `Mcp-Session-Id`)               |
+| DELETE | `/mcp`    | Terminar sesión                                      |
+| GET    | `/health` | Healthcheck                                          |
 
 ## Cómo añadir una nueva operación
 
@@ -353,8 +459,8 @@ node dist/index.js
 2. Commit + merge a `main`.
 3. Crear y empujar un tag con prefijo `v`:
    ```bash
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.5.0
+   git push origin v0.5.0
    ```
 4. El workflow `.github/workflows/publish.yml` se dispara, valida (lint + typecheck + test + build) y publica en GitHub Packages.
 
@@ -369,6 +475,7 @@ node dist/index.js
 - v0.4.0 spec: `docs/superpowers/specs/2026-05-20-commercial-tools-design.md` (commercial tools + envelope unwrap fix)
 - v0.4.0 plan: `docs/superpowers/plans/2026-05-20-commercial-tools.md`
 - v0.4.1: hotfix de catálogos `delegaciones` (endpoint cambiado a /agrupcod) y `tipos-marcajes` (eliminado — endpoint roto). Ver CHANGELOG.
+- ADRs de arquitectura: `docs/adr/` (ver índice en ese directorio)
 - API: `apidocs/Freematica API - Complete Collection.postman_collection.json`
 - CHANGELOG: `CHANGELOG.md`
 
