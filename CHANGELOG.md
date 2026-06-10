@@ -2,6 +2,25 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.5.0] — 2026-06-10
+
+### Release de la épica TD-116 — Ampliación dominio financiero/PRL + hardening
+
+Promueve `0.5.0-rc.2` a versión estable tras integrar las 8 stories de la épica TD-116:
+
+- **TD-117** Foundation: FIQL builder + HardenedBaseClient (timeout, retry+backoff, circuit breaker, 429 honor Retry-After) + logging estructurado pino con sanitización de credenciales.
+- **TD-118** Tools de cartera clientes + facturas de ventas (7 tools).
+- **TD-119** Tools de facturas de compras + proveedores + localizaciones (7 tools). Incluye fix funcional crítico: `FCC_FCHFAC_HASTA` reemplazado por composición AND con el campo real `FCC_FCHFAC`.
+- **TD-120** Tools de contabilidad (cuentas, cuentas analíticas, export-asientos con protección de tamaño 10MB).
+- **TD-121** Tools de PRL + personal + calendarios (7 tools).
+- **TD-122** 6 nuevos catálogos en master-data (18 → 24).
+- **TD-123** Coverage global 99.4% (clients 98.12%, schemas 99.68%, tools 100%). Property-based tests del FIQL builder. 595 tests totales.
+- **TD-124** Documentación completa (README ampliado, 3 ADRs, examples ejecutables) + CI/CD hardening (GitHub Actions, Dependabot, CodeQL) + pre-commit husky/lint-staged + Dockerfile production-ready + TypeScript strict flags (`noImplicitOverride`, `noFallthroughCasesInSwitch`).
+
+**Total tools registradas:** 25 (vs 8 en v0.4.1).
+
+---
+
 ## [0.5.0-rc.2] — 2026-06-09
 
 ### Testing gap + property-based tests + coverage (TD-123)
