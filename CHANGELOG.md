@@ -4,7 +4,28 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 ## [0.5.0-rc.2] — 2026-06-09
 
-<<<<<<< HEAD
+### Testing gap + property-based tests + coverage (TD-123)
+
+#### Tests añadidos
+- `tests/pagination-edge-cases.test.ts`: edge cases del adapter de paginación (página vacía, total=0, items=null, page más allá del último).
+- `tests/coverage-gaps.test.ts`: tests para los métodos `post`, `put`, `delete` del `BaseClient` y para las ramas `catch (err instanceof Error)` genéricas de todas las tools.
+- `tests/fiql-builder.property.test.ts`: properties adicionales — idempotencia de escape, presencia literal de keys, separadores AND/OR en composiciones, operadores en output, safety con inputs maliciosos, manejo de `in` con array vacío.
+- `docs/testing-e2e.md`: documentación manual para verificación con MCP Inspector.
+
+#### Coverage
+- Global statements: **99.4%** (antes 95.36%)
+- `src/clients/`: **98.12%** statements / 87.76% branch
+- `src/schemas/`: **99.68%** statements / 100% branch
+- `src/tools/`: **100%** statements / 70.37% branch
+
+#### Total tests
+- **595** tests (antes 548), todos en verde.
+
+#### Limpieza
+- Eliminados marcadores residuales de conflict en `CHANGELOG.md` provenientes de merges anteriores de la épica TD-116.
+
+---
+
 ### Fixes post code-review (TD-121)
 
 #### Fixed
@@ -19,7 +40,6 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 - Tests nuevos: +4 (3 client-level + 1 tool-level fecha range)
 - Total: 303 tests, todos en verde
-=======
 ### Fixed — Post code-review (TD-120)
 
 - **Version mismatch** (`package.json`, `src/server.ts`, `src/index.ts`): alineadas las tres referencias de versión a `0.5.0-rc.2`. El log de stdio también actualizado de `v0.4.1` a `v0.5.0-rc.2`.
@@ -29,13 +49,11 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 - **Asunción `borrador` FIQL sin documentar** (`src/clients/freematica-client.ts`): añadido JSDoc prominente en el bloque `if (opts.borrador !== undefined)` explicando que `ASI_BORR != ''` / `ASI_BORR == ''` es la convención empíricamente observada para campos nullable en Freemática FIQL, no verificada contra la API real. Añadido TODO para verificación futura.
 
 - **Respuesta truncada no incluía campo `total`** (`src/tools/contabilidad.ts`): el payload del branch truncado omitía `total`, impidiendo que el cliente supiera cuántos registros existen en la API. Añadido `total: result.total` al payload. Nuevo test `respuesta truncada incluye campo total con el total real de la API` verifica el comportamiento.
->>>>>>> origin/development
 
 ---
 
 ## [0.5.0] — 2026-06-09
 
-<<<<<<< HEAD
 ### PRL + Personal + Calendarios (TD-121)
 
 #### Added
@@ -67,7 +85,6 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 - Total: 299 tests, todos en verde
 - Coverage de archivos nuevos: 100% statements/lines
-=======
 ### Added — Contabilidad (TD-120)
 
 #### Tools nuevas
@@ -234,7 +251,6 @@ Total de catálogos: 18 → **24**.
 | `src/tools/cartera.ts` | 100% | 100% | 100% |
 | `src/tools/facturas-ventas.ts` | 100% | 100% | 100% |
 | `src/clients/freematica-client.ts` | 100% | 100% | 100% |
->>>>>>> origin/development
 
 ---
 
