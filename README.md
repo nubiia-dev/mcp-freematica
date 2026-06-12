@@ -48,6 +48,11 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 | `freematica_export_asientos`                         | `GET /pcon/v2/asientos`                                      | Exporta asientos contables de un período (CSV/JSON)                                                |
 | `freematica_list_pedidos_compra`                     | `GET /pcmp/v2/pedidos`                                       | Lista paginada de pedidos de compra (filtros nativos + FIQL + estado enum)                         |
 | `freematica_get_pedido_compra`                       | `GET /pcmp/v2/pedidos/{idReg}`                               | Detalle de un pedido de compra (cabecera + proveedor + líneas)                                     |
+| `freematica_list_albaranes_ventas`                   | `GET /pven/v2/albaranes-ventas`                              | Lista paginada de albaranes de ventas (filtros todos nativos, empresa requerido)                   |
+| `freematica_get_albaran_venta`                       | `GET /pven/v2/albaranes-ventas/{idReg}`                      | Detalle de un albarán de venta                                                                     |
+| `freematica_list_albaranes_factura`                  | `GET /pven/v2/albaranes-facturas`                            | Lista paginada de vinculaciones albarán↔factura (idReg nativo + FIQL)                              |
+| `freematica_get_albaran_factura`                     | `GET /pven/v2/albaranes-facturas/{idReg}`                    | Detalle de una vinculación albarán-factura                                                         |
+| `freematica_list_resultados_facturacion`             | `GET /pvss/v1/facturacion-resultados`                        | Resultados del proceso batch de facturación automática de vigilancia (FIQL)                        |
 
 ## Filtros tipados (FIQL interno)
 

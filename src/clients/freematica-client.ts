@@ -1096,6 +1096,210 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Albaranes de ventas (v0.5.1 / TD-155)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de albaranes de ventas con filtros nativos del endpoint.
+   *
+   * Endpoint: GET /pven/v2/albaranes-ventas
+   *
+   * El endpoint usa exclusivamente query params nativos para los filtros
+   * principales (no FIQL). `codEmpresa` es obligatorio según el spec OpenAPI.
+   *
+   * Mapeo de parámetros nativos:
+   * | opts.empresa       | codEmpresa     |
+   * | opts.delegacion    | codDelegacion  |
+   * | opts.codCliente    | codCliente     |
+   * | opts.codDocumento  | codDocumento   |
+   * | opts.fechaDesde    | desdeFecha     |
+   * | opts.fechaHasta    | hastaFecha     |
+   * | opts.order         | order          |
+   *
+   * @param opts - Opciones de paginación y filtros nativos del endpoint.
+   * @returns Lista paginada de albaranes de ventas.
+   */
+  async listAlbaranesVentas(opts: {
+    page?: number;
+    items?: number;
+    empresa: string;
+    delegacion?: string;
+    codCliente?: string;
+    codDocumento?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+    order?: string;
+  }): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pven/v2/albaranes-ventas');
+
+    // Paginación
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    // Query params nativos del endpoint (no FIQL)
+    url.searchParams.set('codEmpresa', opts.empresa);
+    if (opts.delegacion !== undefined) url.searchParams.set('codDelegacion', opts.delegacion);
+    if (opts.codCliente !== undefined) url.searchParams.set('codCliente', opts.codCliente);
+    if (opts.codDocumento !== undefined) url.searchParams.set('codDocumento', opts.codDocumento);
+    if (opts.fechaDesde !== undefined) url.searchParams.set('desdeFecha', opts.fechaDesde);
+    if (opts.fechaHasta !== undefined) url.searchParams.set('hastaFecha', opts.fechaHasta);
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de un albarán de venta por `idReg` opaco.
+   *
+   * Endpoint: GET /pven/v2/albaranes-ventas/{idReg}
+   *
+   * @param idReg - Identificador opaco (base64) del albarán.
+   * @returns Objeto completo del albarán de venta.
+   */
+  async getAlbaranVenta(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pven/v2/albaranes-ventas/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Albaranes-facturas (v0.5.1 / TD-155)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de vinculaciones albarán↔factura.
+   *
+   * Endpoint: GET /pven/v2/albaranes-facturas
+   *
+   * El filtro `idReg` es un query param nativo. Los filtros empresa, serie,
+   * numFactura y codCliente se envían como FIQL en el parámetro `rQuery`.
+   *
+   * Mapeo de filtros FIQL:
+   * | opts.empresa    | FVCA_CODEMP   |
+   * | opts.serie      | FVCA_SERIEFRA |
+   * | opts.numFactura | FVCA_NUMFRA   |
+   * | opts.codCliente | FVCA_CODCLI   |
+   *
+   * @param opts - Opciones de paginación y filtros.
+   * @returns Lista paginada de vinculaciones albarán-factura.
+   */
+  async listAlbaranesFactura(opts: {
+    page?: number;
+    items?: number;
+    idReg?: string;
+    empresa?: string;
+    serie?: string;
+    numFactura?: string;
+    codCliente?: string;
+  }): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pven/v2/albaranes-facturas');
+
+    // Paginación
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    // idReg como query param nativo
+    if (opts.idReg !== undefined) url.searchParams.set('idReg', opts.idReg);
+
+    // Filtros FIQL
+    const fiqlGroup: Record<string, unknown> = {};
+    if (opts.empresa !== undefined) fiqlGroup['FVCA_CODEMP'] = opts.empresa;
+    if (opts.serie !== undefined) fiqlGroup['FVCA_SERIEFRA'] = opts.serie;
+    if (opts.numFactura !== undefined) fiqlGroup['FVCA_NUMFRA'] = opts.numFactura;
+    if (opts.codCliente !== undefined) fiqlGroup['FVCA_CODCLI'] = opts.codCliente;
+
+    appendRquery(url, buildFiql(fiqlGroup as Parameters<typeof buildFiql>[0]));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de una vinculación albarán↔factura por `idReg` opaco.
+   *
+   * Endpoint: GET /pven/v2/albaranes-facturas/{idReg}
+   *
+   * @param idReg - Identificador opaco (base64) del registro de vinculación.
+   * @returns Objeto completo de la vinculación albarán-factura.
+   */
+  async getAlbaranFactura(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pven/v2/albaranes-facturas/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Resultados de facturación — vigilancia (v0.5.1 / TD-155)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de resultados del proceso batch de facturación de vigilancia.
+   *
+   * Endpoint: GET /pvss/v1/facturacion-resultados
+   *
+   * Todos los filtros se envían como FIQL en el parámetro `rquery`.
+   * El parámetro `order` es nativo del endpoint.
+   *
+   * Mapeo de filtros FIQL:
+   * | opts.empresa    | FACT_EMP     |
+   * | opts.delegacion | FACT_DELEG   |
+   * | opts.codCliente | FACT_COD_CLI |
+   * | opts.calendario | FACT_CAL     |
+   * | opts.mes        | FACT_MES     |
+   * | opts.contrato   | FACT_CTRT    |
+   * | opts.servicio   | FACT_SERV    |
+   * | opts.tipoFac    | FACT_TIPFAC  |
+   * | opts.traspasado | FACT_TRASP   |
+   *
+   * @param opts - Opciones de paginación y filtros FIQL.
+   * @returns Lista paginada de resultados de facturación.
+   */
+  async listResultadosFacturacion(opts: {
+    page?: number;
+    items?: number;
+    empresa?: string;
+    delegacion?: string;
+    codCliente?: string;
+    calendario?: string;
+    mes?: number;
+    contrato?: string;
+    servicio?: string;
+    tipoFac?: string;
+    traspasado?: string;
+    order?: string;
+  }): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pvss/v1/facturacion-resultados');
+
+    // Paginación
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    // order es param nativo
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+
+    // Filtros FIQL
+    const fiqlGroup: Record<string, unknown> = {};
+    if (opts.empresa !== undefined) fiqlGroup['FACT_EMP'] = opts.empresa;
+    if (opts.delegacion !== undefined) fiqlGroup['FACT_DELEG'] = opts.delegacion;
+    if (opts.codCliente !== undefined) fiqlGroup['FACT_COD_CLI'] = opts.codCliente;
+    if (opts.calendario !== undefined) fiqlGroup['FACT_CAL'] = opts.calendario;
+    if (opts.mes !== undefined) fiqlGroup['FACT_MES'] = String(opts.mes);
+    if (opts.contrato !== undefined) fiqlGroup['FACT_CTRT'] = opts.contrato;
+    if (opts.servicio !== undefined) fiqlGroup['FACT_SERV'] = opts.servicio;
+    if (opts.tipoFac !== undefined) fiqlGroup['FACT_TIPFAC'] = opts.tipoFac;
+    if (opts.traspasado !== undefined) fiqlGroup['FACT_TRASP'] = opts.traspasado;
+
+    appendRquery(url, buildFiql(fiqlGroup as Parameters<typeof buildFiql>[0]));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------
 
