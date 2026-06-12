@@ -4,6 +4,19 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 
 ## [0.5.1] — 2026-06-09
 
+### Added — Tools de facturas electrónicas (TD-154)
+
+- `freematica_list_facturas_electronicas` — list facturas Facturae/EDICOM via `GET /pven/v1/facturas`
+- `freematica_get_factura_electronica` — detalle por idReg
+- `freematica_get_factura_documento` — devuelve VoFacturasDocumento (JSON, no binario). Aplica truncate si excede `FREEMATICA_MAX_RESPONSE_SIZE_MB`
+- `freematica_get_factura_log` — log de eventos (auditoría)
+- `freematica_get_edicom_info` — estado integración EDICOM (contiene credenciales — usar con precaución)
+- `freematica_list_facturas_documentos` — descarga masiva con guardrail de tamaño
+
+Tests: 42 nuevos. Coverage `src/tools/facturas-electronicas.ts`: 99.61% stmts.
+
+---
+
 ### Tools de pedidos de compra (TD-152)
 
 #### Added

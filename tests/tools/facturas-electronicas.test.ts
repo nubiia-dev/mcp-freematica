@@ -193,7 +193,7 @@ describe('registerFacturasElectronicasTools', () => {
       const fake = [{ FACED_LEIDO: 'S' }];
       nock(BASE_URL)
         .get('/pven/v1/facturas')
-        .query({ items: '20', page: '1', leido: 'true' })
+        .query({ items: '20', page: '1', leido: '1' })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -211,7 +211,7 @@ describe('registerFacturasElectronicasTools', () => {
       const fake = [{ FACED_LEIDO: 'N' }];
       nock(BASE_URL)
         .get('/pven/v1/facturas')
-        .query({ items: '20', page: '1', leido: 'false' })
+        .query({ items: '20', page: '1', leido: '0' })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -815,6 +815,31 @@ describe('registerFacturasElectronicasTools', () => {
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.error).toBe('not_found');
     });
+
+    it('returns count:0 and items:[] without truncate warning when API returns empty array', async () => {
+      // Covers the branch where items.length === 0 — size guardrail must NOT fire
+      // and the empty list must be returned cleanly.
+      process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'] = '10';
+
+      nock(BASE_URL)
+        .get('/pven/v1/facturas/download')
+        .reply(200, listEnv([], 0));
+
+      const server = buildServer();
+      const handler = getHandler(server, LIST_DOCUMENTOS_TOOL);
+      const result = (await handler({})) as {
+        content: { type: string; text: string }[];
+        isError?: boolean;
+      };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual([]);
+      expect(parsed.total).toBe(0);
+      // No truncation warning should be present
+      expect(parsed.truncated).toBeUndefined();
+      expect(parsed.warning).toBeUndefined();
+    });
   });
 
   // =========================================================================
@@ -834,9 +859,16 @@ describe('registerFacturasElectronicasTools', () => {
       expect(() => schema.parse({ fechaHasta: '20240101' })).toThrow();
     });
 
-    it('ListFacturasElectronicasFiltersSchema: rejects empty empresa string (min 1)', () => {
+    it('ListFacturasElectronicasFiltersSchema: rejects empresa string that is not 4 chars', () => {
       const schema = z.object(ListFacturasElectronicasFiltersSchema);
       expect(() => schema.parse({ empresa: '' })).toThrow();
+      expect(() => schema.parse({ empresa: '1' })).toThrow();
+      expect(() => schema.parse({ empresa: '00001' })).toThrow();
+    });
+
+    it('ListFacturasElectronicasFiltersSchema: accepts empresa string of exactly 4 chars', () => {
+      const schema = z.object(ListFacturasElectronicasFiltersSchema);
+      expect(() => schema.parse({ empresa: '0001' })).not.toThrow();
     });
 
     it('ListFacturasElectronicasFiltersSchema: accepts valid YYYY-MM-DD date', () => {

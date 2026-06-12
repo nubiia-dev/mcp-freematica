@@ -22,6 +22,7 @@ import type { MasterDataItem } from '../types/master-data.js';
 import type { OportunidadNegocio } from '../types/oportunidades-negocio.js';
 import type { VoContratosServMatAsignado } from '../types/contratos.js';
 import { logger } from '../logger.js';
+import { loadMaxResponseSizeMb } from '../utils/size-guardrail.js';
 
 export interface ListResult<T> {
   items: T[];
@@ -1096,7 +1097,7 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Facturas electrónicas (Facturae/EDICOM/FACe) (v0.6.0)
+  // Facturas electrónicas (Facturae/EDICOM/FACe) (v0.5.1 / TD-154)
   // ---------------------------------------------------------------------------
 
   /**
@@ -1121,7 +1122,7 @@ export class FreematicaClient extends BaseClient {
     if (opts.fechaDesde !== undefined) url.searchParams.set('fechaIni', opts.fechaDesde);
     if (opts.fechaHasta !== undefined) url.searchParams.set('fechaFin', opts.fechaHasta);
     if (opts.estado !== undefined) url.searchParams.set('estado', opts.estado);
-    if (opts.leido !== undefined) url.searchParams.set('leido', String(opts.leido));
+    if (opts.leido !== undefined) url.searchParams.set('leido', opts.leido ? '1' : '0');
     if (opts.order !== undefined) url.searchParams.set('order', opts.order);
 
     const path = url.pathname + (url.search ? url.search : '');
@@ -1344,27 +1345,6 @@ export type FacturaDocumentoResult =
 // ---------------------------------------------------------------------------
 // Helpers privados del módulo
 // ---------------------------------------------------------------------------
-
-/**
- * Lee el límite de respuesta en MB desde la variable de entorno
- * `FREEMATICA_MAX_RESPONSE_SIZE_MB`. Si no está definida o es inválida,
- * devuelve el default de 10 MB.
- *
- * Esta función aplica las mismas restricciones que el schema Zod definido en
- * `config.ts` para `FREEMATICA_MAX_RESPONSE_SIZE_MB` (min: 1, max: 500, int):
- * - Debe ser un número entero.
- * - Debe estar en el rango [1, 500].
- * Si cualquiera de esas condiciones falla, se devuelve el default de 10 MB.
- *
- * @returns Límite en megabytes (entero en [1, 500]).
- */
-function loadMaxResponseSizeMb(): number {
-  const raw = process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'];
-  if (raw === undefined || raw === '') return 10;
-  const parsed = Number(raw);
-  if (isNaN(parsed) || !Number.isInteger(parsed) || parsed < 1 || parsed > 500) return 10;
-  return parsed;
-}
 
 /**
  * Calcula el siguiente prefijo léxico para emular un prefix match FIQL.

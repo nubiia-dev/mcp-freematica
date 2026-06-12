@@ -24,9 +24,9 @@ export const ListFacturasElectronicasFiltersSchema = {
   ...PaginationSchema,
   empresa: z
     .string()
-    .min(1)
+    .length(4)
     .optional()
-    .describe('Código de empresa Freemática (query param "empresa"). Ej.: "1".'),
+    .describe('Código de empresa Freemática (query param "empresa"). 4 caracteres exactos. Ej.: "0001".'),
   codCliente: z
     .string()
     .min(1)
