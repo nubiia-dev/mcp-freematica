@@ -194,6 +194,20 @@ describe('registerAlbaranesTools', () => {
     expect(parsed.error).toBe('invalid_token');
   });
 
+  it('list_albaranes_ventas rejects when empresa is missing (Zod validation)', async () => {
+    const handler = getHandler(buildServer(), LIST_ALBARANES_VENTAS_TOOL);
+    // empresa es REQUERIDO por el endpoint /pven/v2/albaranes-ventas — la
+    // ausencia debe fallar en la capa Zod sin llegar al API. No registramos
+    // nock: si llegase, fallaría con "no match for request" indicando que la
+    // validación no funcionó. El MCP SDK devuelve { isError: true } en lugar
+    // de lanzar excepción cuando Zod rechaza el input.
+    const result = (await handler({ page: 1, items: 20 } as never)) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+  });
+
   // ===========================================================================
   // freematica_get_albaran_venta — happy path
   // ===========================================================================

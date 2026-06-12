@@ -3,9 +3,11 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { FreematicaError } from '../clients/base-client.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
-import { ListAlbaranesVentasFiltersSchema } from '../schemas/albaranes.js';
-import { ListAlbaranesFacturaFiltersSchema } from '../schemas/albaranes.js';
-import { ListResultadosFacturacionFiltersSchema } from '../schemas/albaranes.js';
+import {
+  ListAlbaranesFacturaFiltersSchema,
+  ListAlbaranesVentasFiltersSchema,
+  ListResultadosFacturacionFiltersSchema,
+} from '../schemas/albaranes.js';
 import { error, ok, okList } from './helpers.js';
 
 // ---------------------------------------------------------------------------

@@ -1096,7 +1096,7 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Albaranes de ventas (v0.6.0)
+  // Albaranes de ventas (v0.5.1 / TD-155)
   // ---------------------------------------------------------------------------
 
   /**
@@ -1165,7 +1165,7 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Albaranes-facturas (v0.6.0)
+  // Albaranes-facturas (v0.5.1 / TD-155)
   // ---------------------------------------------------------------------------
 
   /**
@@ -1232,7 +1232,7 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
-  // Resultados de facturación — vigilancia (v0.6.0)
+  // Resultados de facturación — vigilancia (v0.5.1 / TD-155)
   // ---------------------------------------------------------------------------
 
   /**
