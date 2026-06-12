@@ -25,7 +25,7 @@ export interface CreateFreematicaServerOptions {
 
 export function createFreematicaServer(opts: CreateFreematicaServerOptions): McpServer {
   const server = new McpServer(
-    { name: 'freematica-mcp', version: '0.5.1' },
+    { name: 'freematica-mcp', version: '0.6.0' },
     { instructions: FREEMATICA_MCP_INSTRUCTIONS },
   );
 
