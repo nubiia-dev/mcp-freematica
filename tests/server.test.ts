@@ -19,11 +19,13 @@ function registeredToolNames(server: ReturnType<typeof createFreematicaServer>):
 }
 
 describe('createFreematicaServer', () => {
-  it('registers all 34 expected tools', () => {
+  it('registers all 39 expected tools', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT });
     const names = registeredToolNames(server);
     expect(names).toEqual([
       'freematica_export_asientos',
+      'freematica_get_albaran_factura',
+      'freematica_get_albaran_venta',
       'freematica_get_cartera_cliente',
       'freematica_get_cliente',
       'freematica_get_factura_cabecera',
@@ -36,6 +38,8 @@ describe('createFreematicaServer', () => {
       'freematica_get_persona',
       'freematica_get_proveedor',
       'freematica_get_vigilancia_salud',
+      'freematica_list_albaranes_factura',
+      'freematica_list_albaranes_ventas',
       'freematica_list_calendario_periodos',
       'freematica_list_calendarios',
       'freematica_list_cartera_clientes',
@@ -56,6 +60,7 @@ describe('createFreematicaServer', () => {
       'freematica_list_pedidos_compra',
       'freematica_list_personal',
       'freematica_list_proveedores',
+      'freematica_list_resultados_facturacion',
       'freematica_list_vigilancia_salud',
     ]);
   });

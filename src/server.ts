@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { FreematicaClient } from './clients/freematica-client.js';
 import { FREEMATICA_MCP_INSTRUCTIONS } from './server-instructions.js';
+import { registerAlbaranesTools } from './tools/albaranes.js';
 import { registerCalendariosTools } from './tools/calendarios.js';
 import { registerCarteraTools } from './tools/cartera.js';
 import { registerClientesTools } from './tools/clientes.js';
@@ -42,6 +43,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerPrlTools(server, opts.client);
   registerPersonalTools(server, opts.client);
   registerCalendariosTools(server, opts.client);
+  registerAlbaranesTools(server, opts.client);
 
   return server;
 }
