@@ -9,6 +9,7 @@ import {
   ListFacturasDocumentosFiltersSchema,
 } from '../schemas/facturas-electronicas.js';
 import { error, ok, okList } from './helpers.js';
+import { loadMaxResponseSizeMb } from '../utils/size-guardrail.js';
 
 // ---------------------------------------------------------------------------
 // Tool names
@@ -89,25 +90,6 @@ const LIST_DOCUMENTOS_DESCRIPTION = [
   'Campos de respuesta (prefijo VoEFraDoc): empresa, fecha, serie, numFra, documentoPdf, documentoXml,',
   'documentoXml2, decError, decError2, documentoError, documentoGuid, documentoFSDir.',
 ].join('\n');
-
-// ---------------------------------------------------------------------------
-// Helper — guardrail de tamaño para documento binario
-// ---------------------------------------------------------------------------
-
-/**
- * Lee el límite de respuesta en MB desde la variable de entorno
- * `FREEMATICA_MAX_RESPONSE_SIZE_MB`. Si no está definida o es inválida,
- * devuelve el default de 10 MB.
- *
- * @returns Límite en megabytes (entero en [1, 500]).
- */
-function loadMaxResponseSizeMb(): number {
-  const raw = process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'];
-  if (raw === undefined || raw === '') return 10;
-  const parsed = Number(raw);
-  if (isNaN(parsed) || !Number.isInteger(parsed) || parsed < 1 || parsed > 500) return 10;
-  return parsed;
-}
 
 // ---------------------------------------------------------------------------
 // Registration
