@@ -2,6 +2,20 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.6.0] — 2026-06-12
+
+### Release de la épica TD-153 — Cierre del ciclo de facturación
+
+Cierra el ciclo de lectura financiera del MCP añadiendo facturación electrónica (Facturae/EDICOM/FACe) y albaranes (ventas + factura-albarán + resultados de facturación de vigilancia). Tras esta release el flujo cubierto es: **pedido → albarán → factura interna → factura electrónica → cartera/cobro**.
+
+- **TD-154** Facturas electrónicas: 6 tools (list, get, documento, log, edicom-info, download). Guardrail de tamaño para documentos PDF/XML grandes (Facturae base64).
+- **TD-155** Albaranes + resultados facturación: 5 tools (albaranes-ventas list+get, albaranes-facturas list+get, resultados facturación vigilancia).
+
+**Total tools registradas: 45** (vs 34 en v0.5.1).
+**Tests: 720** (vs 648 en v0.5.1).
+
+---
+
 ## [Unreleased] — TD-155 (branch feat/TD-155-albaranes)
 
 ### Tools albaranes ventas + albaranes-facturas + resultados facturación vigilancia
