@@ -2,6 +2,48 @@
 
 Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — TD-155 (branch feat/TD-155-albaranes)
+
+### Tools albaranes ventas + albaranes-facturas + resultados facturación vigilancia
+
+#### Added
+
+- **`freematica_list_albaranes_ventas`** (`src/tools/albaranes.ts`): lista paginada de albaranes de ventas desde `GET /pven/v2/albaranes-ventas`.
+  - Todos los filtros son query params **nativos** del endpoint (no FIQL): `empresa` → `codEmpresa` (requerido), `delegacion` → `codDelegacion`, `codCliente`, `codDocumento`, `fechaDesde` → `desdeFecha`, `fechaHasta` → `hastaFecha`, `order`.
+  - Campos de respuesta: prefijo `ALVC_*` (cabecera) y `ALVL_*` (líneas).
+
+- **`freematica_get_albaran_venta`** (`src/tools/albaranes.ts`): detalle de un albarán de venta por `idReg` opaco. Endpoint: `GET /pven/v2/albaranes-ventas/{idReg}`.
+
+- **`freematica_list_albaranes_factura`** (`src/tools/albaranes.ts`): lista paginada de vinculaciones albarán↔factura desde `GET /pven/v2/albaranes-facturas`.
+  - Filtro `idReg` como query param nativo.
+  - Filtros FIQL: `empresa` (FVCA_CODEMP), `serie` (FVCA_SERIEFRA), `numFactura` (FVCA_NUMFRA), `codCliente` (FVCA_CODCLI).
+
+- **`freematica_get_albaran_factura`** (`src/tools/albaranes.ts`): detalle de una vinculación albarán-factura por `idReg` opaco. Endpoint: `GET /pven/v2/albaranes-facturas/{idReg}`.
+
+- **`freematica_list_resultados_facturacion`** (`src/tools/albaranes.ts`): lista paginada de resultados del proceso batch de facturación automática de vigilancia desde `GET /pvss/v1/facturacion-resultados`.
+  - Todos los filtros se envían como FIQL en `rquery`: `empresa` (FACT_EMP), `delegacion` (FACT_DELEG), `codCliente` (FACT_COD_CLI), `calendario` (FACT_CAL), `mes` (FACT_MES), `contrato` (FACT_CTRT), `servicio` (FACT_SERV), `tipoFac` (FACT_TIPFAC), `traspasado` (FACT_TRASP).
+  - Param `order` es nativo del endpoint.
+
+- **`src/schemas/albaranes.ts`**: `ListAlbaranesVentasFiltersSchema`, `ListAlbaranesFacturaFiltersSchema`, `ListResultadosFacturacionFiltersSchema` con tipos exportados para las 3 familias. Decisión de unificar en un archivo al ser 3 dominios relacionados del ciclo albarán→factura.
+
+- **`FreematicaClient`** (`src/clients/freematica-client.ts`): métodos `listAlbaranesVentas`, `getAlbaranVenta`, `listAlbaranesFactura`, `getAlbaranFactura`, `listResultadosFacturacion`.
+
+#### Tests
+
+- `tests/tools/albaranes.test.ts`: 27 tests (registro, happy paths con filtros nativos y FIQL, errores 404/500/401 para las 5 tools).
+- `tests/server.test.ts`: actualizado de 34 → 39 tools registradas.
+- **Total: 675 tests, todos en verde**.
+
+#### Coverage
+
+- `src/schemas/albaranes.ts`: 100% statements, 100% branches
+- `src/tools/albaranes.ts`: 100% statements, 61.53% branches (consistente con el resto de tools)
+- Global statements: 99.55%
+
+**Total tools registradas:** 39 (vs 34 en v0.5.1).
+
+---
+
 ## [0.5.1] — 2026-06-09
 
 ### Added — Tools de facturas electrónicas (TD-154)
