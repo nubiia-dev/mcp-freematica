@@ -12,6 +12,7 @@
  * 6. src/tools/localizaciones.ts — líneas 189-190, 227-228: catch con Error genérico
  * 7. src/tools/calendarios.ts — líneas 70-71, 97-98: catch con Error genérico
  * 8. src/tools/cartera.ts — líneas 75-76, 91-92: catch con Error genérico
+ * 9. src/tools/pedidos-compras.ts — líneas 112-113, 136-137: catch con Error genérico (TD-152)
  */
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import nock from 'nock';
@@ -24,6 +25,7 @@ import { registerOportunidadesNegocioTools } from '../src/tools/oportunidades-ne
 import { registerLocalizacionesTools } from '../src/tools/localizaciones.js';
 import { registerCalendariosTools } from '../src/tools/calendarios.js';
 import { registerCarteraTools } from '../src/tools/cartera.js';
+import { registerPedidosComprasTools } from '../src/tools/pedidos-compras.js';
 import { Writable } from 'node:stream';
 
 // ---------------------------------------------------------------------------
@@ -634,5 +636,101 @@ describe('FreematicaClient — internal helper coverage via listCuentasContables
     const result = await client.listCuentasContables({ prefijoCuenta: '430' });
     expect(result.total).toBe(1);
     expect(result.items).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. pedidos-compras.ts — catch con Error genérico (no FreematicaError) — TD-152
+//
+// Estas ramas (instanceof Error check en catch blocks) no se cubren en los
+// tests principales que solo ejercen FreematicaError y errores 404/500 del API.
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — pedidos-compras.ts (TD-152)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_pedidos_compra — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPedidosCompra').mockRejectedValueOnce(
+      new Error('network timeout'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPedidosComprasTools(server, client);
+    const handler = getHandler(server, 'freematica_list_pedidos_compra');
+
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('unexpected_error');
+    expect(parsed.message).toContain('network timeout');
+  });
+
+  it('get_pedido_compra — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getPedidoCompra').mockRejectedValueOnce(
+      new Error('json parse error'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPedidosComprasTools(server, client);
+    const handler = getHandler(server, 'freematica_get_pedido_compra');
+
+    const result = (await handler({ id: 'some-id' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('unexpected_error');
+    expect(parsed.message).toContain('json parse error');
+  });
+
+  it('list_pedidos_compra — FreematicaError server_error is properly propagated', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPedidosCompra').mockRejectedValueOnce(
+      new FreematicaError('server_error', 'Downstream API error'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPedidosComprasTools(server, client);
+    const handler = getHandler(server, 'freematica_list_pedidos_compra');
+
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('server_error');
+  });
+
+  it('get_pedido_compra — FreematicaError not_found is properly propagated', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getPedidoCompra').mockRejectedValueOnce(
+      new FreematicaError('not_found', 'Pedido no encontrado'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPedidosComprasTools(server, client);
+    const handler = getHandler(server, 'freematica_get_pedido_compra');
+
+    const result = (await handler({ id: 'MISSING_ID' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('not_found');
   });
 });

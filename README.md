@@ -46,6 +46,8 @@ MCP server que expone operaciones del API REST de Freemática para ser consumida
 | `freematica_list_cuentas_contables`                  | `GET /pcon/v2/cuentas`                                       | Plan de cuentas contables (COD_CTA, COD_PLAN, etc.)                                                |
 | `freematica_list_cuentas_analiticas`                 | `GET /pcon/v2/cuentas-analiticas`                            | Catálogo de cuentas analíticas                                                                     |
 | `freematica_export_asientos`                         | `GET /pcon/v2/asientos`                                      | Exporta asientos contables de un período (CSV/JSON)                                                |
+| `freematica_list_pedidos_compra`                     | `GET /pcmp/v2/pedidos`                                       | Lista paginada de pedidos de compra (filtros nativos + FIQL + estado enum)                         |
+| `freematica_get_pedido_compra`                       | `GET /pcmp/v2/pedidos/{idReg}`                               | Detalle de un pedido de compra (cabecera + proveedor + líneas)                                     |
 
 ## Filtros tipados (FIQL interno)
 

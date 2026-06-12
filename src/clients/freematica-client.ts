@@ -11,6 +11,10 @@ import type {
   ListFacturaIvaFilters,
   ListFacturaVencimientosFilters,
 } from '../schemas/facturas-ventas.js';
+import {
+  buildEstadoPedidoFiql,
+  type ListPedidosCompraFilters,
+} from '../schemas/pedidos-compras.js';
 import type { FreematicaListData } from '../types/api-envelope.js';
 import type { Cliente } from '../types/clientes.js';
 import type { ContactoCliente } from '../types/contactos-clientes.js';
@@ -671,6 +675,111 @@ export class FreematicaClient extends BaseClient {
   async getFacturaCompra(idReg: string): Promise<Record<string, unknown>> {
     return this.get<Record<string, unknown>>(
       `/pcmp/v2/facturas-compras/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pedidos de compra (v0.5.1)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de pedidos de compra con diseño mixto de filtros.
+   *
+   * Endpoint: GET /pcmp/v2/pedidos
+   *
+   * DISEÑO MIXTO: el endpoint combina 4 query params nativos con filtros FIQL
+   * adicionales vía `rquery`.
+   *
+   * Filtros que van como **query params nativos** (NO FIQL):
+   * - `empresa` (4c) → `codEmpresa`
+   * - `codProveedor` (≤10c) → `codProveedor`
+   * - `fechaPedidoDesde` (ISO date) → `desdeFecha`
+   * - `fechaPedidoHasta` (ISO date) → `hastaFecha`
+   *
+   * Filtros que van como **FIQL en `rquery`** (campos `ALCC_*`):
+   * - `numPedido` → `ALCC_NUMDOC==N`
+   * - `codDocumento` → `ALCC_CODDOC==XXXX`
+   * - `delegacion` → `ALCC_DELEG==XXXX`
+   * - `formaPago` → `ALCC_FPAGO==XXX`
+   * - `tipoIva` → `ALCC_TIPO_IVA==XXXX`
+   * - `codCliente` → `ALCC_COD_CLIENTE==X`
+   * - `codInstalador` → `ALCC_COD_INSTALADOR==X`
+   * - `codMantenedor` → `ALCC_COD_MANTENEDOR==X`
+   * - `fechaEntregaDesde` → `ALCC_FCHENTREGA=ge=YYYY-MM-DD`
+   * - `fechaEntregaHasta` → `ALCC_FCHENTREGA=le=YYYY-MM-DD`
+   * - `referencia` → `ALCC_REFERENCIA==X`
+   * - `estado` → expresión compuesta sobre `ALCC_PED_BLOQ` y `ALCC_PED_RECIB`
+   *   (ver `buildEstadoPedidoFiql` y comentario empírico en `EstadoPedidoEnum`)
+   *
+   * @param opts - Filtros tipados del schema `ListPedidosCompraFiltersSchema`.
+   * @returns Lista paginada de pedidos de compra.
+   */
+  async listPedidosCompra(opts: ListPedidosCompraFilters = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pcmp/v2/pedidos');
+
+    // Paginación
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    // Query params nativos (NO FIQL)
+    if (opts.empresa !== undefined) url.searchParams.set('codEmpresa', opts.empresa);
+    if (opts.codProveedor !== undefined) url.searchParams.set('codProveedor', opts.codProveedor);
+    if (opts.fechaPedidoDesde !== undefined) url.searchParams.set('desdeFecha', opts.fechaPedidoDesde);
+    if (opts.fechaPedidoHasta !== undefined) url.searchParams.set('hastaFecha', opts.fechaPedidoHasta);
+
+    // Filtros FIQL — cada parte se genera por separado y se une con ";"
+    const fiqlParts: string[] = [];
+
+    // Scalar equality filters: agrupar en un objeto y construir de una vez
+    const eqGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
+    if (opts.codDocumento !== undefined) eqGroup['ALCC_CODDOC'] = opts.codDocumento;
+    if (opts.delegacion !== undefined) eqGroup['ALCC_DELEG'] = opts.delegacion;
+    if (opts.formaPago !== undefined) eqGroup['ALCC_FPAGO'] = opts.formaPago;
+    if (opts.tipoIva !== undefined) eqGroup['ALCC_TIPO_IVA'] = opts.tipoIva;
+    if (opts.codCliente !== undefined) eqGroup['ALCC_COD_CLIENTE'] = opts.codCliente;
+    if (opts.codInstalador !== undefined) eqGroup['ALCC_COD_INSTALADOR'] = opts.codInstalador;
+    if (opts.codMantenedor !== undefined) eqGroup['ALCC_COD_MANTENEDOR'] = opts.codMantenedor;
+    if (opts.referencia !== undefined) eqGroup['ALCC_REFERENCIA'] = opts.referencia;
+    // numPedido es number → convertir a string para FIQL
+    if (opts.numPedido !== undefined) eqGroup['ALCC_NUMDOC'] = String(opts.numPedido);
+
+    const eqFiql = buildFiql(eqGroup);
+    if (eqFiql) fiqlParts.push(eqFiql);
+
+    // Date range filters for fechaEntrega (same field, two possible operators)
+    if (opts.fechaEntregaDesde !== undefined) {
+      fiqlParts.push(buildFiql({ ALCC_FCHENTREGA: { op: 'ge', value: opts.fechaEntregaDesde } }));
+    }
+    if (opts.fechaEntregaHasta !== undefined) {
+      fiqlParts.push(buildFiql({ ALCC_FCHENTREGA: { op: 'le', value: opts.fechaEntregaHasta } }));
+    }
+
+    // Estado — genera expresión FIQL compuesta sobre ALCC_PED_BLOQ + ALCC_PED_RECIB
+    if (opts.estado !== undefined) {
+      fiqlParts.push(buildEstadoPedidoFiql(opts.estado));
+    }
+
+    appendRquery(url, fiqlParts.join(';'));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de un pedido de compra por `idReg` opaco.
+   *
+   * Endpoint: GET /pcmp/v2/pedidos/{idreg}
+   *
+   * La respuesta es un objeto compuesto `{ VoPedidosCompraCab, cabecera_proveedor, lineas[] }`
+   * que se devuelve sin aplanar para conservar la estructura original del API.
+   *
+   * @param idReg - Identificador opaco (puede contener caracteres como "==" de base64).
+   * @returns Objeto compuesto con la cabecera, datos del proveedor y líneas del pedido.
+   */
+  async getPedidoCompra(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcmp/v2/pedidos/${encodeURIComponent(idReg)}`,
     );
   }
 
