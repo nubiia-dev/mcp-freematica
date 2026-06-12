@@ -22,6 +22,7 @@ import type { MasterDataItem } from '../types/master-data.js';
 import type { OportunidadNegocio } from '../types/oportunidades-negocio.js';
 import type { VoContratosServMatAsignado } from '../types/contratos.js';
 import { logger } from '../logger.js';
+import { loadMaxResponseSizeMb } from '../utils/size-guardrail.js';
 
 export interface ListResult<T> {
   items: T[];
@@ -1096,6 +1097,40 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Facturas electrónicas (Facturae/EDICOM/FACe) (v0.5.1 / TD-154)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de facturas electrónicas con filtros nativos (NO FIQL).
+   *
+   * Endpoint: GET /pven/v1/facturas
+   *
+   * Diferente de listFacturasCabecera: expone las facturas firmadas/enviadas vía
+   * Facturae, EDICOM y/o FACe. Los filtros son query params nativos del API.
+   *
+   * @param opts - Filtros nativos: empresa, codCliente, fechaDesde/Hasta, estado, leido + paginación.
+   * @returns Lista paginada de facturas electrónicas con campos FACED_*.
+   */
+  async listFacturasElectronicas(
+    opts: import('../schemas/facturas-electronicas.js').ListFacturasElectronicasFilters,
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pven/v1/facturas');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.empresa !== undefined) url.searchParams.set('empresa', opts.empresa);
+    if (opts.codCliente !== undefined) url.searchParams.set('cliente', opts.codCliente);
+    if (opts.fechaDesde !== undefined) url.searchParams.set('fechaIni', opts.fechaDesde);
+    if (opts.fechaHasta !== undefined) url.searchParams.set('fechaFin', opts.fechaHasta);
+    if (opts.estado !== undefined) url.searchParams.set('estado', opts.estado);
+    if (opts.leido !== undefined) url.searchParams.set('leido', opts.leido ? '1' : '0');
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
   // Albaranes de ventas (v0.5.1 / TD-155)
   // ---------------------------------------------------------------------------
 
@@ -1106,18 +1141,6 @@ export class FreematicaClient extends BaseClient {
    *
    * El endpoint usa exclusivamente query params nativos para los filtros
    * principales (no FIQL). `codEmpresa` es obligatorio según el spec OpenAPI.
-   *
-   * Mapeo de parámetros nativos:
-   * | opts.empresa       | codEmpresa     |
-   * | opts.delegacion    | codDelegacion  |
-   * | opts.codCliente    | codCliente     |
-   * | opts.codDocumento  | codDocumento   |
-   * | opts.fechaDesde    | desdeFecha     |
-   * | opts.fechaHasta    | hastaFecha     |
-   * | opts.order         | order          |
-   *
-   * @param opts - Opciones de paginación y filtros nativos del endpoint.
-   * @returns Lista paginada de albaranes de ventas.
    */
   async listAlbaranesVentas(opts: {
     page?: number;
@@ -1132,11 +1155,9 @@ export class FreematicaClient extends BaseClient {
   }): Promise<ListResult<Record<string, unknown>>> {
     const url = new URL('https://placeholder/pven/v2/albaranes-ventas');
 
-    // Paginación
     if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
 
-    // Query params nativos del endpoint (no FIQL)
     url.searchParams.set('codEmpresa', opts.empresa);
     if (opts.delegacion !== undefined) url.searchParams.set('codDelegacion', opts.delegacion);
     if (opts.codCliente !== undefined) url.searchParams.set('codCliente', opts.codCliente);
@@ -1149,6 +1170,132 @@ export class FreematicaClient extends BaseClient {
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
     return { items: data.items, total: Number(data.total) };
   }
+
+  /**
+   * Detalle de una factura electrónica por `idReg` opaco.
+   *
+   * Endpoint: GET /pven/v1/facturas/{idreg}
+   *
+   * @param idReg - Identificador opaco (base64) de la factura electrónica.
+   * @returns Objeto con los campos de la factura electrónica.
+   */
+  async getFacturaElectronica(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pven/v1/facturas/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Recupera el documento (PDF o XML Facturae firmado) de una factura electrónica.
+   *
+   * Endpoint: GET /pven/v1/facturas/{idreg}/documento
+   *
+   * La API devuelve un JSON (VoFacturasDocumento) con los documentos codificados en base64
+   * en los campos FACED_DOCUMENTO_PDF, FACED_DOCUMENTO_XML, etc.
+   *
+   * Si el tamaño del JSON supera FREEMATICA_MAX_RESPONSE_SIZE_MB, la tool aplica el
+   * guardrail de tamaño y devuelve `{ truncated: true, warning, sizeBytes }` sin el cuerpo.
+   *
+   * @param idReg - Identificador opaco de la factura.
+   * @param opts - Opciones: documentType (tipo de documento), actualizaLeido (marcar como leído).
+   * @returns Objeto VoFacturasDocumento con campos FACED_DOCUMENTO_*.
+   */
+  async getFacturaDocumento(
+    idReg: string,
+    opts: { documentType?: string; actualizaLeido?: boolean } = {},
+  ): Promise<FacturaDocumentoResult> {
+    const maxMb = loadMaxResponseSizeMb();
+    const maxBytes = maxMb * 1024 * 1024;
+
+    const url = new URL(`https://placeholder/pven/v1/facturas/${encodeURIComponent(idReg)}/documento`);
+    if (opts.documentType !== undefined) url.searchParams.set('documentType', opts.documentType);
+    if (opts.actualizaLeido !== undefined) url.searchParams.set('actualiza-leido', String(opts.actualizaLeido));
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<Record<string, unknown>>(path);
+
+    // Validación de tamaño: los documentos base64 pueden ser grandes
+    const serialized = JSON.stringify(data);
+    const sizeBytes = Buffer.byteLength(serialized, 'utf8');
+
+    if (sizeBytes > maxBytes) {
+      logger.warn(
+        { sizeBytes, maxBytes, maxMb, idReg },
+        'getFacturaDocumento: respuesta excede MAX_RESPONSE_SIZE_MB, aplicando guardrail',
+      );
+      return {
+        truncated: true,
+        warning: [
+          `El documento supera el límite de ${maxMb} MB (${Math.round(sizeBytes / 1024 / 1024 * 10) / 10} MB).`,
+          `Para descargar el documento, usa la URL del sistema Freemática directamente.`,
+        ].join(' '),
+        sizeBytes,
+      };
+    }
+
+    return { truncated: false, ...data };
+  }
+
+  /**
+   * Log de auditoría de una factura electrónica (envío, recepción, aceptación AAPP, etc.).
+   *
+   * Endpoint: GET /pven/v1/facturas/{idreg}/log
+   *
+   * @param idReg - Identificador opaco de la factura.
+   * @param opts - Opciones de paginación.
+   * @returns Lista paginada de eventos de auditoría con campos FVCTRLE_*.
+   */
+  async getFacturaLog(idReg: string, opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(
+      `/pven/v1/facturas/${encodeURIComponent(idReg)}/log`,
+      opts,
+    );
+  }
+
+  /**
+   * Configuración de la integración EDICOM (empresa, aplicación, URLs, credenciales).
+   *
+   * Endpoint: GET /pven/v1/facturas/edicominfo
+   *
+   * Devuelve una lista de configuraciones EDICOM (campos EDICOM_*).
+   * NOTA: incluye campos sensibles (EDICOM_USER, EDICOM_PASSWORD). Usar con precaución.
+   *
+   * @param opts - Opciones de paginación.
+   * @returns Lista de configuraciones EDICOM con campos EDICOM_*.
+   */
+  async getEdicomInfo(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(
+      '/pven/v1/facturas/edicominfo',
+      opts,
+    );
+  }
+
+  /**
+   * Descarga masiva de documentos de facturas electrónicas (PDF/XML/ERROR).
+   *
+   * Endpoint: GET /pven/v1/facturas/download
+   *
+   * Permite recuperar múltiples documentos filtrando por identificadores y tipo.
+   * Los documentos se devuelven con campos VoEFraDoc (empresa, serie, numFra, documentoPdf, etc.).
+   *
+   * @param opts - Filtros: documents (IDs separados por comas), documentType (PDF/XML/ERROR).
+   * @returns Lista de documentos con campos VoEFraDoc.
+   */
+  async listFacturasDocumentos(
+    opts: import('../schemas/facturas-electronicas.js').ListFacturasDocumentosFilters = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pven/v1/facturas/download');
+    if (opts.documents !== undefined) url.searchParams.set('documents', opts.documents);
+    if (opts.documentType !== undefined) url.searchParams.set('documentType', opts.documentType);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Albaranes de ventas — detalle (v0.5.1 / TD-155)
+  // ---------------------------------------------------------------------------
 
   /**
    * Detalle de un albarán de venta por `idReg` opaco.
@@ -1379,30 +1526,19 @@ export interface ExportAsientosResult extends ListResult<Record<string, unknown>
   warning?: string;
 }
 
+/**
+ * Resultado de getFacturaDocumento.
+ *
+ * - Si truncated=false: incluye todos los campos VoFacturasDocumento (FACED_DOCUMENTO_PDF, etc.).
+ * - Si truncated=true: incluye solo `truncated`, `warning` y `sizeBytes` (sin el cuerpo del documento).
+ */
+export type FacturaDocumentoResult =
+  | ({ truncated: false } & Record<string, unknown>)
+  | { truncated: true; warning: string; sizeBytes: number };
+
 // ---------------------------------------------------------------------------
 // Helpers privados del módulo
 // ---------------------------------------------------------------------------
-
-/**
- * Lee el límite de respuesta en MB desde la variable de entorno
- * `FREEMATICA_MAX_RESPONSE_SIZE_MB`. Si no está definida o es inválida,
- * devuelve el default de 10 MB.
- *
- * Esta función aplica las mismas restricciones que el schema Zod definido en
- * `config.ts` para `FREEMATICA_MAX_RESPONSE_SIZE_MB` (min: 1, max: 500, int):
- * - Debe ser un número entero.
- * - Debe estar en el rango [1, 500].
- * Si cualquiera de esas condiciones falla, se devuelve el default de 10 MB.
- *
- * @returns Límite en megabytes (entero en [1, 500]).
- */
-function loadMaxResponseSizeMb(): number {
-  const raw = process.env['FREEMATICA_MAX_RESPONSE_SIZE_MB'];
-  if (raw === undefined || raw === '') return 10;
-  const parsed = Number(raw);
-  if (isNaN(parsed) || !Number.isInteger(parsed) || parsed < 1 || parsed > 500) return 10;
-  return parsed;
-}
 
 /**
  * Calcula el siguiente prefijo léxico para emular un prefix match FIQL.

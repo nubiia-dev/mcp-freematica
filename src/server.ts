@@ -9,6 +9,7 @@ import { registerContactosClientesTools } from './tools/contactos-clientes.js';
 import { registerContabilidadTools } from './tools/contabilidad.js';
 import { registerContratosTools } from './tools/contratos.js';
 import { registerFacturasComprasTools } from './tools/facturas-compras.js';
+import { registerFacturasElectronicasTools } from './tools/facturas-electronicas.js';
 import { registerFacturasVentasTools } from './tools/facturas-ventas.js';
 import { registerLocalizacionesTools } from './tools/localizaciones.js';
 import { registerMasterDataTools } from './tools/master-data.js';
@@ -43,6 +44,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerPrlTools(server, opts.client);
   registerPersonalTools(server, opts.client);
   registerCalendariosTools(server, opts.client);
+  registerFacturasElectronicasTools(server, opts.client);
   registerAlbaranesTools(server, opts.client);
 
   return server;
