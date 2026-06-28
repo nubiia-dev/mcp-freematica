@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { loadAuthConfig } from './config.js';
 import { FreematicaClient } from './clients/freematica-client.js';
+import { VERSION } from './version.js';
 
 function parseArg(name: string): string | undefined {
   const prefix = `--${name}=`;
@@ -59,7 +60,7 @@ async function main(): Promise<void> {
   }
 
   console.error(
-    `[freematica-mcp] Starting stdio transport v0.6.0 | base=${auth.FREEMATICA_BASE_URL}`,
+    `[freematica-mcp] Starting stdio transport v${VERSION} | base=${auth.FREEMATICA_BASE_URL}`,
   );
   const { startStdio } = await import('./transports/stdio.js');
   await startStdio({ client });

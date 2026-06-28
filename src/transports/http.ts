@@ -6,6 +6,8 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
 import { createFreematicaServer } from '../server.js';
+import { VERSION } from '../version.js';
+import { logger } from '../logger.js';
 
 export interface HttpTransportConfig {
   port: number;
@@ -34,6 +36,18 @@ export async function createHttpApp(config: HttpTransportConfig): Promise<HttpAp
       ? true
       : config.allowedOrigins.split(',').map((s) => s.trim());
 
+  // Aviso de seguridad: el endpoint /mcp no autentica al cliente. Un CORS
+  // abierto en transporte HTTP amplía la superficie expuesta a navegadores.
+  // En producción, restringir MCP_ALLOWED_ORIGINS y desplegar SIEMPRE detrás
+  // de un gateway/reverse-proxy con autenticación.
+  if (origins === true) {
+    logger.warn(
+      { allowedOrigins: '*' },
+      'MCP_ALLOWED_ORIGINS="*": el endpoint /mcp acepta cualquier origen y NO autentica al cliente. ' +
+        'No lo expongas directamente a internet sin un gateway con autenticación delante.',
+    );
+  }
+
   app.use(
     cors({
       origin: origins,
@@ -51,8 +65,8 @@ export async function createHttpApp(config: HttpTransportConfig): Promise<HttpAp
     legacyHeaders: false,
   });
 
-  app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', version: '0.4.1', sessions: sessions.size });
+  app.get('/health', mcpRateLimit, (_req, res) => {
+    res.json({ status: 'ok', version: VERSION, sessions: sessions.size });
   });
 
   // POST /mcp — JSON-RPC handler
