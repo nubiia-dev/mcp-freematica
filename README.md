@@ -1,6 +1,12 @@
 # mcp-freematica
 
-MCP server que expone operaciones del API REST de Freemática para ser consumidas por Claude a través de Nubiia.
+[![npm version](https://img.shields.io/npm/v/@nubiia/mcp-freematica)](https://www.npmjs.com/package/@nubiia/mcp-freematica)
+[![license: MIT](https://img.shields.io/npm/l/@nubiia/mcp-freematica)](./LICENSE)
+[![by Nubiia](https://img.shields.io/badge/by-Nubiia-6C4EE3)](https://nubiia.es)
+
+MCP server que expone operaciones del API REST de Freemática (ERP: facturación, cartera, proveedores, contabilidad, personal) para ser consumidas por asistentes de IA como Claude.
+
+> Built and maintained by **[Nubiia](https://nubiia.es)** — automatización e integraciones con IA para negocios (MCP, Holded, Pipedrive y más). ¿Quieres algo así para tu empresa? Escríbenos en **[nubiia.es](https://nubiia.es)**.
 
 ## Stack
 
@@ -509,6 +515,26 @@ node dist/index.js
 - ADRs de arquitectura: `docs/adr/` (ver índice en ese directorio)
 - API: `apidocs/Freematica API - Complete Collection.postman_collection.json`
 - CHANGELOG: `CHANGELOG.md`
+
+## About Nubiia
+
+This MCP server is built and maintained by **[Nubiia](https://nubiia.es)**.
+
+[Nubiia](https://nubiia.es) ayuda a empresas a **automatizar procesos e integrar sus herramientas con IA**: servidores MCP a medida, integraciones con ERPs y CRMs (Freemática, Holded, Pipedrive…), y agentes que conectan tus datos de negocio con asistentes como Claude. Este `@nubiia/mcp-freematica` es un ejemplo open source de lo que hacemos.
+
+👉 ¿Quieres una integración o automatización con IA para tu negocio? **[nubiia.es](https://nubiia.es)** · ✉️ [hola@nubiia.es](mailto:hola@nubiia.es)
+
+## Author
+
+Built by **[Nubiia](https://nubiia.es)** — [nubiia.es](https://nubiia.es) · [hola@nubiia.es](mailto:hola@nubiia.es)
+
+Maintainer: Samuel Fraga — [GitHub](https://github.com/iamsamuelfraga)
+
+## Links
+
+- [Nubiia — AI automation & integrations](https://nubiia.es)
+- [npm: @nubiia/mcp-freematica](https://www.npmjs.com/package/@nubiia/mcp-freematica)
+- [GitHub: nubiia-dev/mcp-freematica](https://github.com/nubiia-dev/mcp-freematica)
 
 ## Licencia
 
