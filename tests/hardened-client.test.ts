@@ -86,8 +86,12 @@ describe('HardenedBaseClient', () => {
     it('retries on network error (ECONNREFUSED)', async () => {
       const client = makeClient({ maxRetries: 2, timeoutMs: 5000 });
 
-      nock(BASE_URL).get('/x').replyWithError({ code: 'ECONNREFUSED', message: 'connection refused' });
-      nock(BASE_URL).get('/x').replyWithError({ code: 'ECONNREFUSED', message: 'connection refused' });
+      nock(BASE_URL)
+        .get('/x')
+        .replyWithError(Object.assign(new Error('connection refused'), { code: 'ECONNREFUSED' }));
+      nock(BASE_URL)
+        .get('/x')
+        .replyWithError(Object.assign(new Error('connection refused'), { code: 'ECONNREFUSED' }));
       nock(BASE_URL).get('/x').reply(200, envelope({ ok: true }));
 
       const result = await client.testGet<{ ok: boolean }>('/x');

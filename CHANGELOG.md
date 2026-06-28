@@ -2,6 +2,15 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.6.3] — 2026-06-28
+
+### Actualización de dependencias mayores
+
+- `zod` 3 → 4 (runtime). Migrado `ZodError.errors` → `ZodError.issues`. Compatible con `@modelcontextprotocol/sdk` (acepta `zod ^3.25 || ^4.0`).
+- `nock` 13 → 14 (dev). Migrados los `replyWithError` de objeto plano a `Error` real (requisito de nock 14).
+- `eslint` 9 → 10 (dev) y `@types/node` 20 → 26 (dev), sin cambios de código necesarios.
+- GitHub Actions: `actions/checkout` 4→7, `actions/setup-node` 4→6, `github/codeql-action` 3→4, `@typescript-eslint/parser` 8.59→8.62.
+
 ## [0.6.2] — 2026-06-28
 
 ### Hardening de seguridad
