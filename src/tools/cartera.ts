@@ -12,7 +12,7 @@ const GET_TOOL_NAME = 'freematica_get_cartera_cliente';
 const LIST_DESCRIPTION = [
   'Devuelve la lista paginada de documentos de cartera de clientes (cobros, efectos, impagados).',
   '',
-  'Útil para analizar el estado de cobros de Serlimar: deudas pendientes, impagados, vencimientos próximos.',
+  'Útil para analizar el estado de cobros: deudas pendientes, impagados, vencimientos próximos.',
   '',
   'Cada item contiene ~40 campos: CARCL_CODAUX (código cliente), CARCL_IMPCOB (importe cobrado),',
   'CARCL_IMPPEN (importe pendiente), CARCL_FECDOC (fecha documento), CARCL_FECVCTO (fecha vencimiento),',

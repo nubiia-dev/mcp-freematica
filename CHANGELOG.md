@@ -1,6 +1,6 @@
 # Changelog
 
-Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
+Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
 ## [0.6.0] — 2026-06-12
 
@@ -561,4 +561,4 @@ Total de catálogos: 18 → **24**.
 - `FreematicaClient` (axios + 5 headers `x-auth-*`) + mapeo de errores HTTP a códigos normalizados.
 - Configuración vía Zod (5 env vars `FREEMATICA_AUTH_*` obligatorias + 3 opcionales).
 - 30 tests (vitest + nock), CI en GitHub Actions, Dockerfile multistage.
-- Publicación en GitHub Packages como `@serlimar/mcp-freematica`.
+- Publicación del paquete como `@nubiia/mcp-freematica`.

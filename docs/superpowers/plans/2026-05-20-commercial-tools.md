@@ -15,54 +15,56 @@
 
 ## File Structure
 
-| Path | Cambio | Responsabilidad |
-|---|---|---|
-| `src/types/api-envelope.ts` | Create | `FreematicaEnvelope<T>`, `FreematicaListData<T>` |
-| `src/clients/base-client.ts` | Modify | `request<T>` desempaqueta envelope + `mapEnvelopeError` |
-| `src/clients/freematica-client.ts` | Modify | Existentes retornan `{ items, total }`; añadir 6 métodos nuevos |
-| `src/schemas/pagination.ts` | Create | `PaginationSchema` (page, items) |
-| `src/types/clientes.ts` | Create | `Cliente = Record<string, unknown>` |
-| `src/types/contactos-clientes.ts` | Create | `ContactoCliente = Record<string, unknown>` |
-| `src/types/oportunidades-negocio.ts` | Create | `OportunidadNegocio = Record<string, unknown>` |
-| `src/tools/helpers.ts` | Modify | Añadir `okList()` |
-| `src/tools/contratos.ts` | Modify | Output incluye `total` |
-| `src/tools/master-data.ts` | Modify | Output incluye `total` |
-| `src/tools/clientes.ts` | Create | `registerClientesTools` (2 tools) |
-| `src/tools/contactos-clientes.ts` | Create | `registerContactosClientesTools` (1 tool) |
-| `src/tools/oportunidades-negocio.ts` | Create | `registerOportunidadesNegocioTools` (3 tools) |
-| `src/server.ts` | Modify | Registrar 3 nuevas register*Tools + bump 0.4.0 |
-| `src/server-instructions.ts` | Modify | Documentar 8 tools + paginación + idReg |
-| `src/index.ts` | Modify | Log literal `v0.4.0` |
-| `src/transports/http.ts` | Modify | `/health` `version: '0.4.0'` |
-| `package.json` | Modify | Bump `0.4.0` |
-| `tests/clients/base-client.test.ts` | Modify | Reescribir mocks para envelope + tests de mapeo envelope.errorCode |
-| `tests/clients/freematica-client.test.ts` | Modify | Ajustar mocks existentes + tests para 6 métodos nuevos |
-| `tests/schemas/pagination.test.ts` | Create | Defaults, mins/maxes, rechazo de page=0 |
-| `tests/tools/helpers.test.ts` | Modify | Tests para `okList` |
-| `tests/tools/contratos.test.ts` | Modify | Mocks reflejan envelope + assert nuevo shape |
-| `tests/tools/master-data.test.ts` | Modify | Mocks reflejan envelope + assert nuevo shape |
-| `tests/tools/clientes.test.ts` | Create | 4-5 tests (registration, 2 handlers, errores) |
-| `tests/tools/contactos-clientes.test.ts` | Create | 3 tests |
-| `tests/tools/oportunidades-negocio.test.ts` | Create | 5-6 tests |
-| `tests/server.test.ts` | Modify | Asserts para las 5 tools nuevas |
-| `README.md` | Modify | Tabla Tools, Paginación, idReg, versión 0.4.0 |
-| `CHANGELOG.md` | Modify | Entrada `[0.4.0]` |
+| Path                                        | Cambio | Responsabilidad                                                    |
+| ------------------------------------------- | ------ | ------------------------------------------------------------------ |
+| `src/types/api-envelope.ts`                 | Create | `FreematicaEnvelope<T>`, `FreematicaListData<T>`                   |
+| `src/clients/base-client.ts`                | Modify | `request<T>` desempaqueta envelope + `mapEnvelopeError`            |
+| `src/clients/freematica-client.ts`          | Modify | Existentes retornan `{ items, total }`; añadir 6 métodos nuevos    |
+| `src/schemas/pagination.ts`                 | Create | `PaginationSchema` (page, items)                                   |
+| `src/types/clientes.ts`                     | Create | `Cliente = Record<string, unknown>`                                |
+| `src/types/contactos-clientes.ts`           | Create | `ContactoCliente = Record<string, unknown>`                        |
+| `src/types/oportunidades-negocio.ts`        | Create | `OportunidadNegocio = Record<string, unknown>`                     |
+| `src/tools/helpers.ts`                      | Modify | Añadir `okList()`                                                  |
+| `src/tools/contratos.ts`                    | Modify | Output incluye `total`                                             |
+| `src/tools/master-data.ts`                  | Modify | Output incluye `total`                                             |
+| `src/tools/clientes.ts`                     | Create | `registerClientesTools` (2 tools)                                  |
+| `src/tools/contactos-clientes.ts`           | Create | `registerContactosClientesTools` (1 tool)                          |
+| `src/tools/oportunidades-negocio.ts`        | Create | `registerOportunidadesNegocioTools` (3 tools)                      |
+| `src/server.ts`                             | Modify | Registrar 3 nuevas register\*Tools + bump 0.4.0                    |
+| `src/server-instructions.ts`                | Modify | Documentar 8 tools + paginación + idReg                            |
+| `src/index.ts`                              | Modify | Log literal `v0.4.0`                                               |
+| `src/transports/http.ts`                    | Modify | `/health` `version: '0.4.0'`                                       |
+| `package.json`                              | Modify | Bump `0.4.0`                                                       |
+| `tests/clients/base-client.test.ts`         | Modify | Reescribir mocks para envelope + tests de mapeo envelope.errorCode |
+| `tests/clients/freematica-client.test.ts`   | Modify | Ajustar mocks existentes + tests para 6 métodos nuevos             |
+| `tests/schemas/pagination.test.ts`          | Create | Defaults, mins/maxes, rechazo de page=0                            |
+| `tests/tools/helpers.test.ts`               | Modify | Tests para `okList`                                                |
+| `tests/tools/contratos.test.ts`             | Modify | Mocks reflejan envelope + assert nuevo shape                       |
+| `tests/tools/master-data.test.ts`           | Modify | Mocks reflejan envelope + assert nuevo shape                       |
+| `tests/tools/clientes.test.ts`              | Create | 4-5 tests (registration, 2 handlers, errores)                      |
+| `tests/tools/contactos-clientes.test.ts`    | Create | 3 tests                                                            |
+| `tests/tools/oportunidades-negocio.test.ts` | Create | 5-6 tests                                                          |
+| `tests/server.test.ts`                      | Modify | Asserts para las 5 tools nuevas                                    |
+| `README.md`                                 | Modify | Tabla Tools, Paginación, idReg, versión 0.4.0                      |
+| `CHANGELOG.md`                              | Modify | Entrada `[0.4.0]`                                                  |
 
 ---
 
 ## Task 1: Tipos del envelope
 
 **Files:**
+
 - Create: `src/types/api-envelope.ts`
 
 - [ ] **Step 1.1: Verify starting point**
 
 ```bash
-cd /Users/samu/workspace/slm-freematica-mcp
+cd /Users/samu/workspace/mcp-freematica
 git status
 git branch --show-current
 npm test
 ```
+
 Expected: branch `feat/commercial-tools`, working tree clean (excepto plan untracked OK), 51/51 tests passing.
 
 - [ ] **Step 1.2: Crear `src/types/api-envelope.ts`**
@@ -103,6 +105,7 @@ export interface FreematicaListData<T> {
 ```bash
 npm run typecheck
 ```
+
 Expected: PASS.
 
 - [ ] **Step 1.4: Commit**
@@ -117,6 +120,7 @@ git commit -m "feat: add FreematicaEnvelope and FreematicaListData types"
 ## Task 2: BaseClient — unwrap del envelope (TDD)
 
 **Files:**
+
 - Modify: `src/clients/base-client.ts`
 - Modify: `tests/clients/base-client.test.ts`
 
@@ -146,7 +150,11 @@ class TestClient extends BaseClient {
   }
 }
 
-function envelope<T>(data: T, errorCode = '200', errorMessage = ''): {
+function envelope<T>(
+  data: T,
+  errorCode = '200',
+  errorMessage = '',
+): {
   errorCode: string;
   errorMessage: string;
   data: T;
@@ -188,7 +196,9 @@ describe('BaseClient', () => {
 
   describe('envelope unwrap', () => {
     it('returns envelope.data on success (errorCode=200)', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope({ foo: 'bar' }));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope({ foo: 'bar' }));
       const r = await client.testGet<{ foo: string }>('/x');
       expect(r).toEqual({ foo: 'bar' });
     });
@@ -203,44 +213,60 @@ describe('BaseClient', () => {
 
   describe('envelope errorCode mapping', () => {
     it('maps envelope.errorCode=401 to invalid_token', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '401', 'Unauthorized'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '401', 'Unauthorized'));
       await expect(client.testGet('/x')).rejects.toMatchObject({ code: 'invalid_token' });
     });
 
     it('maps envelope.errorCode=403 to forbidden', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '403', 'Forbidden'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '403', 'Forbidden'));
       await expect(client.testGet('/x')).rejects.toMatchObject({ code: 'forbidden' });
     });
 
     it('maps envelope.errorCode=404 to not_found', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '404', 'Not Found'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '404', 'Not Found'));
       await expect(client.testGet('/x')).rejects.toMatchObject({ code: 'not_found' });
     });
 
     it('maps envelope.errorCode=429 to rate_limit_exceeded', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '429', 'Too Many'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '429', 'Too Many'));
       await expect(client.testGet('/x')).rejects.toMatchObject({
         code: 'rate_limit_exceeded',
       });
     });
 
     it('maps envelope.errorCode=500 to server_error', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '500', 'Internal Error'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '500', 'Internal Error'));
       await expect(client.testGet('/x')).rejects.toMatchObject({ code: 'server_error' });
     });
 
     it('maps envelope.errorCode=503 to server_error', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '503', 'Service Unavailable'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '503', 'Service Unavailable'));
       await expect(client.testGet('/x')).rejects.toMatchObject({ code: 'server_error' });
     });
 
     it('falls back to unexpected_error for unknown envelope.errorCode', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '999', 'Weird'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '999', 'Weird'));
       await expect(client.testGet('/x')).rejects.toMatchObject({ code: 'unexpected_error' });
     });
 
     it('includes errorMessage in the FreematicaError message', async () => {
-      nock(BASE_URL).get('/x').reply(200, envelope(null, '404', 'Resource gone'));
+      nock(BASE_URL)
+        .get('/x')
+        .reply(200, envelope(null, '404', 'Resource gone'));
       await expect(client.testGet('/x')).rejects.toMatchObject({
         message: expect.stringContaining('Resource gone'),
       });
@@ -298,6 +324,7 @@ describe('BaseClient', () => {
 ```bash
 npm test -- tests/clients/base-client.test.ts
 ```
+
 Expected: FAILs — los nuevos tests "envelope unwrap" y "envelope errorCode mapping" no pasarán porque `BaseClient.request` aún devuelve el envelope completo.
 
 - [ ] **Step 2.3: Update `src/clients/base-client.ts`**
@@ -409,8 +436,10 @@ export class BaseClient {
     if (err instanceof AxiosError) {
       if (err.response) {
         const status = err.response.status;
-        if (status === 401) return new FreematicaError('invalid_token', 'Authentication failed (401)');
-        if (status === 403) return new FreematicaError('forbidden', 'Insufficient permissions (403)');
+        if (status === 401)
+          return new FreematicaError('invalid_token', 'Authentication failed (401)');
+        if (status === 403)
+          return new FreematicaError('forbidden', 'Insufficient permissions (403)');
         if (status === 404) return new FreematicaError('not_found', 'Resource not found (404)');
         if (status === 429) {
           const retryAfterHeader = err.response.headers['retry-after'];
@@ -441,6 +470,7 @@ export class BaseClient {
 npm test -- tests/clients/base-client.test.ts
 npm run typecheck
 ```
+
 Expected: PASS todos los nuevos tests. (Full suite todavía fallará — porque `freematica-client.test.ts` y las tools tienen mocks viejos. Eso se arregla en las siguientes tasks.)
 
 - [ ] **Step 2.5: Commit**
@@ -455,6 +485,7 @@ git commit -m "fix: unwrap envelope and map envelope.errorCode to FreematicaErro
 ## Task 3: Refactor `FreematicaClient` — métodos existentes retornan `{ items, total }`
 
 **Files:**
+
 - Modify: `src/clients/freematica-client.ts`
 - Modify: `tests/clients/freematica-client.test.ts`
 
@@ -628,9 +659,9 @@ describe('FreematicaClient', () => {
       nock(BASE_URL)
         .get('/pcrm/v2/oportunidades-negocio/MDJfXzI%3D/datos-ampliados')
         .reply(200, { errorCode: '404', errorMessage: 'No data', data: null });
-      await expect(
-        client.getOportunidadNegocioDatosAmpliados('MDJfXzI='),
-      ).rejects.toMatchObject({ code: 'not_found' });
+      await expect(client.getOportunidadNegocioDatosAmpliados('MDJfXzI=')).rejects.toMatchObject({
+        code: 'not_found',
+      });
     });
   });
 });
@@ -641,11 +672,13 @@ describe('FreematicaClient', () => {
 ```bash
 npm test -- tests/clients/freematica-client.test.ts
 ```
+
 Expected: FAIL — los tests nuevos no encuentran `listClientes`, `getCliente`, etc. Los existentes también fallarán porque devuelven `Promise<T[]>` no `{ items, total }`.
 
 - [ ] **Step 3.3: Create new type files**
 
 `src/types/clientes.ts`:
+
 ```ts
 /**
  * Cliente devuelto por Freemática.
@@ -659,6 +692,7 @@ export type Cliente = Record<string, unknown>;
 ```
 
 `src/types/contactos-clientes.ts`:
+
 ```ts
 /**
  * Contacto de cliente devuelto por Freemática.
@@ -670,6 +704,7 @@ export type ContactoCliente = Record<string, unknown>;
 ```
 
 `src/types/oportunidades-negocio.ts`:
+
 ```ts
 /**
  * Oportunidad de negocio devuelta por Freemática (módulo pcrm).
@@ -688,9 +723,7 @@ Reemplazar el archivo entero con:
 ```ts
 import { BaseClient } from './base-client.js';
 import { CATALOG_ENDPOINTS, type MasterDataCatalog } from '../schemas/master-data.js';
-import type {
-  FreematicaListData,
-} from '../types/api-envelope.js';
+import type { FreematicaListData } from '../types/api-envelope.js';
 import type { Cliente } from '../types/clientes.js';
 import type { ContactoCliente } from '../types/contactos-clientes.js';
 import type { MasterDataItem } from '../types/master-data.js';
@@ -819,6 +852,7 @@ export class FreematicaClient extends BaseClient {
 npm test -- tests/clients/freematica-client.test.ts
 npm run typecheck
 ```
+
 Expected: PASS (16+ tests pasando en este archivo).
 
 Note: the full suite may still fail because the tools (`contratos.ts`, `master-data.ts`) and their tests haven't been updated to reflect the new shape. We fix those in the next tasks.
@@ -836,6 +870,7 @@ git commit -m "feat: add list/get methods for clientes, contactos-clientes, opor
 ## Task 4: Ajustar `helpers.ts` — añadir `okList` (TDD)
 
 **Files:**
+
 - Modify: `src/tools/helpers.ts`
 - Modify: `tests/tools/helpers.test.ts`
 
@@ -888,6 +923,7 @@ import { ok, error, okList } from '../../src/tools/helpers.js';
 ```bash
 npm test -- tests/tools/helpers.test.ts
 ```
+
 Expected: FAIL (`okList` no existe).
 
 - [ ] **Step 4.3: Añadir `okList` a `src/tools/helpers.ts`**
@@ -917,6 +953,7 @@ export function okList(args: {
 npm test -- tests/tools/helpers.test.ts
 npm run typecheck
 ```
+
 Expected: PASS (6 tests, los 4 anteriores + 2 nuevos).
 
 - [ ] **Step 4.5: Commit**
@@ -931,6 +968,7 @@ git commit -m "feat: add okList helper for paginated list responses"
 ## Task 5: Ajustar tools existentes a nuevo shape (`contratos`, `master-data`)
 
 **Files:**
+
 - Modify: `src/tools/contratos.ts`
 - Modify: `src/tools/master-data.ts`
 - Modify: `tests/tools/contratos.test.ts`
@@ -943,87 +981,107 @@ El handler "handler returns ok() with items + count on success" actualmente espe
 Localiza el bloque de mock en el test "handler returns ok() with items + count on success" y reemplaza:
 
 ```ts
-    it('handler returns ok() with items + count on success', async () => {
-      const fakeData = [{ idreg: 1 }, { idreg: 2 }];
-      nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, fakeData);
+it('handler returns ok() with items + count on success', async () => {
+  const fakeData = [{ idreg: 1 }, { idreg: 2 }];
+  nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, fakeData);
 
-      const { server } = buildServer();
-      const tools = (server as unknown as {
-        _registeredTools: Record<string, { callback: (args: unknown) => Promise<unknown> }>;
-      })._registeredTools;
+  const { server } = buildServer();
+  const tools = (
+    server as unknown as {
+      _registeredTools: Record<string, { callback: (args: unknown) => Promise<unknown> }>;
+    }
+  )._registeredTools;
 
-      const result = (await tools[TOOL_NAME].callback({})) as {
-        content: { type: string; text: string }[];
-        isError?: boolean;
-      };
+  const result = (await tools[TOOL_NAME].callback({})) as {
+    content: { type: string; text: string }[];
+    isError?: boolean;
+  };
 
-      expect(result.isError).toBeUndefined();
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed).toEqual({ items: fakeData, count: 2 });
-    });
+  expect(result.isError).toBeUndefined();
+  const parsed = JSON.parse(result.content[0].text);
+  expect(parsed).toEqual({ items: fakeData, count: 2 });
+});
 ```
 
 Por:
 
 ```ts
-    it('handler returns okList() with items, count, total on success', async () => {
-      const fakeData = [{ idreg: 1 }, { idreg: 2 }];
-      nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, {
-        errorCode: '200',
-        errorMessage: '',
-        data: { total: '2', items: fakeData, rowHeight: -1 },
-      });
-
-      const { server } = buildServer();
-      const tools = (server as unknown as {
-        _registeredTools: Record<string, { handler?: (args: unknown) => Promise<unknown>; callback?: (args: unknown) => Promise<unknown> }>;
-      })._registeredTools;
-      const handler = tools[TOOL_NAME].handler ?? tools[TOOL_NAME].callback;
-      if (!handler) throw new Error('handler not registered');
-
-      const result = (await handler({})) as {
-        content: { type: string; text: string }[];
-        isError?: boolean;
-      };
-
-      expect(result.isError).toBeUndefined();
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed).toEqual({
-        items: fakeData,
-        count: 2,
-        total: 2,
-        page: undefined,
-        items_per_page: undefined,
-      });
+it('handler returns okList() with items, count, total on success', async () => {
+  const fakeData = [{ idreg: 1 }, { idreg: 2 }];
+  nock(BASE_URL)
+    .get('/pvss/v2/contratos-servicios-material')
+    .reply(200, {
+      errorCode: '200',
+      errorMessage: '',
+      data: { total: '2', items: fakeData, rowHeight: -1 },
     });
+
+  const { server } = buildServer();
+  const tools = (
+    server as unknown as {
+      _registeredTools: Record<
+        string,
+        {
+          handler?: (args: unknown) => Promise<unknown>;
+          callback?: (args: unknown) => Promise<unknown>;
+        }
+      >;
+    }
+  )._registeredTools;
+  const handler = tools[TOOL_NAME].handler ?? tools[TOOL_NAME].callback;
+  if (!handler) throw new Error('handler not registered');
+
+  const result = (await handler({})) as {
+    content: { type: string; text: string }[];
+    isError?: boolean;
+  };
+
+  expect(result.isError).toBeUndefined();
+  const parsed = JSON.parse(result.content[0].text);
+  expect(parsed).toEqual({
+    items: fakeData,
+    count: 2,
+    total: 2,
+    page: undefined,
+    items_per_page: undefined,
+  });
+});
 ```
 
 Y el test "handler returns error() on API failure" del 401 debe usar envelope:
 
 ```ts
-    it('handler returns error() on API failure', async () => {
-      nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, {
-        errorCode: '401',
-        errorMessage: 'Unauthorized',
-        data: null,
-      });
+it('handler returns error() on API failure', async () => {
+  nock(BASE_URL).get('/pvss/v2/contratos-servicios-material').reply(200, {
+    errorCode: '401',
+    errorMessage: 'Unauthorized',
+    data: null,
+  });
 
-      const { server } = buildServer();
-      const tools = (server as unknown as {
-        _registeredTools: Record<string, { handler?: (args: unknown) => Promise<unknown>; callback?: (args: unknown) => Promise<unknown> }>;
-      })._registeredTools;
-      const handler = tools[TOOL_NAME].handler ?? tools[TOOL_NAME].callback;
-      if (!handler) throw new Error('handler not registered');
+  const { server } = buildServer();
+  const tools = (
+    server as unknown as {
+      _registeredTools: Record<
+        string,
+        {
+          handler?: (args: unknown) => Promise<unknown>;
+          callback?: (args: unknown) => Promise<unknown>;
+        }
+      >;
+    }
+  )._registeredTools;
+  const handler = tools[TOOL_NAME].handler ?? tools[TOOL_NAME].callback;
+  if (!handler) throw new Error('handler not registered');
 
-      const result = (await handler({})) as {
-        content: { type: string; text: string }[];
-        isError?: boolean;
-      };
+  const result = (await handler({})) as {
+    content: { type: string; text: string }[];
+    isError?: boolean;
+  };
 
-      expect(result.isError).toBe(true);
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.error).toBe('invalid_token');
-    });
+  expect(result.isError).toBe(true);
+  const parsed = JSON.parse(result.content[0].text);
+  expect(parsed.error).toBe('invalid_token');
+});
 ```
 
 - [ ] **Step 5.2: Update `src/tools/contratos.ts`**
@@ -1069,6 +1127,7 @@ import { error, ok, okList } from './helpers.js';
 ```bash
 npm test -- tests/tools/contratos.test.ts
 ```
+
 Expected: 3 tests PASS.
 
 - [ ] **Step 5.4: Apply the same to `master-data`**
@@ -1125,6 +1184,7 @@ Para mantener compatibilidad con `okList`, no usarlo aquí; usar `ok({ catalog, 
 ```bash
 npm test -- tests/tools/master-data.test.ts
 ```
+
 Expected: 3 tests PASS.
 
 - [ ] **Step 5.6: Commit**
@@ -1140,6 +1200,7 @@ git commit -m "refactor: adjust contratos and master-data tools to new envelope 
 ## Task 6: PaginationSchema (TDD)
 
 **Files:**
+
 - Create: `src/schemas/pagination.ts`
 - Create: `tests/schemas/pagination.test.ts`
 
@@ -1196,6 +1257,7 @@ describe('PaginationSchema', () => {
 ```bash
 npm test -- tests/schemas/pagination.test.ts
 ```
+
 Expected: FAIL (module not found).
 
 - [ ] **Step 6.3: Crear `src/schemas/pagination.ts`**
@@ -1238,6 +1300,7 @@ export const PaginationSchema = {
 npm test -- tests/schemas/pagination.test.ts
 npm run typecheck
 ```
+
 Expected: 8 tests PASS.
 
 - [ ] **Step 6.5: Commit**
@@ -1252,6 +1315,7 @@ git commit -m "feat: add PaginationSchema (1-indexed, items capped at 50)"
 ## Task 7: Tool `clientes` (list + get) — TDD
 
 **Files:**
+
 - Create: `src/tools/clientes.ts`
 - Create: `tests/tools/clientes.test.ts`
 
@@ -1291,7 +1355,8 @@ function buildServer() {
 }
 
 function getHandler(server: McpServer, name: string) {
-  const tools = (server as unknown as { _registeredTools: Record<string, ToolEntry> })._registeredTools;
+  const tools = (server as unknown as { _registeredTools: Record<string, ToolEntry> })
+    ._registeredTools;
   const t = tools[name];
   if (!t) throw new Error(`Tool not registered: ${name}`);
   const fn = t.handler ?? t.callback;
@@ -1318,7 +1383,8 @@ describe('registerClientesTools', () => {
 
   it('registers both tools', () => {
     const server = buildServer();
-    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })
+      ._registeredTools;
     expect(tools).toHaveProperty(LIST_TOOL);
     expect(tools).toHaveProperty(GET_TOOL);
   });
@@ -1388,6 +1454,7 @@ describe('registerClientesTools', () => {
 ```bash
 npm test -- tests/tools/clientes.test.ts
 ```
+
 Expected: FAIL (module not found).
 
 - [ ] **Step 7.3: Crear `src/tools/clientes.ts`**
@@ -1471,6 +1538,7 @@ npm test -- tests/tools/clientes.test.ts
 npm test          # full suite
 npm run typecheck
 ```
+
 Expected: 4 tests pasan en `clientes.test.ts`.
 
 - [ ] **Step 7.5: Commit**
@@ -1485,6 +1553,7 @@ git commit -m "feat: add freematica_list_clientes and freematica_get_cliente too
 ## Task 8: Tool `contactos-clientes` (list) — TDD
 
 **Files:**
+
 - Create: `src/tools/contactos-clientes.ts`
 - Create: `tests/tools/contactos-clientes.test.ts`
 
@@ -1523,7 +1592,8 @@ function buildServer() {
 }
 
 function getHandler(server: McpServer, name: string) {
-  const tools = (server as unknown as { _registeredTools: Record<string, ToolEntry> })._registeredTools;
+  const tools = (server as unknown as { _registeredTools: Record<string, ToolEntry> })
+    ._registeredTools;
   const t = tools[name];
   if (!t) throw new Error(`Tool not registered: ${name}`);
   const fn = t.handler ?? t.callback;
@@ -1546,7 +1616,8 @@ describe('registerContactosClientesTools', () => {
 
   it('registers list tool', () => {
     const server = buildServer();
-    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })
+      ._registeredTools;
     expect(tools).toHaveProperty(LIST_TOOL);
   });
 
@@ -1600,6 +1671,7 @@ describe('registerContactosClientesTools', () => {
 ```bash
 npm test -- tests/tools/contactos-clientes.test.ts
 ```
+
 Expected: FAIL.
 
 - [ ] **Step 8.3: Crear `src/tools/contactos-clientes.ts`**
@@ -1650,6 +1722,7 @@ export function registerContactosClientesTools(server: McpServer, client: Freema
 npm test -- tests/tools/contactos-clientes.test.ts
 npm run typecheck
 ```
+
 Expected: 3 tests PASS.
 
 - [ ] **Step 8.5: Commit**
@@ -1664,6 +1737,7 @@ git commit -m "feat: add freematica_list_contactos_clientes tool"
 ## Task 9: Tools `oportunidades-negocio` (list + get + datos-ampliados) — TDD
 
 **Files:**
+
 - Create: `src/tools/oportunidades-negocio.ts`
 - Create: `tests/tools/oportunidades-negocio.test.ts`
 
@@ -1704,7 +1778,8 @@ function buildServer() {
 }
 
 function getHandler(server: McpServer, name: string) {
-  const tools = (server as unknown as { _registeredTools: Record<string, ToolEntry> })._registeredTools;
+  const tools = (server as unknown as { _registeredTools: Record<string, ToolEntry> })
+    ._registeredTools;
   const t = tools[name];
   if (!t) throw new Error(`Tool not registered: ${name}`);
   const fn = t.handler ?? t.callback;
@@ -1731,7 +1806,8 @@ describe('registerOportunidadesNegocioTools', () => {
 
   it('registers all three tools', () => {
     const server = buildServer();
-    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })
+      ._registeredTools;
     expect(tools).toHaveProperty(LIST_TOOL);
     expect(tools).toHaveProperty(GET_TOOL);
     expect(tools).toHaveProperty(AMP_TOOL);
@@ -1764,9 +1840,7 @@ describe('registerOportunidadesNegocioTools', () => {
 
   it('get returns the oportunidad detail', async () => {
     const fake = { ID_OPORTUNIDAD: 2.0, NOMBRE: 'VIVENIO', VALOR: 1000 };
-    nock(BASE_URL)
-      .get('/pcrm/v2/oportunidades-negocio/MDJfXzI%3D')
-      .reply(200, detailEnv(fake));
+    nock(BASE_URL).get('/pcrm/v2/oportunidades-negocio/MDJfXzI%3D').reply(200, detailEnv(fake));
 
     const server = buildServer();
     const handler = getHandler(server, GET_TOOL);
@@ -1822,6 +1896,7 @@ describe('registerOportunidadesNegocioTools', () => {
 ```bash
 npm test -- tests/tools/oportunidades-negocio.test.ts
 ```
+
 Expected: FAIL.
 
 - [ ] **Step 9.3: Crear `src/tools/oportunidades-negocio.ts`**
@@ -1931,6 +2006,7 @@ export function registerOportunidadesNegocioTools(
 npm test -- tests/tools/oportunidades-negocio.test.ts
 npm run typecheck
 ```
+
 Expected: 5 tests PASS.
 
 - [ ] **Step 9.5: Commit**
@@ -1945,6 +2021,7 @@ git commit -m "feat: add oportunidades-negocio tools (list + get + datos-ampliad
 ## Task 10: Wire factory + refuerzo test del server
 
 **Files:**
+
 - Modify: `src/server.ts`
 - Modify: `tests/server.test.ts`
 
@@ -2007,7 +2084,8 @@ const TEST_CLIENT = new FreematicaClient({
 });
 
 function registeredToolNames(server: ReturnType<typeof createFreematicaServer>): string[] {
-  const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+  const tools = (server as unknown as { _registeredTools: Record<string, unknown> })
+    ._registeredTools;
   return Object.keys(tools).sort();
 }
 
@@ -2036,6 +2114,7 @@ npm test -- tests/server.test.ts
 npm test          # full suite
 npm run typecheck
 ```
+
 Expected: All pass. Full suite ≥ ~65 tests.
 
 - [ ] **Step 10.4: Commit**
@@ -2050,6 +2129,7 @@ git commit -m "feat: wire 5 new commercial tools into createFreematicaServer (v0
 ## Task 11: Server instructions + version bump literals
 
 **Files:**
+
 - Modify: `src/server-instructions.ts`
 - Modify: `src/transports/http.ts`
 - Modify: `src/index.ts`
@@ -2149,6 +2229,7 @@ Buscar todas las apariciones de `0.3.1` en `src/`:
 ```bash
 grep -rn "0\.3\.1" src/
 ```
+
 Expected: 3 archivos (server.ts ya cambiado en Task 10, http.ts, index.ts). Si el server.ts aún muestra '0.3.1' es un error en Task 10 — corregir.
 
 Cambiar en `src/transports/http.ts` el literal:
@@ -2156,38 +2237,49 @@ Cambiar en `src/transports/http.ts` el literal:
 ```ts
 res.json({ status: 'ok', version: '0.3.1', sessions: sessions.size });
 ```
+
 a:
+
 ```ts
 res.json({ status: 'ok', version: '0.4.0', sessions: sessions.size });
 ```
 
 Cambiar en `src/index.ts` el literal:
+
 ```ts
 `[freematica-mcp] Starting stdio transport v0.3.1 | base=${auth.FREEMATICA_BASE_URL}`,
 ```
+
 a:
+
 ```ts
 `[freematica-mcp] Starting stdio transport v0.4.0 | base=${auth.FREEMATICA_BASE_URL}`,
 ```
 
 Cambiar en `package.json`:
+
 ```json
 "version": "0.3.1",
 ```
+
 a:
+
 ```json
 "version": "0.4.0",
 ```
 
 Y `npm install` para actualizar el lockfile:
+
 ```bash
 npm install
 ```
 
 Verificar:
+
 ```bash
 grep -rn "0\.3\.1" src/
 ```
+
 Expected: no matches.
 
 - [ ] **Step 11.3: Validate**
@@ -2195,6 +2287,7 @@ Expected: no matches.
 ```bash
 npm run lint && npm run typecheck && npm run build && npm test
 ```
+
 Expected: PASS los 4.
 
 - [ ] **Step 11.4: Commit**
@@ -2210,6 +2303,7 @@ git commit -m "chore: extend server instructions, bump version to 0.4.0"
 ## Task 12: README + CHANGELOG
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CHANGELOG.md`
 
@@ -2218,16 +2312,16 @@ git commit -m "chore: extend server instructions, bump version to 0.4.0"
 Localizar la tabla existente. Reemplazarla por:
 
 ```md
-| Tool | Endpoint Freemática | Descripción |
-|---|---|---|
-| `freematica_list_materiales_asignados_servicios` | `GET /pvss/v2/contratos-servicios-material` | Lista de material asignado a servicios |
-| `freematica_get_master_data` | (19 endpoints según `catalog`) | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario) |
-| `freematica_list_clientes` | `GET /pgrl/v2/clientes` | Lista paginada de clientes |
-| `freematica_get_cliente` | `GET /pgrl/v2/clientes/{idReg}` | Detalle de un cliente |
-| `freematica_list_contactos_clientes` | `GET /pgrl/v2/contactos-clientes` | Lista paginada de contactos |
-| `freematica_list_oportunidades_negocio` | `GET /pcrm/v2/oportunidades-negocio` | Lista paginada de oportunidades |
-| `freematica_get_oportunidad_negocio` | `GET /pcrm/v2/oportunidades-negocio/{idReg}` | Detalle de oportunidad |
-| `freematica_get_oportunidad_negocio_datos_ampliados` | `GET /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados` | Datos ampliados (puede 404) |
+| Tool                                                 | Endpoint Freemática                                          | Descripción                                                                            |
+| ---------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `freematica_list_materiales_asignados_servicios`     | `GET /pvss/v2/contratos-servicios-material`                  | Lista de material asignado a servicios                                                 |
+| `freematica_get_master_data`                         | (19 endpoints según `catalog`)                               | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario) |
+| `freematica_list_clientes`                           | `GET /pgrl/v2/clientes`                                      | Lista paginada de clientes                                                             |
+| `freematica_get_cliente`                             | `GET /pgrl/v2/clientes/{idReg}`                              | Detalle de un cliente                                                                  |
+| `freematica_list_contactos_clientes`                 | `GET /pgrl/v2/contactos-clientes`                            | Lista paginada de contactos                                                            |
+| `freematica_list_oportunidades_negocio`              | `GET /pcrm/v2/oportunidades-negocio`                         | Lista paginada de oportunidades                                                        |
+| `freematica_get_oportunidad_negocio`                 | `GET /pcrm/v2/oportunidades-negocio/{idReg}`                 | Detalle de oportunidad                                                                 |
+| `freematica_get_oportunidad_negocio_datos_ampliados` | `GET /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados` | Datos ampliados (puede 404)                                                            |
 ```
 
 - [ ] **Step 12.2: Añadir sección "Paginación" después de "Datos maestros disponibles"**
@@ -2253,6 +2347,7 @@ Las tools `freematica_get_*` requieren un `id` que **NO** es el código natural 
 Si pasas un código natural, el API responde `not_found`.
 
 Patrón típico de uso desde el LLM:
+
 1. `freematica_list_clientes(page=1, items=20)` → encontrar el cliente que interesa.
 2. Tomar el campo `idReg` de ese item.
 3. `freematica_get_cliente(id="<idReg>")` → detalle completo.
@@ -2261,10 +2356,13 @@ Patrón típico de uso desde el LLM:
 - [ ] **Step 12.3: Actualizar literal de versión en "Verificación"**
 
 Buscar:
+
 ```
 "status": "ok", "version": "0.3.1"
 ```
+
 Reemplazar por:
+
 ```
 "status": "ok", "version": "0.4.0"
 ```
@@ -2272,12 +2370,14 @@ Reemplazar por:
 - [ ] **Step 12.4: Añadir referencias v0.4.0 en "Especificaciones y diseño"**
 
 Localizar:
+
 ```md
 - v0.3.0 spec: `docs/superpowers/specs/2026-05-19-master-data-tool-design.md` (master data tool)
 - v0.3.0 plan: `docs/superpowers/plans/2026-05-19-master-data-tool.md`
 ```
 
 Añadir debajo:
+
 ```md
 - v0.4.0 spec: `docs/superpowers/specs/2026-05-20-commercial-tools-design.md` (commercial tools + envelope unwrap fix)
 - v0.4.0 plan: `docs/superpowers/plans/2026-05-20-commercial-tools.md`
@@ -2291,9 +2391,11 @@ Insertar como primera entrada (antes del `[0.3.1]`):
 ## [0.4.0] — 2026-05-20
 
 ### Fixed
+
 - **Envelope unwrap**: el API REST de Freemática envuelve todas las respuestas en `{ errorCode, errorMessage, data }`. El `BaseClient` desempaqueta ahora `data` automáticamente y mapea `errorCode != "200"` a `FreematicaError` (con códigos como `invalid_token`, `not_found`, `server_error`, etc.). Las tools v0.3.x estaban devolviendo el wrapper completo en `items` — bug silencioso al no haber sido consumidas en producción.
 
 ### Added
+
 - 6 tools comerciales nuevas:
   - `freematica_list_clientes` (paginada)
   - `freematica_get_cliente`
@@ -2306,10 +2408,12 @@ Insertar como primera entrada (antes del `[0.3.1]`):
 - `FreematicaListData<T>` y `FreematicaEnvelope<T>` types.
 
 ### Changed (breaking — no consumed yet)
+
 - Tools existentes (`freematica_list_materiales_asignados_servicios`, `freematica_get_master_data`) devuelven ahora `{ items, count, total, ... }` (antes era el wrapper completo de Freemática mal mapeado).
 - `FreematicaClient.getMaterialesAsignadosServicios()` y `getMasterData()` devuelven `Promise<{ items, total }>` en vez de `Promise<T[]>`.
 
 ### Notes
+
 - Probado empíricamente contra el API real de Freemática. Confirmado que `grupoCli` documentado en Postman no funciona en producción — no se expone como filtro.
 ```
 
@@ -2318,6 +2422,7 @@ Insertar como primera entrada (antes del `[0.3.1]`):
 ```bash
 npm run lint && npm run typecheck && npm run build && npm test
 ```
+
 Expected: PASS los 4.
 
 - [ ] **Step 12.7: Commit**
@@ -2336,6 +2441,7 @@ git commit -m "docs: document v0.4.0 commercial tools, pagination, and idReg pat
 - [ ] **Step 13.1: STOP — presentar resumen al usuario para aprobación de push**
 
 > "Implementación completa en `feat/commercial-tools`. Lint + typecheck + build + tests OK localmente (≥65 tests pasando). Plan:
+>
 > 1. Push branch.
 > 2. PR a `development`, esperar CI verde, squash-merge.
 > 3. PR `development` → `main`, esperar CI verde, merge.
@@ -2438,6 +2544,7 @@ gh run list --workflow=publish.yml --limit 1 --json conclusion --jq '.[0].conclu
 ## Task 14: Commitear el plan
 
 **Files:**
+
 - `docs/superpowers/plans/2026-05-20-commercial-tools.md`
 
 Esto debe hacerse al final, una vez todo lo demás esté commiteado (idealmente integrado en el PR, no como commit separado tras el tag). Si no, integrar en el primer push.
@@ -2457,31 +2564,32 @@ git commit -m "docs: add implementation plan for v0.4.0 commercial tools"
 
 **Spec coverage:**
 
-| Spec section | Cubierto en |
-|---|---|
-| §2 Goals | Tasks 2 (unwrap), 7-9 (6 tools), 6 (paginación), 11 (idReg en descripción), 1+3 (api-envelope types) |
-| §3 Non-goals | Respetado (sin filtros, sin escritura, sin casos, sin contactos detalle, sin tipado fuerte, sin help tool) |
-| §4 Decisiones de diseño | Distribuidas en Tasks 2 (unwrap+mapEnvelopeError), 6 (pagination), 7/9 (id=string con .describe), 5 (shape de tools existentes), 11 (version) |
-| §5 Estructura de archivos | Tasks 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12 |
-| §6.1 api-envelope.ts | Task 1 |
-| §6.2 base-client.ts | Task 2 |
-| §6.3 freematica-client.ts | Task 3 |
-| §6.4 pagination.ts | Task 6 |
-| §6.5 types | Task 3 (combinado con freematica-client) |
-| §6.6 helpers.ts | Task 4 |
-| §6.7 tools | Tasks 7, 8, 9 |
-| §6.8 server.ts | Task 10 |
-| §6.9 server-instructions.ts | Task 11 |
-| §7 Data flow | Verificado en Tasks 7-9 (tests E2E) |
-| §8 Manejo de errores | Tasks 2 (envelope mapping), 7-9 (errorFor) |
-| §9 Testing | Tasks 2, 3, 4, 6, 7, 8, 9, 10 |
-| §11 README | Task 12 |
-| §12 Version | Tasks 10 (server.ts), 11 (package.json + http + index) |
-| §13 Open questions | Out of scope para el plan; doc del comportamiento de datos-ampliados en Task 9 y 11 |
+| Spec section                | Cubierto en                                                                                                                                   |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| §2 Goals                    | Tasks 2 (unwrap), 7-9 (6 tools), 6 (paginación), 11 (idReg en descripción), 1+3 (api-envelope types)                                          |
+| §3 Non-goals                | Respetado (sin filtros, sin escritura, sin casos, sin contactos detalle, sin tipado fuerte, sin help tool)                                    |
+| §4 Decisiones de diseño     | Distribuidas en Tasks 2 (unwrap+mapEnvelopeError), 6 (pagination), 7/9 (id=string con .describe), 5 (shape de tools existentes), 11 (version) |
+| §5 Estructura de archivos   | Tasks 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12                                                                                                      |
+| §6.1 api-envelope.ts        | Task 1                                                                                                                                        |
+| §6.2 base-client.ts         | Task 2                                                                                                                                        |
+| §6.3 freematica-client.ts   | Task 3                                                                                                                                        |
+| §6.4 pagination.ts          | Task 6                                                                                                                                        |
+| §6.5 types                  | Task 3 (combinado con freematica-client)                                                                                                      |
+| §6.6 helpers.ts             | Task 4                                                                                                                                        |
+| §6.7 tools                  | Tasks 7, 8, 9                                                                                                                                 |
+| §6.8 server.ts              | Task 10                                                                                                                                       |
+| §6.9 server-instructions.ts | Task 11                                                                                                                                       |
+| §7 Data flow                | Verificado en Tasks 7-9 (tests E2E)                                                                                                           |
+| §8 Manejo de errores        | Tasks 2 (envelope mapping), 7-9 (errorFor)                                                                                                    |
+| §9 Testing                  | Tasks 2, 3, 4, 6, 7, 8, 9, 10                                                                                                                 |
+| §11 README                  | Task 12                                                                                                                                       |
+| §12 Version                 | Tasks 10 (server.ts), 11 (package.json + http + index)                                                                                        |
+| §13 Open questions          | Out of scope para el plan; doc del comportamiento de datos-ampliados en Task 9 y 11                                                           |
 
 **Placeholder scan:** ✅ Sin "TBD" / "TODO" / "implement later". Las notas sobre `CallToolResult` cast son guías concretas referenciando código existente (`src/tools/contratos.ts`), no placeholders.
 
 **Type consistency:**
+
 - `FreematicaEnvelope<T>` y `FreematicaListData<T>` (Task 1) → usados en Tasks 2, 3.
 - `ListResult<T>` y `ListOptions` (Task 3) → exportados; usados implícitamente por las tools en Tasks 7-9.
 - `Cliente`, `ContactoCliente`, `OportunidadNegocio` (Task 3) → usados como tipos genéricos en `FreematicaClient` methods.

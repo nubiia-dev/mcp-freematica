@@ -3,7 +3,7 @@
 - **Date:** 2026-05-18
 - **Author:** Samuel Fraga
 - **Status:** Approved, ready for implementation
-- **Repo:** `slm-freematica-mcp` (Freemática org)
+- **Repo:** `mcp-freematica` (Freemática org)
 
 ---
 
@@ -17,46 +17,46 @@ Queremos exponer un subconjunto de esas operaciones como un servidor MCP (Model 
 
 ## 2. Operación a automatizar (v0.1.0)
 
-| Campo | Valor |
-|---|---|
-| Tool MCP | `freematica_list_materiales_asignados_servicios` |
-| Método HTTP | `GET` |
-| URL | `https://api-p01.clientservicepanel.com/restsat/api/pvss/v2/contratos-servicios-material` |
-| Headers requeridos | `x-auth-token`, `x-auth-company`, `x-auth-organization`, `x-auth-app`, `x-auth-session`, `Content-Type: application/json` |
-| Query params | _Ninguno_ |
-| Path params | _Ninguno_ |
-| Body | _Ninguno_ |
-| Respuesta | `VoContratosServMatAsignado[]` |
-| Internal Method | `MCT_TABLA_GESTION` |
-| API Group | Contratos |
-| App | `pvss` |
-| Version | `v2` |
-| Descripción Postman | _"Devuelve un arreglo de objetos VoContratosServMatAsignado con la información solicitada de material asignado"_ |
+| Campo               | Valor                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Tool MCP            | `freematica_list_materiales_asignados_servicios`                                                                          |
+| Método HTTP         | `GET`                                                                                                                     |
+| URL                 | `https://api-p01.clientservicepanel.com/restsat/api/pvss/v2/contratos-servicios-material`                                 |
+| Headers requeridos  | `x-auth-token`, `x-auth-company`, `x-auth-organization`, `x-auth-app`, `x-auth-session`, `Content-Type: application/json` |
+| Query params        | _Ninguno_                                                                                                                 |
+| Path params         | _Ninguno_                                                                                                                 |
+| Body                | _Ninguno_                                                                                                                 |
+| Respuesta           | `VoContratosServMatAsignado[]`                                                                                            |
+| Internal Method     | `MCT_TABLA_GESTION`                                                                                                       |
+| API Group           | Contratos                                                                                                                 |
+| App                 | `pvss`                                                                                                                    |
+| Version             | `v2`                                                                                                                      |
+| Descripción Postman | _"Devuelve un arreglo de objetos VoContratosServMatAsignado con la información solicitada de material asignado"_          |
 
 **Nota:** el shape exacto de `VoContratosServMatAsignado` no está documentado en el Postman; se inferirá del primer response real y se tipará en `src/types/contratos.ts`. Hasta tener acceso al API, el tipo se declara como `Record<string, unknown>` y se afina iterativamente.
 
 ## 3. Decisiones de diseño
 
-| Decisión | Elección | Justificación |
-|---|---|---|
-| Lenguaje / runtime | TypeScript + Node.js ≥ 20 | Mejor SDK del MCP, alineado con `mcp-nevent` y `mcp-holded`. |
-| MCP SDK | `@modelcontextprotocol/sdk` ^1.27.1 | Oficial, misma versión que `mcp-nevent`. |
-| Transporte | **Streamable HTTP** (único) | Nubiia conecta remotamente. Sin stdio. |
-| Inyección de credenciales | Variables de entorno (`FREEMATICA_AUTH_*`) cargadas al arrancar | Estándar; Nubiia las setea al lanzar el proceso. Credenciales globales por instalación. |
-| Validación de inputs | Zod | Estándar del MCP SDK TS. |
-| Cliente HTTP | `axios` envuelto en `BaseClient` | Headers de auth se inyectan automáticamente; mapeo de errores centralizado. |
-| Estructura de tools | 1 archivo por **API Group** del Postman en `src/tools/` | Misma convención que `mcp-nevent`. Cuando un grupo pase de ~15 tools, se split. |
-| Naming de tools | `freematica_<verbo>_<recurso>` (snake_case) | Mismo estilo que `nevent_<verbo>_<recurso>`. Namespace claro. |
-| Auth de Claude → MCP | **No implementada en este server** | Nubiia gestiona la auth entre Claude y el MCP. El server confía en quien llega al endpoint HTTP. |
-| Logging persistente | **No** | No hay MongoDB; logging a stderr basta para esta versión. |
-| Operation mode (READ/STANDARD/FULL) | **No por ahora** | Solo hay una tool read-only. Se introduce cuando se añadan tools destructivas. |
-| Despliegue | Solo código + Dockerfile opcional | Nubiia se encarga del deploy. |
+| Decisión                            | Elección                                                        | Justificación                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Lenguaje / runtime                  | TypeScript + Node.js ≥ 20                                       | Mejor SDK del MCP, alineado con `mcp-nevent` y `mcp-holded`.                                     |
+| MCP SDK                             | `@modelcontextprotocol/sdk` ^1.27.1                             | Oficial, misma versión que `mcp-nevent`.                                                         |
+| Transporte                          | **Streamable HTTP** (único)                                     | Nubiia conecta remotamente. Sin stdio.                                                           |
+| Inyección de credenciales           | Variables de entorno (`FREEMATICA_AUTH_*`) cargadas al arrancar | Estándar; Nubiia las setea al lanzar el proceso. Credenciales globales por instalación.          |
+| Validación de inputs                | Zod                                                             | Estándar del MCP SDK TS.                                                                         |
+| Cliente HTTP                        | `axios` envuelto en `BaseClient`                                | Headers de auth se inyectan automáticamente; mapeo de errores centralizado.                      |
+| Estructura de tools                 | 1 archivo por **API Group** del Postman en `src/tools/`         | Misma convención que `mcp-nevent`. Cuando un grupo pase de ~15 tools, se split.                  |
+| Naming de tools                     | `freematica_<verbo>_<recurso>` (snake_case)                     | Mismo estilo que `nevent_<verbo>_<recurso>`. Namespace claro.                                    |
+| Auth de Claude → MCP                | **No implementada en este server**                              | Nubiia gestiona la auth entre Claude y el MCP. El server confía en quien llega al endpoint HTTP. |
+| Logging persistente                 | **No**                                                          | No hay MongoDB; logging a stderr basta para esta versión.                                        |
+| Operation mode (READ/STANDARD/FULL) | **No por ahora**                                                | Solo hay una tool read-only. Se introduce cuando se añadan tools destructivas.                   |
+| Despliegue                          | Solo código + Dockerfile opcional                               | Nubiia se encarga del deploy.                                                                    |
 
 ## 4. Arquitectura
 
 ```
 ┌──────────────┐    HTTP (Streamable)    ┌────────────────────────────┐
-│   Nubiia     │ ───────────────────────▶│  slm-freematica-mcp        │
+│   Nubiia     │ ───────────────────────▶│  mcp-freematica        │
 │  (cliente)   │                         │  (Express + MCP SDK)       │
 └──────────────┘                         │                            │
                                          │  ┌──────────────────────┐  │
@@ -79,7 +79,7 @@ Queremos exponer un subconjunto de esas operaciones como un servidor MCP (Model 
 ## 5. Estructura de archivos
 
 ```
-slm-freematica-mcp/
+mcp-freematica/
 ├── package.json
 ├── tsconfig.json
 ├── vitest.config.ts
@@ -130,7 +130,10 @@ Carga y valida env vars con Zod. Falla con mensaje claro en arranque si falta al
 
 ```ts
 const ConfigSchema = z.object({
-  FREEMATICA_BASE_URL: z.string().url().default('https://api-p01.clientservicepanel.com/restsat/api'),
+  FREEMATICA_BASE_URL: z
+    .string()
+    .url()
+    .default('https://api-p01.clientservicepanel.com/restsat/api'),
   FREEMATICA_AUTH_TOKEN: z.string().min(1),
   FREEMATICA_AUTH_COMPANY: z.string().min(1),
   FREEMATICA_AUTH_ORGANIZATION: z.string().min(1),
@@ -141,27 +144,30 @@ const ConfigSchema = z.object({
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
-export function loadConfig(): Config { /* parse + format errors */ }
+export function loadConfig(): Config {
+  /* parse + format errors */
+}
 ```
 
 ### 6.2 `src/clients/base-client.ts`
 
 Cliente HTTP genérico que:
+
 - Inyecta los 5 headers `x-auth-*` + `Content-Type` automáticamente.
 - Expone `request<T>(method, path, body?)` y atajos `get<T>(path)`, `post<T>(path, body)`, etc.
 - Mapea respuestas HTTP a errores normalizados `FreematicaError` con `code` y `message`.
 
 **Códigos de error normalizados:**
 
-| Código | Trigger | LLM action |
-|---|---|---|
-| `invalid_token` | 401 | Avisar al usuario; las credenciales del MCP necesitan renovarse en Nubiia. |
-| `forbidden` | 403 | Sin permisos para la operación. |
-| `not_found` | 404 | Recurso/endpoint inexistente. |
-| `rate_limit_exceeded` | 429 | Esperar `retryAfter` y reintentar una vez. |
-| `server_error` | 5xx | Reintentar una vez con backoff. |
-| `network_error` | ECONNREFUSED / timeout | Reintentar una vez tras 2s. |
-| `unexpected_error` | resto | Loggear y reintentar una vez. |
+| Código                | Trigger                | LLM action                                                                 |
+| --------------------- | ---------------------- | -------------------------------------------------------------------------- |
+| `invalid_token`       | 401                    | Avisar al usuario; las credenciales del MCP necesitan renovarse en Nubiia. |
+| `forbidden`           | 403                    | Sin permisos para la operación.                                            |
+| `not_found`           | 404                    | Recurso/endpoint inexistente.                                              |
+| `rate_limit_exceeded` | 429                    | Esperar `retryAfter` y reintentar una vez.                                 |
+| `server_error`        | 5xx                    | Reintentar una vez con backoff.                                            |
+| `network_error`       | ECONNREFUSED / timeout | Reintentar una vez tras 2s.                                                |
+| `unexpected_error`    | resto                  | Loggear y reintentar una vez.                                              |
 
 ### 6.3 `src/clients/freematica-client.ts`
 
@@ -183,7 +189,7 @@ Factory `createFreematicaServer(opts)` que devuelve un `McpServer` con todas las
 export function createFreematicaServer(opts: CreateFreematicaServerOptions): McpServer {
   const server = new McpServer(
     { name: 'freematica-mcp', version: '0.1.0' },
-    { instructions: FREEMATICA_MCP_INSTRUCTIONS }
+    { instructions: FREEMATICA_MCP_INSTRUCTIONS },
   );
   registerContratosTools(server, opts.client);
   return server;
@@ -198,20 +204,21 @@ Una función `registerContratosTools(server, client)` que registra todas las too
 server.tool(
   'freematica_list_materiales_asignados_servicios',
   'Devuelve la lista de material asignado a servicios (pvss/v2/contratos-servicios-material). ' +
-  'Equivale a la operación VoContratosServMatAsignado del backend de Freemática. ' +
-  'No requiere parámetros.',
+    'Equivale a la operación VoContratosServMatAsignado del backend de Freemática. ' +
+    'No requiere parámetros.',
   {}, // sin inputs
   { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
   async () => {
     const items = await client.getMaterialesAsignadosServicios();
     return ok({ items, count: items.length });
-  }
+  },
 );
 ```
 
 ### 6.6 `src/transports/http.ts`
 
 Express app con:
+
 - `POST /mcp` — JSON-RPC (`StreamableHTTPServerTransport`).
 - `GET /mcp` — SSE stream.
 - `DELETE /mcp` — terminación de sesión.
@@ -237,7 +244,11 @@ const client = new FreematicaClient({
   },
 });
 
-const { app, shutdown } = await createHttpApp({ port: config.MCP_PORT, client, allowedOrigins: config.MCP_ALLOWED_ORIGINS });
+const { app, shutdown } = await createHttpApp({
+  port: config.MCP_PORT,
+  client,
+  allowedOrigins: config.MCP_ALLOWED_ORIGINS,
+});
 
 process.on('SIGTERM', () => void shutdown().then(() => process.exit(0)));
 process.on('SIGINT', () => void shutdown().then(() => process.exit(0)));
@@ -288,7 +299,7 @@ app.listen(config.MCP_PORT, () => {
 
 ```json
 {
-  "name": "slm-freematica-mcp",
+  "name": "mcp-freematica",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",

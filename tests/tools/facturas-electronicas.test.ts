@@ -604,7 +604,7 @@ describe('registerFacturasElectronicasTools', () => {
           EDICOM_CLIENT_ID: 'CLIE001',
           EDICOM_DOMAIN: 'test.edicom.es',
           EDICOM_SERVER_URL: 'https://edicom.example.com',
-          EDICOM_RAZON_SOCIAL: 'Serlimar S.L.',
+          EDICOM_RAZON_SOCIAL: 'Empresa Ejemplo S.L.',
         },
       ];
       nock(BASE_URL)
