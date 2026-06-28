@@ -87,7 +87,7 @@ export class BaseClient {
     }
   }
 
-  private mapEnvelopeError(env: FreematicaEnvelope<unknown> | undefined): FreematicaError {
+  protected mapEnvelopeError(env: FreematicaEnvelope<unknown> | undefined): FreematicaError {
     const code = env?.errorCode ?? 'unknown';
     const msg = env?.errorMessage || `API error (envelope errorCode=${code})`;
     if (code === '401') return new FreematicaError('invalid_token', msg);
@@ -98,7 +98,7 @@ export class BaseClient {
     return new FreematicaError('unexpected_error', msg);
   }
 
-  private mapAxiosError(err: unknown): FreematicaError {
+  protected mapAxiosError(err: unknown): FreematicaError {
     if (err instanceof AxiosError) {
       if (err.response) {
         const status = err.response.status;
@@ -120,6 +120,11 @@ export class BaseClient {
       }
       if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'ENOTFOUND') {
         return new FreematicaError('network_error', `Network error: ${err.message}`);
+      }
+      // ECONNABORTED: Axios timeout (axios timeout option fired)
+      // ERR_CANCELED: Axios cancellation via AbortController signal
+      if (err.code === 'ECONNABORTED' || err.code === 'ERR_CANCELED') {
+        return new FreematicaError('network_error', `Request timed out: ${err.message}`);
       }
     }
     const msg = err instanceof Error ? err.message : String(err);

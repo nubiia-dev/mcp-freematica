@@ -3,7 +3,7 @@
 - **Date:** 2026-05-19
 - **Author:** Samuel Fraga
 - **Status:** Approved, ready for implementation
-- **Repo:** `serlimar/slm-freematica-mcp`
+- **Repo:** `nubiia-dev/mcp-freematica`
 - **Target version:** `0.3.0`
 - **Predecessors:** v0.1.0 (`docs/superpowers/specs/2026-05-18-freematica-mcp-design.md`), v0.2.0 (`docs/superpowers/specs/2026-05-19-stdio-transport-design.md`).
 
@@ -36,49 +36,49 @@ Esta release añade una segunda tool, `freematica_get_master_data`, que expone 1
 
 Cada entrada define el valor del enum `catalog`, el endpoint Freemática y una descripción humana (que va al `.describe()` del enum para que el LLM la lea en el inputSchema).
 
-| `catalog` | Endpoint | Descripción para el LLM |
-|---|---|---|
-| **Tipos / clasificaciones (9)** | | |
-| `tipos-contrato` | `GET /ppre/v2/tipos-contrato` | Tipos de contrato comercial (mantenimiento, venta, instalación, etc.) |
-| `tipo-instalacion` | `GET /ppre/v1/tipo-instalacion` | Tipos de instalación física |
-| `clases-servicios` | `GET /pvss/v1/clases-servicios` | Clases de servicio operativas |
-| `tipos-casos` | `GET /pcrm/v2/tipos-casos` | Tipos de caso/ticket del CRM |
-| `subtipos-casos` | `GET /pcrm/v2/subtipos-casos` | Subtipos de caso del CRM |
-| `tipos-oportunidad-negocio` | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial |
-| `tipos-impuestos` | `GET /pgrl/v2/tipos-impuestos` | Tipos de impuesto (IVA, IRPF, retenciones) |
-| `tipos-marcajes` | `GET /pkai/v1/tiposmarcajes` | Tipos de marcaje de presencia/jornada |
-| `naturalezas-abono` | `GET /pven/v1/naturalezas-abono` | Naturalezas de abono comercial |
-| **Geográficos (4)** | | |
-| `paises` | `GET /pgrl/v1/paises` | Países |
-| `nacionalidades` | `GET /pgrl/v1/nacionalidades` | Nacionalidades |
-| `provincias` | `GET /pgrl/v1/provincias` | Provincias |
-| `poblaciones` | `GET /pgrl/v2/poblaciones` | Poblaciones / municipios |
-| **Organizativos (4)** | | |
-| `empresas` | `GET /pgrl/v1/empresas` | Empresas dentro de la organización |
-| `delegaciones` | `GET /pgrl/v2/delegaciones` | Delegaciones de las empresas |
-| `lineas-negocio` | `GET /pgrl/v2/lineas-negocio` | Líneas de negocio |
-| `cargos-clientes` | `GET /pgrl/v2/cargos-clientes` | Cargos / puestos de contactos de clientes |
-| **Inventario (2)** | | |
-| `familias` | `GET /part/v1/familias` | Familias de artículos / productos |
-| `subfamilias` | `GET /part/v1/subfamilias` | Subfamilias de artículos |
+| `catalog`                       | Endpoint                                 | Descripción para el LLM                                               |
+| ------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| **Tipos / clasificaciones (9)** |                                          |                                                                       |
+| `tipos-contrato`                | `GET /ppre/v2/tipos-contrato`            | Tipos de contrato comercial (mantenimiento, venta, instalación, etc.) |
+| `tipo-instalacion`              | `GET /ppre/v1/tipo-instalacion`          | Tipos de instalación física                                           |
+| `clases-servicios`              | `GET /pvss/v1/clases-servicios`          | Clases de servicio operativas                                         |
+| `tipos-casos`                   | `GET /pcrm/v2/tipos-casos`               | Tipos de caso/ticket del CRM                                          |
+| `subtipos-casos`                | `GET /pcrm/v2/subtipos-casos`            | Subtipos de caso del CRM                                              |
+| `tipos-oportunidad-negocio`     | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial                                        |
+| `tipos-impuestos`               | `GET /pgrl/v2/tipos-impuestos`           | Tipos de impuesto (IVA, IRPF, retenciones)                            |
+| `tipos-marcajes`                | `GET /pkai/v1/tiposmarcajes`             | Tipos de marcaje de presencia/jornada                                 |
+| `naturalezas-abono`             | `GET /pven/v1/naturalezas-abono`         | Naturalezas de abono comercial                                        |
+| **Geográficos (4)**             |                                          |                                                                       |
+| `paises`                        | `GET /pgrl/v1/paises`                    | Países                                                                |
+| `nacionalidades`                | `GET /pgrl/v1/nacionalidades`            | Nacionalidades                                                        |
+| `provincias`                    | `GET /pgrl/v1/provincias`                | Provincias                                                            |
+| `poblaciones`                   | `GET /pgrl/v2/poblaciones`               | Poblaciones / municipios                                              |
+| **Organizativos (4)**           |                                          |                                                                       |
+| `empresas`                      | `GET /pgrl/v1/empresas`                  | Empresas dentro de la organización                                    |
+| `delegaciones`                  | `GET /pgrl/v2/delegaciones`              | Delegaciones de las empresas                                          |
+| `lineas-negocio`                | `GET /pgrl/v2/lineas-negocio`            | Líneas de negocio                                                     |
+| `cargos-clientes`               | `GET /pgrl/v2/cargos-clientes`           | Cargos / puestos de contactos de clientes                             |
+| **Inventario (2)**              |                                          |                                                                       |
+| `familias`                      | `GET /part/v1/familias`                  | Familias de artículos / productos                                     |
+| `subfamilias`                   | `GET /part/v1/subfamilias`               | Subfamilias de artículos                                              |
 
 Si Freemática ofrece varias versiones del mismo endpoint, usamos siempre la más alta (v2 sobre v1). Para los catálogos cuya última versión es v1, se documenta así.
 
 ## 5. Decisiones de diseño
 
-| Decisión | Elección | Justificación |
-|---|---|---|
-| Una tool vs N tools | Una sola con enum | 19 tools casi idénticas saturan el catálogo del LLM. Patrón estándar (Stripe, Holded). |
-| Nombre tool | `freematica_get_master_data` | Coherente con `freematica_list_materiales_asignados_servicios`. Prefijo namespaced. |
-| Parámetro | `catalog: z.enum([19 valores])` | Validación a nivel de schema; valores inválidos rechazados antes del handler. |
-| Descripción del enum | `.describe()` con la lista completa de valores y su significado | Visible para el LLM vía `tools/list`. No necesita docs externas. |
-| Tipo de items | `Record<string, unknown>[]` | Igual que v0.1.0. Se tipa cuando se vea la forma real. |
-| Output | `{ catalog, items, count }` | Mismo shape que `freematica_list_materiales_asignados_servicios`. |
-| Paginación | No | YAGNI. Catálogos pequeños. |
-| Cache | No | El cliente axios no cachea; Freemática responde rápido. |
-| Mapeo catálogo → endpoint | `const CATALOG_ENDPOINTS: Record<MasterDataCatalog, string>` en `src/schemas/master-data.ts` | Una fuente de verdad. Añadir catálogo = 1 línea en enum + 1 línea en record. |
-| Versionado API Freemática | v2 cuando exista, v1 si no | Aprovechar la versión más estable. |
-| Versión paquete | `0.3.0` | Minor: feature add, no breaking. |
+| Decisión                  | Elección                                                                                     | Justificación                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Una tool vs N tools       | Una sola con enum                                                                            | 19 tools casi idénticas saturan el catálogo del LLM. Patrón estándar (Stripe, Holded). |
+| Nombre tool               | `freematica_get_master_data`                                                                 | Coherente con `freematica_list_materiales_asignados_servicios`. Prefijo namespaced.    |
+| Parámetro                 | `catalog: z.enum([19 valores])`                                                              | Validación a nivel de schema; valores inválidos rechazados antes del handler.          |
+| Descripción del enum      | `.describe()` con la lista completa de valores y su significado                              | Visible para el LLM vía `tools/list`. No necesita docs externas.                       |
+| Tipo de items             | `Record<string, unknown>[]`                                                                  | Igual que v0.1.0. Se tipa cuando se vea la forma real.                                 |
+| Output                    | `{ catalog, items, count }`                                                                  | Mismo shape que `freematica_list_materiales_asignados_servicios`.                      |
+| Paginación                | No                                                                                           | YAGNI. Catálogos pequeños.                                                             |
+| Cache                     | No                                                                                           | El cliente axios no cachea; Freemática responde rápido.                                |
+| Mapeo catálogo → endpoint | `const CATALOG_ENDPOINTS: Record<MasterDataCatalog, string>` en `src/schemas/master-data.ts` | Una fuente de verdad. Añadir catálogo = 1 línea en enum + 1 línea en record.           |
+| Versionado API Freemática | v2 cuando exista, v1 si no                                                                   | Aprovechar la versión más estable.                                                     |
+| Versión paquete           | `0.3.0`                                                                                      | Minor: feature add, no breaking.                                                       |
 
 ## 6. Estructura de archivos
 
@@ -137,7 +137,7 @@ export const MASTER_DATA_CATALOGS = [
   'subfamilias',
 ] as const;
 
-export type MasterDataCatalog = typeof MASTER_DATA_CATALOGS[number];
+export type MasterDataCatalog = (typeof MASTER_DATA_CATALOGS)[number];
 
 export const MasterDataCatalogSchema = z.enum(MASTER_DATA_CATALOGS);
 
@@ -151,16 +151,16 @@ export const CATALOG_ENDPOINTS: Record<MasterDataCatalog, string> = {
   'tipos-impuestos': '/pgrl/v2/tipos-impuestos',
   'tipos-marcajes': '/pkai/v1/tiposmarcajes',
   'naturalezas-abono': '/pven/v1/naturalezas-abono',
-  'paises': '/pgrl/v1/paises',
-  'nacionalidades': '/pgrl/v1/nacionalidades',
-  'provincias': '/pgrl/v1/provincias',
-  'poblaciones': '/pgrl/v2/poblaciones',
-  'empresas': '/pgrl/v1/empresas',
-  'delegaciones': '/pgrl/v2/delegaciones',
+  paises: '/pgrl/v1/paises',
+  nacionalidades: '/pgrl/v1/nacionalidades',
+  provincias: '/pgrl/v1/provincias',
+  poblaciones: '/pgrl/v2/poblaciones',
+  empresas: '/pgrl/v1/empresas',
+  delegaciones: '/pgrl/v2/delegaciones',
   'lineas-negocio': '/pgrl/v2/lineas-negocio',
   'cargos-clientes': '/pgrl/v2/cargos-clientes',
-  'familias': '/part/v1/familias',
-  'subfamilias': '/part/v1/subfamilias',
+  familias: '/part/v1/familias',
+  subfamilias: '/part/v1/subfamilias',
 };
 ```
 
@@ -260,15 +260,15 @@ Extender el bloque "Tools disponibles" para incluir la nueva tool con sus 19 cat
 
 Mismo flujo que la tool existente. Códigos posibles:
 
-| Código | Cuándo |
-|---|---|
-| `invalid_token` | Auth expirada |
-| `forbidden` | Sin permisos para el catálogo |
-| `not_found` | Endpoint inexistente (catálogo retirado en Freemática) |
-| `rate_limit_exceeded` | Demasiadas peticiones |
-| `server_error` | 5xx |
-| `network_error` | Timeout / unreachable |
-| `unexpected_error` | Cualquier otro |
+| Código                | Cuándo                                                 |
+| --------------------- | ------------------------------------------------------ |
+| `invalid_token`       | Auth expirada                                          |
+| `forbidden`           | Sin permisos para el catálogo                          |
+| `not_found`           | Endpoint inexistente (catálogo retirado en Freemática) |
+| `rate_limit_exceeded` | Demasiadas peticiones                                  |
+| `server_error`        | 5xx                                                    |
+| `network_error`       | Timeout / unreachable                                  |
+| `unexpected_error`    | Cualquier otro                                         |
 
 Validación de input fallida (catálogo no presente en el enum) la maneja el SDK antes de llegar al handler y devuelve un error MCP estándar de invalid_params.
 

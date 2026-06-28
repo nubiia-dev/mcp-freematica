@@ -15,38 +15,40 @@
 
 ## File Structure
 
-| Path | Cambio | Responsabilidad |
-|---|---|---|
-| `src/schemas/master-data.ts` | Create | `MASTER_DATA_CATALOGS` const tuple, `MasterDataCatalog` type, `MasterDataCatalogSchema` (Zod enum), `CATALOG_ENDPOINTS` record |
-| `src/types/master-data.ts` | Create | `MasterDataItem` = `Record<string, unknown>` |
-| `src/clients/freematica-client.ts` | Modify | Añadir método `getMasterData(catalog)` |
-| `src/tools/master-data.ts` | Create | `registerMasterDataTools(server, client)` con `freematica_get_master_data` |
-| `src/server.ts` | Modify | Invocar `registerMasterDataTools(server, opts.client)` |
-| `src/server-instructions.ts` | Modify | Añadir bloque "Master data" al texto de instrucciones |
-| `src/transports/http.ts` | Modify | Bump version 0.2.0 → 0.3.0 en `/health` |
-| `tests/schemas/master-data.test.ts` | Create | Guard: cada catálogo del enum tiene endpoint mapeado |
-| `tests/clients/freematica-client.test.ts` | Modify | Añadir `describe('getMasterData', ...)` con 2 tests |
-| `tests/tools/master-data.test.ts` | Create | 3 tests (registration, success, error) |
-| `package.json` | Modify | Bump version 0.2.0 → 0.3.0 |
-| `README.md` | Modify | Tabla "Tools expuestas" + sección "Datos maestros disponibles" |
-| `CHANGELOG.md` | Modify | Entrada `[0.3.0] — 2026-05-19` |
+| Path                                      | Cambio | Responsabilidad                                                                                                                |
+| ----------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `src/schemas/master-data.ts`              | Create | `MASTER_DATA_CATALOGS` const tuple, `MasterDataCatalog` type, `MasterDataCatalogSchema` (Zod enum), `CATALOG_ENDPOINTS` record |
+| `src/types/master-data.ts`                | Create | `MasterDataItem` = `Record<string, unknown>`                                                                                   |
+| `src/clients/freematica-client.ts`        | Modify | Añadir método `getMasterData(catalog)`                                                                                         |
+| `src/tools/master-data.ts`                | Create | `registerMasterDataTools(server, client)` con `freematica_get_master_data`                                                     |
+| `src/server.ts`                           | Modify | Invocar `registerMasterDataTools(server, opts.client)`                                                                         |
+| `src/server-instructions.ts`              | Modify | Añadir bloque "Master data" al texto de instrucciones                                                                          |
+| `src/transports/http.ts`                  | Modify | Bump version 0.2.0 → 0.3.0 en `/health`                                                                                        |
+| `tests/schemas/master-data.test.ts`       | Create | Guard: cada catálogo del enum tiene endpoint mapeado                                                                           |
+| `tests/clients/freematica-client.test.ts` | Modify | Añadir `describe('getMasterData', ...)` con 2 tests                                                                            |
+| `tests/tools/master-data.test.ts`         | Create | 3 tests (registration, success, error)                                                                                         |
+| `package.json`                            | Modify | Bump version 0.2.0 → 0.3.0                                                                                                     |
+| `README.md`                               | Modify | Tabla "Tools expuestas" + sección "Datos maestros disponibles"                                                                 |
+| `CHANGELOG.md`                            | Modify | Entrada `[0.3.0] — 2026-05-19`                                                                                                 |
 
 ---
 
 ## Task 1: Schema y mapeo de catálogos (TDD ligero — guard test)
 
 **Files:**
+
 - Create: `src/schemas/master-data.ts`
 - Create: `tests/schemas/master-data.test.ts`
 
 - [ ] **Step 1.1: Verificar punto de partida**
 
 ```bash
-cd /Users/samu/workspace/slm-freematica-mcp
+cd /Users/samu/workspace/mcp-freematica
 git status
 git branch --show-current
 npm test
 ```
+
 Expected: working tree clean (excepto untracked plan), branch `feat/master-data-tool`, 37/37 tests passing.
 
 Si el working tree tiene cambios no relacionados, STOP y reportar.
@@ -54,6 +56,7 @@ Si el working tree tiene cambios no relacionados, STOP y reportar.
 - [ ] **Step 1.2: Escribir test guard que falla**
 
 `tests/schemas/master-data.test.ts`:
+
 ```ts
 import { describe, it, expect } from 'vitest';
 import {
@@ -132,6 +135,7 @@ describe('MasterDataCatalogSchema', () => {
 ```bash
 npm test -- tests/schemas/master-data.test.ts
 ```
+
 Expected: FAIL (module not found).
 
 - [ ] **Step 1.4: Crear `src/schemas/master-data.ts`**
@@ -161,7 +165,7 @@ export const MASTER_DATA_CATALOGS = [
   'subfamilias',
 ] as const;
 
-export type MasterDataCatalog = typeof MASTER_DATA_CATALOGS[number];
+export type MasterDataCatalog = (typeof MASTER_DATA_CATALOGS)[number];
 
 export const MasterDataCatalogSchema = z.enum(MASTER_DATA_CATALOGS);
 
@@ -195,6 +199,7 @@ npm test -- tests/schemas/master-data.test.ts
 npm test          # full suite
 npm run typecheck
 ```
+
 Expected: PASS (8 tests en el archivo nuevo); full suite ≥ 45 tests passing.
 
 - [ ] **Step 1.6: Commit**
@@ -209,6 +214,7 @@ git commit -m "feat: add master data catalogs enum and endpoint mapping"
 ## Task 2: Tipo placeholder
 
 **Files:**
+
 - Create: `src/types/master-data.ts`
 
 - [ ] **Step 2.1: Crear el archivo**
@@ -230,6 +236,7 @@ export type MasterDataItem = Record<string, unknown>;
 ```bash
 npm run typecheck
 ```
+
 Expected: PASS.
 
 - [ ] **Step 2.3: Commit**
@@ -244,6 +251,7 @@ git commit -m "feat: add MasterDataItem type alias"
 ## Task 3: Método `getMasterData` en `FreematicaClient` (TDD)
 
 **Files:**
+
 - Modify: `src/clients/freematica-client.ts`
 - Modify: `tests/clients/freematica-client.test.ts`
 
@@ -252,27 +260,27 @@ git commit -m "feat: add MasterDataItem type alias"
 Abrir `tests/clients/freematica-client.test.ts` y, **dentro del `describe('FreematicaClient', ...)`** ya existente, justo antes del cierre de ese describe, insertar:
 
 ```ts
-  describe('getMasterData', () => {
-    it('calls the endpoint mapped for the requested catalog and returns the array', async () => {
-      const fakeData = [
-        { idreg: 1, nombre: 'España' },
-        { idreg: 2, nombre: 'Francia' },
-      ];
-      const scope = nock(BASE_URL).get('/pgrl/v1/paises').reply(200, fakeData);
+describe('getMasterData', () => {
+  it('calls the endpoint mapped for the requested catalog and returns the array', async () => {
+    const fakeData = [
+      { idreg: 1, nombre: 'España' },
+      { idreg: 2, nombre: 'Francia' },
+    ];
+    const scope = nock(BASE_URL).get('/pgrl/v1/paises').reply(200, fakeData);
 
-      const result = await client.getMasterData('paises');
+    const result = await client.getMasterData('paises');
 
-      expect(result).toEqual(fakeData);
-      expect(scope.isDone()).toBe(true);
-    });
+    expect(result).toEqual(fakeData);
+    expect(scope.isDone()).toBe(true);
+  });
 
-    it('propagates FreematicaError on 401', async () => {
-      nock(BASE_URL).get('/pgrl/v1/paises').reply(401);
-      await expect(client.getMasterData('paises')).rejects.toMatchObject({
-        code: 'invalid_token',
-      });
+  it('propagates FreematicaError on 401', async () => {
+    nock(BASE_URL).get('/pgrl/v1/paises').reply(401);
+    await expect(client.getMasterData('paises')).rejects.toMatchObject({
+      code: 'invalid_token',
     });
   });
+});
 ```
 
 - [ ] **Step 3.2: Verificar que falla**
@@ -280,6 +288,7 @@ Abrir `tests/clients/freematica-client.test.ts` y, **dentro del `describe('Freem
 ```bash
 npm test -- tests/clients/freematica-client.test.ts
 ```
+
 Expected: FAIL (`client.getMasterData is not a function`).
 
 - [ ] **Step 3.3: Añadir el método al cliente**
@@ -344,6 +353,7 @@ npm test -- tests/clients/freematica-client.test.ts
 npm test          # full suite
 npm run typecheck
 ```
+
 Expected: PASS. Tests en este archivo: 5 (3 anteriores + 2 nuevos). Full suite: ≥47 tests.
 
 - [ ] **Step 3.5: Commit**
@@ -358,12 +368,14 @@ git commit -m "feat: add FreematicaClient.getMasterData(catalog) method"
 ## Task 4: Tool `freematica_get_master_data` (TDD)
 
 **Files:**
+
 - Create: `src/tools/master-data.ts`
 - Create: `tests/tools/master-data.test.ts`
 
 - [ ] **Step 4.1: Escribir tests que fallan**
 
 `tests/tools/master-data.test.ts`:
+
 ```ts
 import { describe, it, expect, afterEach } from 'vitest';
 import nock from 'nock';
@@ -461,6 +473,7 @@ describe('registerMasterDataTools', () => {
 ```bash
 npm test -- tests/tools/master-data.test.ts
 ```
+
 Expected: FAIL (module not found).
 
 - [ ] **Step 4.3: Implementar `src/tools/master-data.ts`**
@@ -469,10 +482,7 @@ Expected: FAIL (module not found).
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { FreematicaError } from '../clients/base-client.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
-import {
-  MASTER_DATA_CATALOGS,
-  MasterDataCatalogSchema,
-} from '../schemas/master-data.js';
+import { MASTER_DATA_CATALOGS, MasterDataCatalogSchema } from '../schemas/master-data.js';
 import { error, ok } from './helpers.js';
 
 const TOOL_NAME = 'freematica_get_master_data';
@@ -551,6 +561,7 @@ npm test -- tests/tools/master-data.test.ts
 npm test          # full suite
 npm run typecheck
 ```
+
 Expected: PASS (3 tests new). Full suite: ≥50 tests.
 
 - [ ] **Step 4.5: Commit**
@@ -565,6 +576,7 @@ git commit -m "feat: add freematica_get_master_data tool"
 ## Task 5: Wire the tool into `createFreematicaServer`
 
 **Files:**
+
 - Modify: `src/server.ts`
 
 - [ ] **Step 5.1: Modificar `src/server.ts`**
@@ -629,6 +641,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
 npm test
 npm run typecheck
 ```
+
 Expected: PASS. Full suite todavía ≥50 tests.
 
 - [ ] **Step 5.3: Commit**
@@ -643,6 +656,7 @@ git commit -m "feat: wire master data tool into createFreematicaServer"
 ## Task 6: Reforzar el test del server factory
 
 **Files:**
+
 - Modify: `tests/server.test.ts`
 
 - [ ] **Step 6.1: Añadir test para la nueva tool**
@@ -717,6 +731,7 @@ describe('createFreematicaServer', () => {
 npm test -- tests/server.test.ts
 npm test          # full suite
 ```
+
 Expected: 2 tests en `server.test.ts`. Full suite: ≥51 tests.
 
 - [ ] **Step 6.3: Commit**
@@ -731,6 +746,7 @@ git commit -m "test: assert master data tool is registered by the server factory
 ## Task 7: Actualizar `server-instructions.ts`
 
 **Files:**
+
 - Modify: `src/server-instructions.ts`
 
 - [ ] **Step 7.1: Reescribir el bloque de instrucciones**
@@ -784,6 +800,7 @@ Las llamadas pueden fallar con uno de estos códigos:
 npm run typecheck
 npm test
 ```
+
 Expected: PASS. Full suite igual número que antes.
 
 - [ ] **Step 7.3: Commit**
@@ -798,24 +815,30 @@ git commit -m "docs: extend server instructions with master data tool"
 ## Task 8: Bump version en package.json + /health endpoint
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `src/transports/http.ts`
 
 - [ ] **Step 8.1: Bump version en `package.json`**
 
 Cambiar:
+
 ```json
 "version": "0.2.0",
 ```
+
 por:
+
 ```json
 "version": "0.3.0",
 ```
 
 Después:
+
 ```bash
 npm install
 ```
+
 Expected: actualiza solo la entrada raíz del lockfile.
 
 - [ ] **Step 8.2: Bump version en `/health`**
@@ -843,6 +866,7 @@ Y en `src/index.ts`, donde el log de stdio dice `Starting stdio transport v0.2.0
 ```bash
 grep -rn "v0.2.0\|0\.2\.0" src/ | grep -v dist
 ```
+
 Expected: ver las 3 líneas (server.ts ya cambiado en Task 5, http.ts y index.ts ahora). Si server.ts aún muestra '0.2.0' hay un error en Task 5 — corregir.
 
 - [ ] **Step 8.3: Validar todo el stack**
@@ -850,6 +874,7 @@ Expected: ver las 3 líneas (server.ts ya cambiado en Task 5, http.ts y index.ts
 ```bash
 npm run lint && npm run typecheck && npm run build && npm test
 ```
+
 Expected: PASS los 4.
 
 - [ ] **Step 8.4: Commit**
@@ -864,6 +889,7 @@ git commit -m "chore: bump version to 0.3.0"
 ## Task 9: README + CHANGELOG
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `CHANGELOG.md`
 
@@ -872,8 +898,8 @@ git commit -m "chore: bump version to 0.3.0"
 Localizar en `README.md` la tabla:
 
 ```md
-| Tool | Endpoint Freemática | Descripción |
-|---|---|---|
+| Tool                                             | Endpoint Freemática                         | Descripción                            |
+| ------------------------------------------------ | ------------------------------------------- | -------------------------------------- |
 | `freematica_list_materiales_asignados_servicios` | `GET /pvss/v2/contratos-servicios-material` | Lista de material asignado a servicios |
 ```
 
@@ -890,31 +916,31 @@ Añadir una fila debajo:
 
 La tool `freematica_get_master_data` acepta un parámetro `catalog` con uno de los 19 valores siguientes. Cada uno mapea a un endpoint específico de Freemática.
 
-| `catalog` | Endpoint Freemática | Contenido |
-|---|---|---|
-| **Tipos / clasificaciones** | | |
-| `tipos-contrato` | `GET /ppre/v2/tipos-contrato` | Tipos de contrato comercial |
-| `tipo-instalacion` | `GET /ppre/v1/tipo-instalacion` | Tipos de instalación física |
-| `clases-servicios` | `GET /pvss/v1/clases-servicios` | Clases de servicio operativas |
-| `tipos-casos` | `GET /pcrm/v2/tipos-casos` | Tipos de caso CRM |
-| `subtipos-casos` | `GET /pcrm/v2/subtipos-casos` | Subtipos de caso CRM |
+| `catalog`                   | Endpoint Freemática                      | Contenido                      |
+| --------------------------- | ---------------------------------------- | ------------------------------ |
+| **Tipos / clasificaciones** |                                          |                                |
+| `tipos-contrato`            | `GET /ppre/v2/tipos-contrato`            | Tipos de contrato comercial    |
+| `tipo-instalacion`          | `GET /ppre/v1/tipo-instalacion`          | Tipos de instalación física    |
+| `clases-servicios`          | `GET /pvss/v1/clases-servicios`          | Clases de servicio operativas  |
+| `tipos-casos`               | `GET /pcrm/v2/tipos-casos`               | Tipos de caso CRM              |
+| `subtipos-casos`            | `GET /pcrm/v2/subtipos-casos`            | Subtipos de caso CRM           |
 | `tipos-oportunidad-negocio` | `GET /pcrm/v2/tipos-oportunidad-negocio` | Tipos de oportunidad comercial |
-| `tipos-impuestos` | `GET /pgrl/v2/tipos-impuestos` | IVA, IRPF, retenciones |
-| `tipos-marcajes` | `GET /pkai/v1/tiposmarcajes` | Tipos de marcaje |
-| `naturalezas-abono` | `GET /pven/v1/naturalezas-abono` | Naturalezas de abono comercial |
-| **Geográficos** | | |
-| `paises` | `GET /pgrl/v1/paises` | Países |
-| `nacionalidades` | `GET /pgrl/v1/nacionalidades` | Nacionalidades |
-| `provincias` | `GET /pgrl/v1/provincias` | Provincias |
-| `poblaciones` | `GET /pgrl/v2/poblaciones` | Municipios |
-| **Organizativos** | | |
-| `empresas` | `GET /pgrl/v1/empresas` | Empresas |
-| `delegaciones` | `GET /pgrl/v2/delegaciones` | Delegaciones |
-| `lineas-negocio` | `GET /pgrl/v2/lineas-negocio` | Líneas de negocio |
-| `cargos-clientes` | `GET /pgrl/v2/cargos-clientes` | Cargos de contactos |
-| **Inventario** | | |
-| `familias` | `GET /part/v1/familias` | Familias de artículos |
-| `subfamilias` | `GET /part/v1/subfamilias` | Subfamilias |
+| `tipos-impuestos`           | `GET /pgrl/v2/tipos-impuestos`           | IVA, IRPF, retenciones         |
+| `tipos-marcajes`            | `GET /pkai/v1/tiposmarcajes`             | Tipos de marcaje               |
+| `naturalezas-abono`         | `GET /pven/v1/naturalezas-abono`         | Naturalezas de abono comercial |
+| **Geográficos**             |                                          |                                |
+| `paises`                    | `GET /pgrl/v1/paises`                    | Países                         |
+| `nacionalidades`            | `GET /pgrl/v1/nacionalidades`            | Nacionalidades                 |
+| `provincias`                | `GET /pgrl/v1/provincias`                | Provincias                     |
+| `poblaciones`               | `GET /pgrl/v2/poblaciones`               | Municipios                     |
+| **Organizativos**           |                                          |                                |
+| `empresas`                  | `GET /pgrl/v1/empresas`                  | Empresas                       |
+| `delegaciones`              | `GET /pgrl/v2/delegaciones`              | Delegaciones                   |
+| `lineas-negocio`            | `GET /pgrl/v2/lineas-negocio`            | Líneas de negocio              |
+| `cargos-clientes`           | `GET /pgrl/v2/cargos-clientes`           | Cargos de contactos            |
+| **Inventario**              |                                          |                                |
+| `familias`                  | `GET /part/v1/familias`                  | Familias de artículos          |
+| `subfamilias`               | `GET /part/v1/subfamilias`               | Subfamilias                    |
 
 Respuesta: `{ catalog, items, count }`. Patrón típico de uso: llamar primero al catálogo correspondiente cuando otra tool devuelva IDs crípticos para resolverlos a nombres humanos.
 ```
@@ -946,12 +972,14 @@ Insertar como primera entrada (antes de `[0.2.0]`):
 ## [0.3.0] — 2026-05-19
 
 ### Added
+
 - Nueva tool `freematica_get_master_data` que expone 19 catálogos de datos maestros del API de Freemática (tipos, geográficos, organizativos, inventario) a través de un único enum `catalog`.
 - `src/schemas/master-data.ts` con `MASTER_DATA_CATALOGS` (enum de 19 valores) y `CATALOG_ENDPOINTS` (mapeo a endpoints REST). Una sola fuente de verdad para añadir catálogos futuros.
 - `FreematicaClient.getMasterData(catalog)` que resuelve el endpoint via el record.
 - Sección "Datos maestros disponibles" en README con la tabla catálogo → endpoint.
 
 ### Changed
+
 - `createFreematicaServer` ahora registra dos tools (la existente + la nueva).
 - `server-instructions.ts` ampliado con la nueva tool y un patrón de uso (resolver IDs crípticos a nombres humanos).
 - Version reportada en `/health` y en el `serverInfo` MCP actualizada a `0.3.0`.
@@ -962,6 +990,7 @@ Insertar como primera entrada (antes de `[0.2.0]`):
 ```bash
 npm run lint && npm run typecheck && npm run build && npm test
 ```
+
 Expected: PASS los 4.
 
 - [ ] **Step 9.7: Commit**
@@ -980,6 +1009,7 @@ git commit -m "docs: document master data tool in README and CHANGELOG (v0.3.0)"
 - [ ] **Step 10.1: STOP — presentar resumen al usuario para aprobación de push**
 
 > "Implementación completa en `feat/master-data-tool`. Lint + typecheck + build + tests OK localmente (≥51 tests pasando). Plan:
+>
 > 1. Push branch.
 > 2. PR a `development`, esperar CI verde, squash-merge.
 > 3. PR `development` → `main`, esperar CI verde, merge.
@@ -1073,7 +1103,7 @@ until gh run list --workflow=publish.yml --limit 1 --json status --jq '.[0].stat
 gh run list --workflow=publish.yml --limit 1 --json conclusion --jq '.[0].conclusion'   # debe ser "success"
 ```
 
-Si la conclusión es `success`, `@serlimar/mcp-freematica@0.3.0` ya está disponible en GitHub Packages.
+Si la conclusión es `success`, `@nubiia/mcp-freematica@0.3.0` ya está disponible en GitHub Packages.
 
 ---
 
@@ -1081,29 +1111,30 @@ Si la conclusión es `success`, `@serlimar/mcp-freematica@0.3.0` ya está dispon
 
 **Spec coverage:**
 
-| Spec section | Cubierto en |
-|---|---|
-| §2 Goals | Tasks 1-7 |
-| §3 Non-goals | Respetado (operativos/financieros excluidos; sin paginación, cache, tipado fuerte) |
-| §4 Catálogos incluidos | Task 1 (enum + record) |
-| §5 Decisiones de diseño | Tasks 1 (record único), 4 (one tool with enum), 5 (factory wire), 8 (version) |
-| §6 Estructura de archivos | Distribuida en Tasks 1-9 |
-| §7.1 schemas/master-data.ts | Task 1 |
-| §7.2 types/master-data.ts | Task 2 |
-| §7.3 freematica-client | Task 3 |
-| §7.4 tools/master-data | Task 4 |
-| §7.5 server.ts | Task 5 |
-| §7.6 server-instructions | Task 7 |
-| §8 Data flow | Verificado en Task 4 (tests) |
-| §9 Manejo de errores | Task 4 (try/catch en handler) |
-| §10 Testing | Tasks 1 (schema guard), 3 (client), 4 (tool), 6 (server factory) |
-| §11 README | Task 9 |
-| §12 Version | Tasks 5 (server.ts), 8 (package.json + http + index) |
-| §13 Open questions | Out of scope; no requieren task |
+| Spec section                | Cubierto en                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| §2 Goals                    | Tasks 1-7                                                                          |
+| §3 Non-goals                | Respetado (operativos/financieros excluidos; sin paginación, cache, tipado fuerte) |
+| §4 Catálogos incluidos      | Task 1 (enum + record)                                                             |
+| §5 Decisiones de diseño     | Tasks 1 (record único), 4 (one tool with enum), 5 (factory wire), 8 (version)      |
+| §6 Estructura de archivos   | Distribuida en Tasks 1-9                                                           |
+| §7.1 schemas/master-data.ts | Task 1                                                                             |
+| §7.2 types/master-data.ts   | Task 2                                                                             |
+| §7.3 freematica-client      | Task 3                                                                             |
+| §7.4 tools/master-data      | Task 4                                                                             |
+| §7.5 server.ts              | Task 5                                                                             |
+| §7.6 server-instructions    | Task 7                                                                             |
+| §8 Data flow                | Verificado en Task 4 (tests)                                                       |
+| §9 Manejo de errores        | Task 4 (try/catch en handler)                                                      |
+| §10 Testing                 | Tasks 1 (schema guard), 3 (client), 4 (tool), 6 (server factory)                   |
+| §11 README                  | Task 9                                                                             |
+| §12 Version                 | Tasks 5 (server.ts), 8 (package.json + http + index)                               |
+| §13 Open questions          | Out of scope; no requieren task                                                    |
 
 **Placeholder scan:** ✅ Sin "TBD" / "TODO" / "implement later". Notas para el implementador sobre `tool.callback` vs `tool.handler` y posible cast a `CallToolResult` son guías concretas con referencias a archivos existentes, no placeholders.
 
 **Type consistency:**
+
 - `MasterDataCatalog` (Task 1) usado en Tasks 3, 4.
 - `MasterDataItem` (Task 2) usado en Task 3.
 - `MASTER_DATA_CATALOGS`, `CATALOG_ENDPOINTS`, `MasterDataCatalogSchema` (Task 1) consistentes en Tasks 3, 4.
