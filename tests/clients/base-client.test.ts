@@ -148,7 +148,9 @@ describe('BaseClient', () => {
     });
 
     it('maps network error to network_error', async () => {
-      nock(BASE_URL).get('/x').replyWithError({ code: 'ECONNREFUSED', message: 'down' });
+      nock(BASE_URL)
+        .get('/x')
+        .replyWithError(Object.assign(new Error('down'), { code: 'ECONNREFUSED' }));
       await expect(client.testGet('/x')).rejects.toMatchObject({ code: 'network_error' });
     });
   });

@@ -209,7 +209,7 @@ export function registerPrlTools(server: McpServer, client: FreematicaClient): v
         codigoFicha,
       });
       if (!validation.success) {
-        const msg = validation.error.errors.map((e) => e.message).join('; ');
+        const msg = validation.error.issues.map((e) => e.message).join('; ');
         return error(new Error(msg)) as CallToolResult;
       }
 
