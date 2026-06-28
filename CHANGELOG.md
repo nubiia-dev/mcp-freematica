@@ -2,6 +2,15 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.6.1] — 2026-06-28
+
+### Rebrand y publicación pública
+
+- Paquete renombrado de `@serlimar/mcp-freematica` a `@nubiia/mcp-freematica`.
+- Repositorio movido a `nubiia-dev/mcp-freematica` y publicado como open source.
+- Publicación migrada de GitHub Packages (restricted) al registry público de npm (`--access public`).
+- Eliminadas las referencias internas a Serlimar; el servidor es ahora una API genérica para cualquier consumidor del API REST de Freemática.
+
 ## [0.6.0] — 2026-06-12
 
 ### Release de la épica TD-153 — Cierre del ciclo de facturación
