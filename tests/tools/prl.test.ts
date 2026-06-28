@@ -60,7 +60,7 @@ describe('FichaPrevClienteRefinedSchema (.refine validation)', () => {
     const result = FichaPrevClienteRefinedSchema.safeParse({});
     expect(result.success).toBe(false);
     if (!result.success) {
-      const msgs = result.error.errors.map((e) => e.message);
+      const msgs = result.error.issues.map((e) => e.message);
       expect(msgs.some((m) => m.includes('al menos un identificador'))).toBe(true);
     }
   });
