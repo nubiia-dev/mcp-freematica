@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { FreematicaClient } from './clients/freematica-client.js';
 import { FREEMATICA_MCP_INSTRUCTIONS } from './server-instructions.js';
+import { VERSION } from './version.js';
 import { registerAlbaranesTools } from './tools/albaranes.js';
 import { registerCalendariosTools } from './tools/calendarios.js';
 import { registerCarteraTools } from './tools/cartera.js';
@@ -25,7 +26,7 @@ export interface CreateFreematicaServerOptions {
 
 export function createFreematicaServer(opts: CreateFreematicaServerOptions): McpServer {
   const server = new McpServer(
-    { name: 'freematica-mcp', version: '0.6.0' },
+    { name: 'freematica-mcp', version: VERSION },
     { instructions: FREEMATICA_MCP_INSTRUCTIONS },
   );
 

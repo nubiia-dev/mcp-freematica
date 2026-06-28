@@ -409,6 +409,36 @@ Ver instrucciones detalladas en [docs/testing-e2e.md](docs/testing-e2e.md).
 | DELETE | `/mcp`    | Terminar sesión                                      |
 | GET    | `/health` | Healthcheck                                          |
 
+## Seguridad
+
+> [!IMPORTANT]
+> **El endpoint `/mcp` no autentica al cliente.** Cualquiera con acceso de red al
+> puerto puede invocar las tools usando las credenciales de Freemática que el
+> servidor tiene configuradas en sus variables de entorno. Como todas las tools
+> son de **solo lectura**, esto equivale a acceso de lectura a los datos de la
+> empresa (cartera, facturación, clientes, personal…).
+
+Por tanto, al desplegar en modo HTTP:
+
+- **Nunca expongas el puerto directamente a internet.** Despliega siempre detrás
+  de un gateway / reverse-proxy que haga la autenticación y autorización del
+  cliente (es el modelo con el que opera Nubiia).
+- **Restringe `MCP_ALLOWED_ORIGINS`** al dominio exacto desde el que se conecta,
+  en lugar del valor por defecto `*`. Si arrancas con `*`, el servidor emite un
+  warning en el log. Ten en cuenta que CORS solo protege frente a navegadores;
+  no frente a clientes como `curl`.
+- **Trata las 5 credenciales `FREEMATICA_AUTH_*` como secretos.** Inyéctalas vía
+  gestor de secretos, nunca en el repositorio (`.env*` está en `.gitignore`).
+
+Buenas prácticas ya incluidas en el servidor:
+
+- Los headers `x-auth-*` se eliminan de cualquier log (incluido `debug`/`trace`)
+  y los bodies de petición nunca se loguean.
+- Rate limiting (120 req/min por IP) en `/mcp` y `/health`, límite de body de
+  1 MB, y expiración automática de sesiones inactivas.
+- Los valores de los filtros FIQL se escapan para prevenir inyección de
+  operadores de consulta.
+
 ## Cómo añadir una nueva operación
 
 1. **Tipar la respuesta** en `src/types/<grupo>.ts`.
