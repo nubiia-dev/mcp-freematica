@@ -1,6 +1,6 @@
 {
-  "name": "@serlimar/mcp-freematica",
-  "version": "0.6.0",
+  "name": "@nubiia/mcp-freematica",
+  "version": "0.6.1",
   "description": "MCP server for Freemática REST API (consumed by Claude via Nubiia)",
   "type": "module",
   "main": "dist/index.js",
@@ -28,26 +28,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/serlimar/slm-freematica-mcp.git"
+    "url": "git+https://github.com/nubiia-dev/mcp-freematica.git"
   },
   "bugs": {
-    "url": "https://github.com/serlimar/slm-freematica-mcp/issues"
+    "url": "https://github.com/nubiia-dev/mcp-freematica/issues"
   },
-  "homepage": "https://github.com/serlimar/slm-freematica-mcp#readme",
+  "homepage": "https://github.com/nubiia-dev/mcp-freematica#readme",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
+    "access": "public"
   },
   "engines": {
     "node": ">=20"
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "freematica",
-    "nubiia",
-    "serlimar"
+    "nubiia"
   ],
-  "author": "Serlimar",
+  "author": "Nubiia",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",

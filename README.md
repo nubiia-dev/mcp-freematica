@@ -1,4 +1,4 @@
-# slm-freematica-mcp
+# mcp-freematica
 
 MCP server que expone operaciones del API REST de Freemática para ser consumidas por Claude a través de Nubiia.
 
@@ -119,7 +119,7 @@ Edita `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "freematica": {
       "command": "npx",
-      "args": ["-y", "@serlimar/mcp-freematica"],
+      "args": ["-y", "@nubiia/mcp-freematica"],
       "env": {
         "FREEMATICA_AUTH_TOKEN": "...",
         "FREEMATICA_AUTH_COMPANY": "...",
@@ -137,7 +137,7 @@ Reinicia Claude Desktop y las tools de `freematica_*` aparecerán disponibles.
 ### Configurar en Claude Code (stdio)
 
 ```bash
-claude mcp add freematica npx -y @serlimar/mcp-freematica \
+claude mcp add freematica npx -y @nubiia/mcp-freematica \
   -e FREEMATICA_AUTH_TOKEN=... \
   -e FREEMATICA_AUTH_COMPANY=... \
   -e FREEMATICA_AUTH_ORGANIZATION=... \
@@ -243,9 +243,9 @@ Variables de entorno opcionales para tuning de comportamiento en producción:
 
 ### De dónde salen las credenciales `x-auth-*`
 
-Las 5 credenciales `x-auth-*` son **preexistentes** — el Postman collection de Freemática no expone un endpoint de login, así que estas credenciales se obtienen fuera de banda (típicamente por el departamento de IT de Freemática o el integrador de Serlimar).
+Las 5 credenciales `x-auth-*` son **preexistentes** — el Postman collection de Freemática no expone un endpoint de login, así que estas credenciales se obtienen fuera de banda (típicamente por el departamento de IT de Freemática o tu integrador).
 
-- Pide los 5 valores al responsable técnico de Freemática (o usa los mismos que ya emplea `slm-integration` si están en el gestor de secretos).
+- Pide los 5 valores al responsable técnico de Freemática (o recupéralos de tu gestor de secretos si ya están provisionados).
 - **NO comitees credenciales reales**. El repositorio tiene `.env.*` en `.gitignore` (excepto `.env.example`).
 - Si las credenciales caducan, el MCP devolverá `invalid_token` en todas las llamadas. Renovarlas implica reiniciar el proceso (no hay refresh automático).
 
@@ -253,7 +253,7 @@ Las 5 credenciales `x-auth-*` son **preexistentes** — el Postman collection de
 
 Nubiia despliega el servidor MCP y se encarga de inyectar las variables de entorno. En el panel de Nubiia:
 
-1. Crea un MCP server apuntando a la URL del contenedor desplegado (por ejemplo `https://freematica-mcp.serlimar.internal/mcp`).
+1. Crea un MCP server apuntando a la URL del contenedor desplegado (por ejemplo `https://freematica-mcp.example.com/mcp`).
 2. Añade las variables de entorno listadas arriba en la sección de secretos.
 3. Recomendado: setear `MCP_ALLOWED_ORIGINS` al dominio exacto desde el que Claude/Nubiia conecta, no `*`.
 4. Verifica con el endpoint `GET /health` que el servidor está vivo antes de habilitar el MCP en Claude.
@@ -428,21 +428,15 @@ Patrón inspirado en `mcp-nevent` y `mcp-holded`.
 
 Pensado para ejecutarse dentro de **Nubiia**. La plataforma se encarga del deploy y de inyectar las variables de entorno. Tienes 3 opciones:
 
-### Opción 1 — Instalar como paquete npm desde GitHub Packages (recomendada)
+### Opción 1 — Instalar como paquete npm (recomendada)
 
-El paquete se publica como `@serlimar/mcp-freematica` en GitHub Packages cuando se crea un tag `v*` en `main`.
+El paquete se publica como `@nubiia/mcp-freematica` en el registry público de npm cuando se crea un tag `v*` en `main`.
 
 ```bash
-# .npmrc del consumidor:
-echo "@serlimar:registry=https://npm.pkg.github.com" >> ~/.npmrc
-echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> ~/.npmrc
-
-# Instalar y ejecutar
-npm install -g @serlimar/mcp-freematica
+# Instalar y ejecutar (no requiere autenticación)
+npm install -g @nubiia/mcp-freematica
 mcp-freematica   # binario instalado, lee env vars y arranca el server
 ```
-
-`GITHUB_TOKEN` debe tener scope `read:packages` y acceso al repo `serlimar/slm-freematica-mcp`.
 
 ### Opción 2 — Docker
 
@@ -454,8 +448,8 @@ docker run --env-file .env -p 3000:3000 mcp-freematica
 ### Opción 3 — Clone + build
 
 ```bash
-git clone https://github.com/serlimar/slm-freematica-mcp.git
-cd slm-freematica-mcp
+git clone https://github.com/nubiia-dev/mcp-freematica.git
+cd mcp-freematica
 npm ci && npm run build
 node dist/index.js
 ```
@@ -469,7 +463,7 @@ node dist/index.js
    git tag v0.5.0
    git push origin v0.5.0
    ```
-4. El workflow `.github/workflows/publish.yml` se dispara, valida (lint + typecheck + test + build) y publica en GitHub Packages.
+4. El workflow `.github/workflows/publish.yml` se dispara, valida (lint + typecheck + test + build) y publica en npm.
 
 ## Especificaciones y diseño
 

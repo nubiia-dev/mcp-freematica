@@ -3,7 +3,7 @@
 - **Date:** 2026-05-19
 - **Author:** Samuel Fraga
 - **Status:** Approved, ready for implementation
-- **Repo:** `serlimar/slm-freematica-mcp`
+- **Repo:** `nubiia-dev/mcp-freematica`
 - **Target version:** `0.2.0`
 - **Supersedes:** Sección §13 (out of scope: "Stdio transport — no aplica para Nubiia") de `2026-05-18-freematica-mcp-design.md`.
 
@@ -17,7 +17,7 @@ El patrón a replicar es el de `mcp-nevent`: un único binario que elige transpo
 
 ## 2. Goals
 
-- Mismo binario `mcp-freematica` (y mismo paquete `@serlimar/mcp-freematica`) ejecuta en stdio o HTTP según selección.
+- Mismo binario `mcp-freematica` (y mismo paquete `@nubiia/mcp-freematica`) ejecuta en stdio o HTTP según selección.
 - Default `stdio` cuando no se pasa flag (alinea con Claude Desktop/Claude Code).
 - Nubiia sigue funcionando exactamente igual con `MCP_TRANSPORT=http` en el entorno del proceso.
 - Cero cambios en la factoría `createFreematicaServer()` ni en las tools (transport-agnostic, ya lo está).
@@ -31,16 +31,16 @@ El patrón a replicar es el de `mcp-nevent`: un único binario que elige transpo
 
 ## 4. Decisiones de diseño
 
-| Decisión | Elección | Justificación |
-|---|---|---|
-| Mecanismo de selección | CLI flag `--transport=<stdio\|http>` **Y** env var `MCP_TRANSPORT` | Mismo patrón que `mcp-nevent`. CLI flag útil en terminal humana; env var útil para deploy programático (Nubiia). Si están ambos, gana el CLI flag. |
-| Default cuando no hay selección | `stdio` | Convención estándar del ecosistema MCP (Claude Desktop, Claude Code, mcp-nevent default). |
-| Default cuando hay valor inválido | Warn + fallback a `stdio` | Mismo patrón nevent (`Unknown transport "...". Defaulting to stdio.`). No fail-hard para no romper despliegues por una errata. |
-| Logging en modo stdio | Solo `console.error` (stderr) | stdout está reservado para JSON-RPC. Un `console.log` accidental corrompería el protocolo. |
-| Validación de env vars | Split: `loadAuthConfig()` (auth + base URL, requerido en ambos modos) y `loadHttpConfig()` (port + origins, solo HTTP) | Stdio no debe exigir `MCP_PORT` ni `MCP_ALLOWED_ORIGINS`. Validar solo lo que aplica a cada modo. |
-| Carga del módulo HTTP | Dynamic import en modo HTTP | Stdio no necesita cargar Express, axios-rate-limit, cors, randomUUID, etc. Reduce cold-start del modo stdio (~50ms estimado). Patrón copiado de `mcp-nevent/src/index.ts`. |
-| Versión | `0.2.0` (minor bump) | Funcionalidad nueva, retro-compatible si Nubiia añade `MCP_TRANSPORT=http`. |
-| Breaking change | Documentado en CHANGELOG y README | Quien ya esté ejecutando v0.1.0 con `node dist/index.js` (sin flag) recibía HTTP; con v0.2.0 recibirá stdio. Mitigación: setear `MCP_TRANSPORT=http`. |
+| Decisión                          | Elección                                                                                                               | Justificación                                                                                                                                                              |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mecanismo de selección            | CLI flag `--transport=<stdio\|http>` **Y** env var `MCP_TRANSPORT`                                                     | Mismo patrón que `mcp-nevent`. CLI flag útil en terminal humana; env var útil para deploy programático (Nubiia). Si están ambos, gana el CLI flag.                         |
+| Default cuando no hay selección   | `stdio`                                                                                                                | Convención estándar del ecosistema MCP (Claude Desktop, Claude Code, mcp-nevent default).                                                                                  |
+| Default cuando hay valor inválido | Warn + fallback a `stdio`                                                                                              | Mismo patrón nevent (`Unknown transport "...". Defaulting to stdio.`). No fail-hard para no romper despliegues por una errata.                                             |
+| Logging en modo stdio             | Solo `console.error` (stderr)                                                                                          | stdout está reservado para JSON-RPC. Un `console.log` accidental corrompería el protocolo.                                                                                 |
+| Validación de env vars            | Split: `loadAuthConfig()` (auth + base URL, requerido en ambos modos) y `loadHttpConfig()` (port + origins, solo HTTP) | Stdio no debe exigir `MCP_PORT` ni `MCP_ALLOWED_ORIGINS`. Validar solo lo que aplica a cada modo.                                                                          |
+| Carga del módulo HTTP             | Dynamic import en modo HTTP                                                                                            | Stdio no necesita cargar Express, axios-rate-limit, cors, randomUUID, etc. Reduce cold-start del modo stdio (~50ms estimado). Patrón copiado de `mcp-nevent/src/index.ts`. |
+| Versión                           | `0.2.0` (minor bump)                                                                                                   | Funcionalidad nueva, retro-compatible si Nubiia añade `MCP_TRANSPORT=http`.                                                                                                |
+| Breaking change                   | Documentado en CHANGELOG y README                                                                                      | Quien ya esté ejecutando v0.1.0 con `node dist/index.js` (sin flag) recibía HTTP; con v0.2.0 recibirá stdio. Mitigación: setear `MCP_TRANSPORT=http`.                      |
 
 ## 5. Estructura de archivos
 
@@ -75,7 +75,10 @@ Split en 2 funciones independientes, ambas con su propio Zod schema. `loadConfig
 
 ```ts
 const AuthConfigSchema = z.object({
-  FREEMATICA_BASE_URL: z.string().url().default('https://api-p01.clientservicepanel.com/restsat/api'),
+  FREEMATICA_BASE_URL: z
+    .string()
+    .url()
+    .default('https://api-p01.clientservicepanel.com/restsat/api'),
   FREEMATICA_AUTH_TOKEN: z.string().min(1),
   FREEMATICA_AUTH_COMPANY: z.string().min(1),
   FREEMATICA_AUTH_ORGANIZATION: z.string().min(1),
@@ -90,11 +93,17 @@ const HttpConfigSchema = z.object({
 
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;
 export type HttpConfig = z.infer<typeof HttpConfigSchema>;
-export type Config = AuthConfig & HttpConfig;       // retro-compat
+export type Config = AuthConfig & HttpConfig; // retro-compat
 
-export function loadAuthConfig(): AuthConfig { /* parse + format errors */ }
-export function loadHttpConfig(): HttpConfig { /* parse + format errors */ }
-export function loadConfig(): Config { return { ...loadAuthConfig(), ...loadHttpConfig() }; }
+export function loadAuthConfig(): AuthConfig {
+  /* parse + format errors */
+}
+export function loadHttpConfig(): HttpConfig {
+  /* parse + format errors */
+}
+export function loadConfig(): Config {
+  return { ...loadAuthConfig(), ...loadHttpConfig() };
+}
 ```
 
 ### 6.2 `src/transports/stdio.ts` (nuevo)
@@ -227,8 +236,10 @@ describe('stdio transport smoke', () => {
     const proc = spawn('node', ['dist/index.js'], {
       env: {
         ...process.env,
-        FREEMATICA_AUTH_TOKEN: 't', FREEMATICA_AUTH_COMPANY: 'c',
-        FREEMATICA_AUTH_ORGANIZATION: 'o', FREEMATICA_AUTH_APP: 'a',
+        FREEMATICA_AUTH_TOKEN: 't',
+        FREEMATICA_AUTH_COMPANY: 'c',
+        FREEMATICA_AUTH_ORGANIZATION: 'o',
+        FREEMATICA_AUTH_APP: 'a',
         FREEMATICA_AUTH_SESSION: 's',
         MCP_TRANSPORT: 'stdio',
       },
@@ -253,7 +264,7 @@ Sin tocar — siguen los 30 tests actuales.
 - run: npm run lint
 - run: npm run typecheck
 - run: npm run build
-- run: npm test          # incluye stdio smoke (que asume dist/ ya existe)
+- run: npm test # incluye stdio smoke (que asume dist/ ya existe)
 ```
 
 ## 10. README
@@ -265,10 +276,10 @@ Nueva sección "Modos de transporte" (sustituye / amplía "Endpoints HTTP"):
 
 El binario soporta dos transportes seleccionables vía `--transport=<modo>` (CLI) o `MCP_TRANSPORT=<modo>` (env var). Default: `stdio`.
 
-| Modo | Cuándo usar | Comando |
-|---|---|---|
-| `stdio` | Claude Desktop, Claude Code, uso local | `mcp-freematica` (default) o `mcp-freematica --transport=stdio` |
-| `http`  | Nubiia, deploy como servicio web | `mcp-freematica --transport=http` o `MCP_TRANSPORT=http mcp-freematica` |
+| Modo    | Cuándo usar                            | Comando                                                                 |
+| ------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| `stdio` | Claude Desktop, Claude Code, uso local | `mcp-freematica` (default) o `mcp-freematica --transport=stdio`         |
+| `http`  | Nubiia, deploy como servicio web       | `mcp-freematica --transport=http` o `MCP_TRANSPORT=http mcp-freematica` |
 ```
 
 Más ejemplos concretos:
@@ -279,19 +290,19 @@ Más ejemplos concretos:
 `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 {
-  "mcpServers": {
-    "freematica": {
-      "command": "npx",
-      "args": ["-y", "@serlimar/mcp-freematica"],
-      "env": {
-        "FREEMATICA_AUTH_TOKEN": "...",
-        "FREEMATICA_AUTH_COMPANY": "...",
-        "FREEMATICA_AUTH_ORGANIZATION": "...",
-        "FREEMATICA_AUTH_APP": "...",
-        "FREEMATICA_AUTH_SESSION": "..."
-      }
-    }
-  }
+"mcpServers": {
+"freematica": {
+"command": "npx",
+"args": ["-y", "@nubiia/mcp-freematica"],
+"env": {
+"FREEMATICA_AUTH_TOKEN": "...",
+"FREEMATICA_AUTH_COMPANY": "...",
+"FREEMATICA_AUTH_ORGANIZATION": "...",
+"FREEMATICA_AUTH_APP": "...",
+"FREEMATICA_AUTH_SESSION": "..."
+}
+}
+}
 }
 
 ### Nubiia (HTTP)

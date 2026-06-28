@@ -4,7 +4,7 @@
 
 **Fecha:** 2026-05-20
 
-**Autores:** Equipo Transformación Digital — Serlimar
+**Autores:** Nubiia
 
 ---
 

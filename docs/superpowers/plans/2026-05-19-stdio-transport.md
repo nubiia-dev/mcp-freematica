@@ -15,36 +15,38 @@
 
 ## File Structure
 
-| Path | Cambio | Responsabilidad |
-|---|---|---|
-| `src/config.ts` | Refactor | Split en `loadAuthConfig` + `loadHttpConfig`; mantener `loadConfig` como wrapper retro-compat |
-| `src/transports/stdio.ts` | Create | `startStdio({ client })` — crea McpServer + StdioServerTransport y los conecta |
-| `src/transports/http.ts` | No cambia | Sigue exportando `createHttpApp` |
-| `src/index.ts` | Rewrite | Bootstrap con branching stdio vs http; dynamic imports |
-| `src/server.ts` | No cambia | Transport-agnostic |
-| `tests/config.test.ts` | Adapt | Tests divididos en `describe('loadAuthConfig')` y `describe('loadHttpConfig')` + smoke de `loadConfig` |
-| `tests/transports/stdio.test.ts` | Create | Smoke test E2E que spawna `node dist/index.js` y envía JSON-RPC por stdin |
-| `.github/workflows/ci.yml` | Modify | Reordenar: build antes que test (smoke stdio necesita dist/) |
-| `package.json` | Modify | Bump version `0.1.0` → `0.2.0` |
-| `README.md` | Modify | Sección "Modos de transporte" con tabla + ejemplos Claude Desktop/Nubiia |
-| `CHANGELOG.md` | Create | Documentar v0.2.0 con breaking change |
+| Path                             | Cambio    | Responsabilidad                                                                                        |
+| -------------------------------- | --------- | ------------------------------------------------------------------------------------------------------ |
+| `src/config.ts`                  | Refactor  | Split en `loadAuthConfig` + `loadHttpConfig`; mantener `loadConfig` como wrapper retro-compat          |
+| `src/transports/stdio.ts`        | Create    | `startStdio({ client })` — crea McpServer + StdioServerTransport y los conecta                         |
+| `src/transports/http.ts`         | No cambia | Sigue exportando `createHttpApp`                                                                       |
+| `src/index.ts`                   | Rewrite   | Bootstrap con branching stdio vs http; dynamic imports                                                 |
+| `src/server.ts`                  | No cambia | Transport-agnostic                                                                                     |
+| `tests/config.test.ts`           | Adapt     | Tests divididos en `describe('loadAuthConfig')` y `describe('loadHttpConfig')` + smoke de `loadConfig` |
+| `tests/transports/stdio.test.ts` | Create    | Smoke test E2E que spawna `node dist/index.js` y envía JSON-RPC por stdin                              |
+| `.github/workflows/ci.yml`       | Modify    | Reordenar: build antes que test (smoke stdio necesita dist/)                                           |
+| `package.json`                   | Modify    | Bump version `0.1.0` → `0.2.0`                                                                         |
+| `README.md`                      | Modify    | Sección "Modos de transporte" con tabla + ejemplos Claude Desktop/Nubiia                               |
+| `CHANGELOG.md`                   | Create    | Documentar v0.2.0 con breaking change                                                                  |
 
 ---
 
 ## Task 1: Split `loadConfig` en `loadAuthConfig` + `loadHttpConfig` (TDD)
 
 **Files:**
+
 - Modify: `src/config.ts`
 - Modify: `tests/config.test.ts`
 
 - [ ] **Step 1.1: Verificar punto de partida**
 
 ```bash
-cd /Users/samu/workspace/slm-freematica-mcp
+cd /Users/samu/workspace/mcp-freematica
 git status
 git branch --show-current
 npm test
 ```
+
 Expected: working tree limpio, branch `feat/stdio-transport`, 30/30 tests passing.
 
 - [ ] **Step 1.2: Reescribir `tests/config.test.ts` para cubrir las 2 funciones nuevas**
@@ -94,9 +96,7 @@ describe('loadAuthConfig', () => {
     expect(config.FREEMATICA_AUTH_ORGANIZATION).toBe('org');
     expect(config.FREEMATICA_AUTH_APP).toBe('app');
     expect(config.FREEMATICA_AUTH_SESSION).toBe('ses');
-    expect(config.FREEMATICA_BASE_URL).toBe(
-      'https://api-p01.clientservicepanel.com/restsat/api',
-    );
+    expect(config.FREEMATICA_BASE_URL).toBe('https://api-p01.clientservicepanel.com/restsat/api');
   });
 
   it.each(REQUIRED_AUTH_VARS)('throws clear error when %s is missing', (varName) => {
@@ -251,9 +251,7 @@ export type HttpConfig = z.infer<typeof HttpConfigSchema>;
 export type Config = AuthConfig & HttpConfig;
 
 function formatZodError(err: z.ZodError): string {
-  const issues = err.issues
-    .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
-    .join('\n');
+  const issues = err.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
   return (
     `[freematica-mcp] Invalid configuration:\n${issues}\n\n` +
     `Set the missing/invalid environment variables and restart.`
@@ -299,6 +297,7 @@ git commit -m "refactor: split loadConfig into loadAuthConfig and loadHttpConfig
 ## Task 2: Implementar `src/transports/stdio.ts`
 
 **Files:**
+
 - Create: `src/transports/stdio.ts`
 
 > **Sin test unitario aquí.** El smoke test E2E va en la Task 4 — testea el binario real. Un mock del SDK aquí sería tan trivial que no aportaría valor (el archivo tiene 5 líneas funcionales).
@@ -333,6 +332,7 @@ export async function startStdio(opts: StartStdioOptions): Promise<void> {
 ```bash
 npm run typecheck
 ```
+
 Expected: PASS.
 
 - [ ] **Step 2.3: Commit**
@@ -347,6 +347,7 @@ git commit -m "feat: add stdio transport helper"
 ## Task 3: Reescribir `src/index.ts` con dual transport
 
 **Files:**
+
 - Rewrite: `src/index.ts`
 
 - [ ] **Step 3.1: Reemplazar todo el contenido de `src/index.ts`**
@@ -430,6 +431,7 @@ main().catch((err) => {
 ```bash
 npm run typecheck
 ```
+
 Expected: PASS.
 
 - [ ] **Step 3.3: Build**
@@ -437,6 +439,7 @@ Expected: PASS.
 ```bash
 npm run build
 ```
+
 Expected: PASS. `dist/index.js` contiene la nueva lógica.
 
 - [ ] **Step 3.4: Smoke check manual — modo HTTP sigue funcionando**
@@ -455,6 +458,7 @@ curl -sf http://localhost:3000/health | grep -q '"status":"ok"' && echo "HTTP OK
 kill $SERVER_PID
 wait $SERVER_PID 2>/dev/null
 ```
+
 Expected: `HTTP OK`. Cualquier otra cosa significa que el modo HTTP se rompió.
 
 - [ ] **Step 3.5: Smoke check manual — modo stdio falla limpiamente sin env vars**
@@ -462,6 +466,7 @@ Expected: `HTTP OK`. Cualquier otra cosa significa que el modo HTTP se rompió.
 ```bash
 node dist/index.js 2>&1 | head -10
 ```
+
 Expected: mensaje claro listando los 5 `FREEMATICA_AUTH_*` requeridos. Exit code 1.
 
 - [ ] **Step 3.6: Smoke check manual — modo stdio arranca con env vars y responde a initialize**
@@ -472,6 +477,7 @@ FREEMATICA_AUTH_ORGANIZATION=o FREEMATICA_AUTH_APP=a \
 FREEMATICA_AUTH_SESSION=s \
 sh -c 'echo "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-03-26\",\"capabilities\":{},\"clientInfo\":{\"name\":\"smoke\",\"version\":\"1\"}}}"; sleep 1' | node dist/index.js 2>/dev/null | head -1
 ```
+
 Expected: una línea JSON con `"jsonrpc":"2.0"` y `"result":{...}` conteniendo `protocolVersion` y `serverInfo`. Si aparece, el modo stdio funciona end-to-end.
 
 - [ ] **Step 3.7: Commit**
@@ -486,6 +492,7 @@ git commit -m "feat: support dual transport (stdio default, http opt-in)"
 ## Task 4: Smoke test stdio en vitest
 
 **Files:**
+
 - Create: `tests/transports/stdio.test.ts`
 
 - [ ] **Step 4.1: Crear el test**
@@ -610,6 +617,7 @@ describe('stdio transport (smoke)', () => {
 ```bash
 npm run build
 ```
+
 Expected: PASS.
 
 - [ ] **Step 4.3: Ejecutar el smoke test**
@@ -617,9 +625,11 @@ Expected: PASS.
 ```bash
 npm test -- tests/transports/stdio.test.ts
 ```
+
 Expected: PASS (2 tests).
 
 Si falla el test "responds to initialize handshake" por timeout, verifica:
+
 - ¿El binario realmente arranca? Ejecuta manualmente `node dist/index.js` con los env vars del test (paso 3.6 del plan).
 - ¿El SDK escribe la respuesta en stdout con `\n` final? Si el SDK usa otro framing (Content-Length headers, por ejemplo), el parser de `sendRequest` debe adaptarse. Comprueba leyendo logs del SDK en `node_modules/@modelcontextprotocol/sdk/dist/esm/server/stdio.js`.
 
@@ -630,6 +640,7 @@ Si el segundo test falla porque el proceso no termina al cerrar stdin: añadir u
 ```bash
 npm test
 ```
+
 Expected: full suite PASS. Total tests > 30 (los 30 anteriores + 2 nuevos del smoke).
 
 - [ ] **Step 4.5: Commit**
@@ -644,6 +655,7 @@ git commit -m "test: add stdio transport smoke test (initialize + stdin close)"
 ## Task 5: Reordenar CI workflow (build antes que test)
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yml`
 
 - [ ] **Step 5.1: Editar `.github/workflows/ci.yml`**
@@ -651,17 +663,17 @@ git commit -m "test: add stdio transport smoke test (initialize + stdin close)"
 Reemplazar el bloque `steps:` por:
 
 ```yaml
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run build
-      - run: npm test
+steps:
+  - uses: actions/checkout@v4
+  - uses: actions/setup-node@v4
+    with:
+      node-version: '20'
+      cache: 'npm'
+  - run: npm ci
+  - run: npm run lint
+  - run: npm run typecheck
+  - run: npm run build
+  - run: npm test
 ```
 
 (Cambio: `npm run build` ahora va antes que `npm test`, porque el smoke test stdio necesita `dist/index.js`.)
@@ -672,6 +684,7 @@ Reemplazar el bloque `steps:` por:
 rm -rf dist
 npm run lint && npm run typecheck && npm run build && npm test
 ```
+
 Expected: PASS los 4 en orden.
 
 - [ ] **Step 5.3: Commit**
@@ -686,6 +699,7 @@ git commit -m "ci: build before test so stdio smoke can spawn dist/index.js"
 ## Task 6: Bump version + README + CHANGELOG
 
 **Files:**
+
 - Modify: `package.json` (version)
 - Modify: `README.md` (sección "Modos de transporte" + ejemplos)
 - Create: `CHANGELOG.md`
@@ -693,10 +707,13 @@ git commit -m "ci: build before test so stdio smoke can spawn dist/index.js"
 - [ ] **Step 6.1: Bump version en `package.json`**
 
 Cambiar:
+
 ```json
 "version": "0.1.0",
 ```
+
 por:
+
 ```json
 "version": "0.2.0",
 ```
@@ -706,6 +723,7 @@ Luego `npm install` para actualizar el lockfile (debe actualizar solo la entrada
 ```bash
 npm install
 ```
+
 Expected: 1 paquete actualizado (el propio root), sin otras alteraciones.
 
 - [ ] **Step 6.2: Actualizar `README.md` — sección "Modos de transporte"**
@@ -721,10 +739,10 @@ El binario soporta dos transportes seleccionables. La selección sigue este orde
 2. Variable de entorno: `MCP_TRANSPORT=<modo>`
 3. Default: `stdio`
 
-| Modo | Cuándo usar | Comando |
-|---|---|---|
-| `stdio` | Claude Desktop, Claude Code, ejecución local | `mcp-freematica` (default) o `mcp-freematica --transport=stdio` |
-| `http`  | Nubiia, deploy como servicio web | `mcp-freematica --transport=http` o `MCP_TRANSPORT=http mcp-freematica` |
+| Modo    | Cuándo usar                                  | Comando                                                                 |
+| ------- | -------------------------------------------- | ----------------------------------------------------------------------- |
+| `stdio` | Claude Desktop, Claude Code, ejecución local | `mcp-freematica` (default) o `mcp-freematica --transport=stdio`         |
+| `http`  | Nubiia, deploy como servicio web             | `mcp-freematica --transport=http` o `MCP_TRANSPORT=http mcp-freematica` |
 
 ### Configurar en Claude Desktop (stdio)
 
@@ -732,19 +750,19 @@ Edita `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 \`\`\`json
 {
-  "mcpServers": {
-    "freematica": {
-      "command": "npx",
-      "args": ["-y", "@serlimar/mcp-freematica"],
-      "env": {
-        "FREEMATICA_AUTH_TOKEN": "...",
-        "FREEMATICA_AUTH_COMPANY": "...",
-        "FREEMATICA_AUTH_ORGANIZATION": "...",
-        "FREEMATICA_AUTH_APP": "...",
-        "FREEMATICA_AUTH_SESSION": "..."
-      }
-    }
-  }
+"mcpServers": {
+"freematica": {
+"command": "npx",
+"args": ["-y", "@nubiia/mcp-freematica"],
+"env": {
+"FREEMATICA_AUTH_TOKEN": "...",
+"FREEMATICA_AUTH_COMPANY": "...",
+"FREEMATICA_AUTH_ORGANIZATION": "...",
+"FREEMATICA_AUTH_APP": "...",
+"FREEMATICA_AUTH_SESSION": "..."
+}
+}
+}
 }
 \`\`\`
 
@@ -753,12 +771,12 @@ Reinicia Claude Desktop y la tool `freematica_list_materiales_asignados_servicio
 ### Configurar en Claude Code (stdio)
 
 \`\`\`bash
-claude mcp add freematica npx -y @serlimar/mcp-freematica \\
-  -e FREEMATICA_AUTH_TOKEN=... \\
-  -e FREEMATICA_AUTH_COMPANY=... \\
-  -e FREEMATICA_AUTH_ORGANIZATION=... \\
-  -e FREEMATICA_AUTH_APP=... \\
-  -e FREEMATICA_AUTH_SESSION=...
+claude mcp add freematica npx -y @nubiia/mcp-freematica \\
+-e FREEMATICA_AUTH_TOKEN=... \\
+-e FREEMATICA_AUTH_COMPANY=... \\
+-e FREEMATICA_AUTH_ORGANIZATION=... \\
+-e FREEMATICA_AUTH_APP=... \\
+-e FREEMATICA_AUTH_SESSION=...
 \`\`\`
 
 ### Configurar en Nubiia (HTTP)
@@ -769,6 +787,7 @@ Setear `MCP_TRANSPORT=http` en las variables de entorno del proceso. El resto de
 (Las triples backticks dentro del bloque están escapadas con `\` para que el README las renderice como literales. Al escribir el archivo, el Edit tool debe poner triples backticks reales — no incluir las barras invertidas.)
 
 Importante: además de añadir la nueva sección, **eliminar** del README cualquier instrucción que diga "El servidor arranca por defecto en HTTP" o equivalente. El default ahora es stdio. Buscar y ajustar:
+
 - En la sección "Configuración" (variables de entorno): aclarar que `MCP_PORT` y `MCP_ALLOWED_ORIGINS` aplican solo en modo HTTP.
 - En la sección "Despliegue" → "Opción 1 — Instalar como paquete npm": ya menciona que se ejecuta como `mcp-freematica`; añadir `MCP_TRANSPORT=http` al ejemplo si el lector quiere HTTP (por defecto será stdio).
 - En la sección "Verificación de la configuración": la verificación con `curl http://localhost:3000/health` solo aplica si el servidor está arrancado en modo HTTP — añadir nota.
@@ -778,34 +797,38 @@ Importante: además de añadir la nueva sección, **eliminar** del README cualqu
 ```md
 # Changelog
 
-Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
+Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
 ## [0.2.0] — 2026-05-19
 
 ### Added
+
 - Soporte para transporte **stdio** (default). Selección vía CLI `--transport=` o env `MCP_TRANSPORT`.
 - `src/transports/stdio.ts` con `startStdio({ client })`.
 - Smoke test E2E del modo stdio (spawn de `dist/index.js`, JSON-RPC initialize por stdin).
 - Sección "Modos de transporte" en el README con ejemplos para Claude Desktop, Claude Code y Nubiia.
 
 ### Changed
+
 - `src/config.ts` refactorizado: `loadAuthConfig()` + `loadHttpConfig()` independientes. `loadConfig()` se mantiene como wrapper retro-compat.
 - `src/index.ts` reescrito para branching stdio/http con dynamic imports (evita cargar Express en modo stdio).
 - CI: `npm run build` se ejecuta antes que `npm test` (el smoke test stdio necesita `dist/`).
 
 ### Breaking
+
 - **Default del binario cambió de HTTP a stdio.** Si tu entorno (Nubiia u otro) ejecutaba el binario sin configurar transporte, hay que añadir `MCP_TRANSPORT=http` para mantener el comportamiento anterior.
 
 ## [0.1.0] — 2026-05-18
 
 ### Added
+
 - Bootstrap inicial del MCP server.
 - Tool: `freematica_list_materiales_asignados_servicios` → `GET /pvss/v2/contratos-servicios-material`.
 - Transporte HTTP (Streamable) con Express + StreamableHTTPServerTransport.
 - `FreematicaClient` (axios + 5 headers `x-auth-*`) + mapeo de errores HTTP a códigos normalizados.
 - Configuración vía Zod (5 env vars `FREEMATICA_AUTH_*` obligatorias + 3 opcionales).
 - 30 tests (vitest + nock), CI en GitHub Actions, Dockerfile multistage.
-- Publicación en GitHub Packages como `@serlimar/mcp-freematica`.
+- Publicación en GitHub Packages como `@nubiia/mcp-freematica`.
 ```
 
 - [ ] **Step 6.4: Validar todo**
@@ -813,6 +836,7 @@ Todas las versiones notables del paquete `@serlimar/mcp-freematica` se documenta
 ```bash
 npm run lint && npm run typecheck && npm run build && npm test
 ```
+
 Expected: PASS los 4.
 
 - [ ] **Step 6.5: Commit (todo junto)**
@@ -831,6 +855,7 @@ git commit -m "release: v0.2.0 — add stdio transport support"
 - [ ] **Step 7.1: STOP — presentar resumen al usuario para aprobación de push**
 
 > "Implementación completa en `feat/stdio-transport`. He hecho N commits. Lint, typecheck, build, tests OK localmente. Voy a:
+>
 > 1. Push de `feat/stdio-transport` a remote.
 > 2. PR contra `development`.
 > 3. Esperar CI verde.
@@ -840,6 +865,7 @@ git commit -m "release: v0.2.0 — add stdio transport support"
 > 7. Tag `v0.2.0` + push (dispara el workflow `publish.yml` que publica en GitHub Packages).
 >
 > Antes de empezar, confirma:
+>
 > - ¿Algún cliente ya está corriendo v0.1.0 esperando HTTP? Si sí, recuerda añadirles `MCP_TRANSPORT=http` antes de actualizar a v0.2.0 (breaking change documentado en CHANGELOG).
 >
 > ¿Apruebas el flujo completo?"
@@ -929,7 +955,7 @@ until gh run list --workflow=publish.yml --limit 1 --json status --jq '.[0].stat
 gh run list --workflow=publish.yml --limit 1 --json conclusion --jq '.[0].conclusion'   # debe ser "success"
 ```
 
-Si la conclusión es `success`, `@serlimar/mcp-freematica@0.2.0` ya está disponible en GitHub Packages.
+Si la conclusión es `success`, `@nubiia/mcp-freematica@0.2.0` ya está disponible en GitHub Packages.
 
 ---
 
@@ -937,33 +963,35 @@ Si la conclusión es `success`, `@serlimar/mcp-freematica@0.2.0` ya está dispon
 
 **Spec coverage:**
 
-| Spec section | Cubierto en |
-|---|---|
-| §2 Goals | Tasks 1, 2, 3 |
-| §3 Non-goals | Respetado (no auto-detect, no WebSocket) |
-| §4 Decisiones de diseño | Tasks 1 (split config), 3 (selección + defaults) |
-| §5 Estructura de archivos | Distribuida en Tasks 1-6 |
-| §6.1 `src/config.ts` | Task 1 |
-| §6.2 `src/transports/stdio.ts` | Task 2 |
-| §6.3 `src/index.ts` | Task 3 |
-| §6.4 `src/transports/http.ts` | Sin cambios — no requiere task |
-| §6.5 `src/server.ts` + tools | Sin cambios — no requiere task |
-| §7 Data flow stdio | Verificado en Task 4 (smoke test) |
-| §8 Manejo de errores | Tasks 1 (env vars), 3 (unknown transport warn) |
-| §9 Testing | Tasks 1 (config), 4 (stdio smoke) |
-| §10 README | Task 6 |
-| §11 Out of scope | Respetado (no se implementa) |
-| §12 Open questions | Task 7.1 (confirmar con el usuario antes del push) |
+| Spec section                   | Cubierto en                                        |
+| ------------------------------ | -------------------------------------------------- |
+| §2 Goals                       | Tasks 1, 2, 3                                      |
+| §3 Non-goals                   | Respetado (no auto-detect, no WebSocket)           |
+| §4 Decisiones de diseño        | Tasks 1 (split config), 3 (selección + defaults)   |
+| §5 Estructura de archivos      | Distribuida en Tasks 1-6                           |
+| §6.1 `src/config.ts`           | Task 1                                             |
+| §6.2 `src/transports/stdio.ts` | Task 2                                             |
+| §6.3 `src/index.ts`            | Task 3                                             |
+| §6.4 `src/transports/http.ts`  | Sin cambios — no requiere task                     |
+| §6.5 `src/server.ts` + tools   | Sin cambios — no requiere task                     |
+| §7 Data flow stdio             | Verificado en Task 4 (smoke test)                  |
+| §8 Manejo de errores           | Tasks 1 (env vars), 3 (unknown transport warn)     |
+| §9 Testing                     | Tasks 1 (config), 4 (stdio smoke)                  |
+| §10 README                     | Task 6                                             |
+| §11 Out of scope               | Respetado (no se implementa)                       |
+| §12 Open questions             | Task 7.1 (confirmar con el usuario antes del push) |
 
 **Placeholder scan:** ✅ Sin "TBD" / "TODO" / "fill in details" / "implement later". Notas concretas en Task 4.3 (qué hacer si el SDK usa otro framing) y Task 4.4 (escalar como BLOCKED si el `onclose` no funciona) — son guías reales, no placeholders.
 
 **Type consistency:**
+
 - `AuthConfig` / `HttpConfig` / `Config` declarados en Task 1, usados en Tasks 3, 4.
 - `loadAuthConfig` / `loadHttpConfig` / `loadConfig` consistentes en Tasks 1, 3, 4.
 - `StartStdioOptions` / `startStdio` declarado en Task 2, usado en Task 3.
 - `MCP_TRANSPORT` / `--transport=` aparición consistente en Tasks 3, 4, 5, 6.
 
 **Git workflow:** Cumple las normas globales:
+
 - Branch `feat/stdio-transport` desde `development` (ya hecho).
 - Push y PR requieren aprobación humana (Task 7.1).
 - Sin co-authored-by ni referencias a Claude/AI.

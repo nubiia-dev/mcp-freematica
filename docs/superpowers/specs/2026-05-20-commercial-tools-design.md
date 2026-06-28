@@ -3,7 +3,7 @@
 - **Date:** 2026-05-20
 - **Author:** Samuel Fraga
 - **Status:** Approved, ready for implementation
-- **Repo:** `serlimar/slm-freematica-mcp`
+- **Repo:** `nubiia-dev/mcp-freematica`
 - **Target version:** `0.4.0`
 - **Predecessors:** v0.3.1 (`docs/superpowers/specs/2026-05-19-master-data-tool-design.md`).
 
@@ -38,19 +38,19 @@ Esta release **arregla los tres** y añade **6 tools comerciales** (clientes, co
 
 ## 4. Decisiones de diseño
 
-| Decisión | Elección | Justificación |
-|---|---|---|
-| Lugar del unwrap | `BaseClient.request<T>()` | El wrapper es universal en TODOS los endpoints. Unwrap automático evita repetirlo en cada método. |
-| Verificación de `errorCode` | En `request<T>()`, mapea a `FreematicaError` | El API devuelve siempre status HTTP 200, pero `errorCode` interno puede ser != "200" (ej. el `404` que vimos cuando el id no existe). Hay que checar el envelope. |
-| Shape de listados | `data: { total, items, rowHeight }` → método retorna `{ items, total }` | `rowHeight` no es útil al LLM, se descarta. `total` sí (informa cuántas páginas hay). |
-| Shape de detalle | `data: <objeto del item>` → método retorna el objeto directo | El detalle no envuelve en `{items}`. |
-| Paginación tool inputs | `page: int >=1, default 1`; `items: int 1..50, default 20` | Bloqueamos `page=0` (devuelve TODO). Cap `items` en 50 para evitar respuestas masivas. |
-| Naming del id | El input se llama `id` y la doc explica que es el `idReg` opaco | Naming MCP estándar; explicar en la `.describe()` que el LLM debe usar el campo `idReg` de los listados, no `COD_CLI`/`ID_OPORTUNIDAD`. |
-| Datos ampliados | Tool independiente `freematica_get_oportunidad_negocio_datos_ampliados` | Endpoint distinto (`/datos-ampliados` suffix). Puede devolver 404 si no existen — documentar al LLM cómo manejarlo. |
-| Tipado de items | `Record<string, unknown>` | Igual que tools existentes. Los campos son códigos crípticos `COD_*` que se traducen vía master-data tool. |
-| Output tool listado | `{ items, count, total, page, items_per_page }` | `count` = `items.length` (esta página), `total` = del API, `page`/`items_per_page` = echo del input. Le da al LLM toda la info para paginar. |
-| Output tool detalle | El objeto del item directamente | Sin wrapper extra. Si quieres metadatos, ya hay otra capa MCP. |
-| Versión | `0.4.0` | Minor: añade tools. Breaking en shape de respuestas existentes pero nadie las consume aún, así que asumimos el cambio. |
+| Decisión                    | Elección                                                                | Justificación                                                                                                                                                     |
+| --------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lugar del unwrap            | `BaseClient.request<T>()`                                               | El wrapper es universal en TODOS los endpoints. Unwrap automático evita repetirlo en cada método.                                                                 |
+| Verificación de `errorCode` | En `request<T>()`, mapea a `FreematicaError`                            | El API devuelve siempre status HTTP 200, pero `errorCode` interno puede ser != "200" (ej. el `404` que vimos cuando el id no existe). Hay que checar el envelope. |
+| Shape de listados           | `data: { total, items, rowHeight }` → método retorna `{ items, total }` | `rowHeight` no es útil al LLM, se descarta. `total` sí (informa cuántas páginas hay).                                                                             |
+| Shape de detalle            | `data: <objeto del item>` → método retorna el objeto directo            | El detalle no envuelve en `{items}`.                                                                                                                              |
+| Paginación tool inputs      | `page: int >=1, default 1`; `items: int 1..50, default 20`              | Bloqueamos `page=0` (devuelve TODO). Cap `items` en 50 para evitar respuestas masivas.                                                                            |
+| Naming del id               | El input se llama `id` y la doc explica que es el `idReg` opaco         | Naming MCP estándar; explicar en la `.describe()` que el LLM debe usar el campo `idReg` de los listados, no `COD_CLI`/`ID_OPORTUNIDAD`.                           |
+| Datos ampliados             | Tool independiente `freematica_get_oportunidad_negocio_datos_ampliados` | Endpoint distinto (`/datos-ampliados` suffix). Puede devolver 404 si no existen — documentar al LLM cómo manejarlo.                                               |
+| Tipado de items             | `Record<string, unknown>`                                               | Igual que tools existentes. Los campos son códigos crípticos `COD_*` que se traducen vía master-data tool.                                                        |
+| Output tool listado         | `{ items, count, total, page, items_per_page }`                         | `count` = `items.length` (esta página), `total` = del API, `page`/`items_per_page` = echo del input. Le da al LLM toda la info para paginar.                      |
+| Output tool detalle         | El objeto del item directamente                                         | Sin wrapper extra. Si quieres metadatos, ya hay otra capa MCP.                                                                                                    |
+| Versión                     | `0.4.0`                                                                 | Minor: añade tools. Breaking en shape de respuestas existentes pero nadie las consume aún, así que asumimos el cambio.                                            |
 
 ## 5. Estructura de archivos
 
@@ -103,15 +103,15 @@ tests/
 
 ```ts
 export interface FreematicaEnvelope<T> {
-  errorCode: string;        // "200" en éxito; "404", "500", etc en error
+  errorCode: string; // "200" en éxito; "404", "500", etc en error
   errorMessage: string;
   data: T;
 }
 
 export interface FreematicaListData<T> {
-  total: string;            // viene como string del API
+  total: string; // viene como string del API
   items: T[];
-  rowHeight: number;        // descartar — no útil al LLM
+  rowHeight: number; // descartar — no útil al LLM
 }
 ```
 
@@ -155,7 +155,7 @@ import type { FreematicaListData } from '../types/api-envelope.js';
 
 export interface ListResult<T> {
   items: T[];
-  total: number;          // convertimos string → number
+  total: number; // convertimos string → number
 }
 
 export interface ListOptions {
@@ -169,7 +169,9 @@ export class FreematicaClient extends BaseClient {
   async getMaterialesAsignadosServicios(): Promise<ListResult<VoContratosServMatAsignado>> {
     // Sin paginación porque no la documenta el Postman para este endpoint.
     // Si en producción devuelve >200 items, considerar añadirla en v0.4.x.
-    const data = await this.get<FreematicaListData<VoContratosServMatAsignado>>('/pvss/v2/contratos-servicios-material');
+    const data = await this.get<FreematicaListData<VoContratosServMatAsignado>>(
+      '/pvss/v2/contratos-servicios-material',
+    );
     return { items: data.items, total: Number(data.total) };
   }
 
@@ -198,11 +200,15 @@ export class FreematicaClient extends BaseClient {
   }
 
   async getOportunidadNegocio(idReg: string): Promise<OportunidadNegocio> {
-    return this.get<OportunidadNegocio>(`/pcrm/v2/oportunidades-negocio/${encodeURIComponent(idReg)}`);
+    return this.get<OportunidadNegocio>(
+      `/pcrm/v2/oportunidades-negocio/${encodeURIComponent(idReg)}`,
+    );
   }
 
   async getOportunidadNegocioDatosAmpliados(idReg: string): Promise<Record<string, unknown>> {
-    return this.get<Record<string, unknown>>(`/pcrm/v2/oportunidades-negocio/${encodeURIComponent(idReg)}/datos-ampliados`);
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/oportunidades-negocio/${encodeURIComponent(idReg)}/datos-ampliados`,
+    );
   }
 
   // ---- helper interno ----
@@ -303,7 +309,12 @@ export function registerClientesTools(server: McpServer, client: FreematicaClien
   server.tool(
     GET_TOOL_NAME,
     'Devuelve el detalle completo de un cliente. El parámetro `id` DEBE ser el campo `idReg` (string opaco base64) que aparece en los items de freematica_list_clientes — NO el COD_CLI ni otro código natural. ...',
-    { id: z.string().min(1).describe('idReg opaco del cliente (campo "idReg" en los items del listado).') },
+    {
+      id: z
+        .string()
+        .min(1)
+        .describe('idReg opaco del cliente (campo "idReg" en los items del listado).'),
+    },
     { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async ({ id }) => {
       try {
@@ -339,6 +350,7 @@ Bump version a `0.4.0`.
 ### 6.9 `src/server-instructions.ts`
 
 Reescribir el bloque "Tools disponibles" con las 8 tools totales:
+
 - `freematica_list_materiales_asignados_servicios`
 - `freematica_get_master_data`
 - `freematica_list_clientes` + `freematica_get_cliente`
@@ -368,15 +380,15 @@ Añadir una nueva sección "## IDs opacos" explicando que `idReg` es el campo a 
 
 Códigos posibles (sin cambios respecto a v0.3.x):
 
-| Código | Cuándo |
-|---|---|
-| `invalid_token` | HTTP 401 o envelope.errorCode = "401" |
-| `forbidden` | HTTP 403 o envelope.errorCode = "403" |
-| `not_found` | HTTP 404 o envelope.errorCode = "404" (id inexistente, endpoint inexistente, datos-ampliados sin datos) |
-| `rate_limit_exceeded` | HTTP 429 o envelope.errorCode = "429" |
-| `server_error` | HTTP 5xx o envelope.errorCode = "5*" |
-| `network_error` | ECONNREFUSED / ETIMEDOUT / ENOTFOUND |
-| `unexpected_error` | Cualquier otra cosa |
+| Código                | Cuándo                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `invalid_token`       | HTTP 401 o envelope.errorCode = "401"                                                                   |
+| `forbidden`           | HTTP 403 o envelope.errorCode = "403"                                                                   |
+| `not_found`           | HTTP 404 o envelope.errorCode = "404" (id inexistente, endpoint inexistente, datos-ampliados sin datos) |
+| `rate_limit_exceeded` | HTTP 429 o envelope.errorCode = "429"                                                                   |
+| `server_error`        | HTTP 5xx o envelope.errorCode = "5\*"                                                                   |
+| `network_error`       | ECONNREFUSED / ETIMEDOUT / ENOTFOUND                                                                    |
+| `unexpected_error`    | Cualquier otra cosa                                                                                     |
 
 Nuevo: `mapEnvelopeError` para el caso donde HTTP es 200 pero el envelope dice otro código. Es muy común en este API.
 
@@ -386,7 +398,9 @@ Nuevo: `mapEnvelopeError` para el caso donde HTTP es 200 pero el envelope dice o
 
 ```ts
 it('unwraps envelope.data on success', async () => {
-  nock(BASE_URL).get('/x').reply(200, { errorCode: '200', errorMessage: '', data: { foo: 'bar' } });
+  nock(BASE_URL)
+    .get('/x')
+    .reply(200, { errorCode: '200', errorMessage: '', data: { foo: 'bar' } });
   const r = await client.testGet<{ foo: string }>('/x');
   expect(r).toEqual({ foo: 'bar' });
 });
