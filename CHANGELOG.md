@@ -2,6 +2,15 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.6.2] — 2026-06-28
+
+### Hardening de seguridad
+
+- Versión del servidor leída dinámicamente de `package.json` (handshake MCP, `/health`, logs de arranque); elimina versiones hardcodeadas desincronizadas (`/health` devolvía `0.4.1`).
+- Aviso en el log al arrancar en transporte HTTP si `MCP_ALLOWED_ORIGINS="*"`.
+- Rate limiting aplicado también al endpoint `/health` (antes solo `/mcp`).
+- Nueva sección **Seguridad** en el README: el endpoint `/mcp` no autentica al cliente y debe desplegarse tras un gateway con autenticación, restringiendo los orígenes permitidos.
+
 ## [0.6.1] — 2026-06-28
 
 ### Rebrand y publicación pública
