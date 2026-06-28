@@ -2,6 +2,14 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.6.4] — 2026-06-28
+
+### Branding y descubribilidad (npm/README)
+
+- `package.json`: descripción enriquecida, `homepage` y `author.url` apuntando a [nubiia.es](https://nubiia.es), y `keywords` ampliadas (erp, invoicing, facturación, accounting, cartera, claude, anthropic, ai, llm, automation) para mejorar la descubribilidad en npm.
+- README: badges (npm, license, by Nubiia), tagline con CTA y secciones **About Nubiia**, **Author** y **Links**.
+- Sin cambios funcionales en las tools.
+
 ## [0.6.3] — 2026-06-28
 
 ### Actualización de dependencias mayores
