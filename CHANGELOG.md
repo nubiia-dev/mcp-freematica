@@ -2,7 +2,7 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
-## [Unreleased] — Contratos y Servicios (branch feat/contratos-servicios-crud)
+## [0.7.0] — 2026-07-02
 
 ### Contratos y Servicios: lectura + escritura (create/update, sin delete)
 
