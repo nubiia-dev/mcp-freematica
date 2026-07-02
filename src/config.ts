@@ -83,10 +83,29 @@ const HardeningConfigSchema = z.object({
     .default(10),
 });
 
+/**
+ * Configuración de operaciones de escritura.
+ *
+ * Por defecto el servidor es de solo lectura: las tools de creación y
+ * actualización (freematica_create_* / freematica_update_*) NO se registran.
+ * Para habilitarlas hay que establecer FREEMATICA_ENABLE_WRITES=true de forma
+ * explícita en el entorno del despliegue.
+ *
+ * Nota: se parsea como enum de strings (no z.coerce.boolean()) porque
+ * `z.coerce.boolean()` evalúa "false" como truthy.
+ */
+const WritesConfigSchema = z.object({
+  FREEMATICA_ENABLE_WRITES: z
+    .enum(['true', 'false', '1', '0'])
+    .default('false')
+    .transform((v) => v === 'true' || v === '1'),
+});
+
 export type AuthConfig = z.infer<typeof AuthConfigSchema>;
 export type HttpConfig = z.infer<typeof HttpConfigSchema>;
 export type HardeningConfig = z.infer<typeof HardeningConfigSchema>;
-export type Config = AuthConfig & HttpConfig & HardeningConfig;
+export type WritesConfig = z.infer<typeof WritesConfigSchema>;
+export type Config = AuthConfig & HttpConfig & HardeningConfig & WritesConfig;
 
 function formatZodError(err: z.ZodError): string {
   const issues = err.issues
@@ -116,6 +135,17 @@ export function loadHardeningConfig(): HardeningConfig {
   return result.data;
 }
 
+export function loadWritesConfig(): WritesConfig {
+  const result = WritesConfigSchema.safeParse(process.env);
+  if (!result.success) throw new Error(formatZodError(result.error));
+  return result.data;
+}
+
 export function loadConfig(): Config {
-  return { ...loadAuthConfig(), ...loadHttpConfig(), ...loadHardeningConfig() };
+  return {
+    ...loadAuthConfig(),
+    ...loadHttpConfig(),
+    ...loadHardeningConfig(),
+    ...loadWritesConfig(),
+  };
 }

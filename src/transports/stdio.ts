@@ -1,9 +1,12 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
+import { loadWritesConfig } from '../config.js';
 import { createFreematicaServer } from '../server.js';
 
 export interface StartStdioOptions {
   client: FreematicaClient;
+  /** Override del flag de escrituras; si se omite se lee FREEMATICA_ENABLE_WRITES. */
+  enableWrites?: boolean;
 }
 
 /**
@@ -14,7 +17,8 @@ export interface StartStdioOptions {
  * el `onclose` del transport y libera el proceso).
  */
 export async function startStdio(opts: StartStdioOptions): Promise<void> {
-  const server = createFreematicaServer({ client: opts.client });
+  const enableWrites = opts.enableWrites ?? loadWritesConfig().FREEMATICA_ENABLE_WRITES;
+  const server = createFreematicaServer({ client: opts.client, enableWrites });
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
