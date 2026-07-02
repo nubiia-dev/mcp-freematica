@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import nock from 'nock';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { FreematicaClient } from '../../src/clients/freematica-client.js';
-import { registerContratosTools } from '../../src/tools/contratos.js';
+import { FreematicaClient } from '../../../src/clients/freematica-client.js';
+import { registerContratosTools } from '../../../src/tools/contratos/index.js';
 
 const BASE_URL = 'https://api.example.com/restsat/api';
 const AUTH_HEADERS = {
