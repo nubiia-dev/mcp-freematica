@@ -2,6 +2,42 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.7.0] — 2026-07-02
+
+### Contratos y Servicios: lectura + escritura (create/update, sin delete)
+
+Primera incorporación de operaciones de escritura al MCP. El grupo Contratos (módulos `pvss` y `ppre`) pasa de 1 tool a 17.
+
+#### Added
+
+**Lectura (6 tools, siempre registradas):**
+
+- **`freematica_list_contratos`** — cabeceras de contratos desde `GET /pvss/v1/contratos`. Solo filtros nativos empresa/delegación: verificado empíricamente que el API ignora `rQuery` (FIQL) en este endpoint.
+- **`freematica_get_contrato`** — búsqueda por códigos naturales (empresa + codContrato) con paginación interna y filtrado en cliente (no existe endpoint singular).
+- **`freematica_list_servicios_contrato`** / **`freematica_get_servicio_contrato`** — servicios de un contrato (`GET /pvss/v1/contratos/{id}/servicios`, `GET /pvss/v2/contratos-servicios/{idreg}`).
+- **`freematica_list_contratos_opcionales`** / **`freematica_get_contrato_opcionales`** — opcionales de contratos (`GET /ppre/v2/contratos/opcionales`).
+
+**Escritura (10 tools, solo con `FREEMATICA_ENABLE_WRITES=true`; no se implementa borrado):**
+
+- **`freematica_create_contrato`** / **`freematica_update_contrato`** — `POST/PUT /pvss/v2/contratos`.
+- **`freematica_create_servicio_contrato`** — `POST /pvss/v2/contratos/{idReg}/servicios`. Los campos requeridos (CTRTS_EMP/DELEG/CTRT) se derivan automáticamente del idReg del contrato.
+- **`freematica_update_servicio_fechas`** — `PUT /pvss/v2/contratos/{id}/servicio/{id}` (solo fechas inicio/fin; es el mecanismo de baja de servicios).
+- **`freematica_create_servicio_historico_precios`** / **`freematica_update_servicio_historico_precios`** — histórico versionado de precios del servicio.
+- **`freematica_create_servicio_facturacion_txt`** — líneas de texto de facturación.
+- **`freematica_update_servicio_facturacion`** — datos de facturación; campos comunes con nombre amigable y resto vía `camposAdicionales` (CTRTF\_\*).
+- **`freematica_create_contrato_opcionales`** / **`freematica_update_contrato_opcionales`** — `POST/PUT /ppre/v2/contratos/opcionales`.
+
+**Infraestructura:**
+
+- Nueva variable `FREEMATICA_ENABLE_WRITES` (default `false`): el servidor sigue siendo de solo lectura salvo activación explícita. Las tools de escritura no se registran sin ella.
+- Helper `src/utils/idreg.ts` para decodificar los idReg opacos (`Base64("EMP__DELEG__COD")` contratos, 4 partes servicios).
+- Log de auditoría en todas las escrituras: operación + endpoint + campos (info) y body completo (debug).
+- Anotaciones MCP: creates con `destructiveHint: false`, updates con `destructiveHint: true` e `idempotentHint: true`.
+- `src/tools/contratos.ts` dividido en `src/tools/contratos/{cabecera,servicios,opcionales,materiales}.ts` al superar el umbral de ~15 tools.
+
+**Total tools registradas: 51 read-only (61 con escrituras)** (vs 45 en v0.6.4).
+**Tests: 764** (vs 720 en v0.6.x).
+
 ## [0.6.4] — 2026-06-28
 
 ### Branding y descubribilidad (npm/README)

@@ -59,6 +59,29 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_list_albaranes_factura`                  | `GET /pven/v2/albaranes-facturas`                            | Lista paginada de vinculaciones albarán↔factura (idReg nativo + FIQL)                              |
 | `freematica_get_albaran_factura`                     | `GET /pven/v2/albaranes-facturas/{idReg}`                    | Detalle de una vinculación albarán-factura                                                         |
 | `freematica_list_resultados_facturacion`             | `GET /pvss/v1/facturacion-resultados`                        | Resultados del proceso batch de facturación automática de vigilancia (FIQL)                        |
+| `freematica_list_contratos`                          | `GET /pvss/v1/contratos`                                     | Lista paginada de cabeceras de contratos (solo filtros nativos: el API ignora FIQL aquí)           |
+| `freematica_get_contrato`                            | `GET /pvss/v1/contratos` (scan)                              | Busca un contrato por empresa + código natural (paginación interna + filtrado en cliente)          |
+| `freematica_list_servicios_contrato`                 | `GET /pvss/v1/contratos/{idReg}/servicios`                   | Servicios de un contrato                                                                           |
+| `freematica_get_servicio_contrato`                   | `GET /pvss/v2/contratos-servicios/{idReg}`                   | Detalle de un servicio de contrato                                                                 |
+| `freematica_list_contratos_opcionales`               | `GET /ppre/v2/contratos/opcionales`                          | Lista paginada de opcionales de contratos                                                          |
+| `freematica_get_contrato_opcionales`                 | `GET /ppre/v2/contratos/opcionales/{idReg}`                  | Detalle de un registro de opcionales                                                               |
+
+### Tools de escritura (requieren `FREEMATICA_ENABLE_WRITES=true`)
+
+Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=true` se registran además estas tools de creación y actualización. **No existe ninguna tool de borrado.** Todas las escrituras dejan log de auditoría (operación + endpoint + campos a nivel info; body completo a nivel debug).
+
+| Tool                                           | Endpoint Freemática                                             | Descripción                                                      |
+| ---------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `freematica_create_contrato`                   | `POST /pvss/v2/contratos`                                       | Alta de cabecera de contrato                                     |
+| `freematica_update_contrato`                   | `PUT /pvss/v2/contratos/{idReg}`                                | Actualización de cabecera de contrato                            |
+| `freematica_create_servicio_contrato`          | `POST /pvss/v2/contratos/{idReg}/servicios`                     | Alta de servicio (identificación derivada del idReg)             |
+| `freematica_update_servicio_fechas`            | `PUT /pvss/v2/contratos/{id}/servicio/{id}`                     | Fechas inicio/fin del servicio (mecanismo de baja)               |
+| `freematica_create_servicio_historico_precios` | `POST /pvss/v2/contratos/{id}/servicios-historico-precios/{id}` | Alta de revisión de precios del servicio                         |
+| `freematica_update_servicio_historico_precios` | `PUT /pvss/v2/contratos/{id}/servicios-historico-precios/{id}`  | Actualización de revisión de precios                             |
+| `freematica_create_servicio_facturacion_txt`   | `POST /pvss/v2/contratos/{id}/servicios-facturacion-txt/{id}`   | Alta de línea de texto de facturación                            |
+| `freematica_update_servicio_facturacion`       | `PUT /pvss/v2/contratos/{id}/servicios-facturacion/{id}`        | Datos de facturación del servicio (precios hora, forma de pago…) |
+| `freematica_create_contrato_opcionales`        | `POST /ppre/v2/contratos/opcionales`                            | Alta de opcionales de contrato                                   |
+| `freematica_update_contrato_opcionales`        | `PUT /ppre/v2/contratos/opcionales/{idReg}`                     | Actualización de opcionales de contrato                          |
 
 ## Filtros tipados (FIQL interno)
 
@@ -234,18 +257,19 @@ El servidor lee toda su configuración de **variables de entorno** al arrancar. 
 
 Variables de entorno opcionales para tuning de comportamiento en producción:
 
-| Variable                                | Default                                              | Descripción                                                                                                                                     |
-| --------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `FREEMATICA_BASE_URL`                   | `https://api-p01.clientservicepanel.com/restsat/api` | Base URL del API de Freemática. Cambiar solo si Freemática cambia el host o se usa un entorno alternativo.                                      |
-| `FREEMATICA_TIMEOUT_MS`                 | `30000`                                              | Timeout por petición en milisegundos. Si el upstream no responde en este tiempo, el request se cancela con `network_error`.                     |
-| `FREEMATICA_MAX_RETRIES`                | `3`                                                  | Número máximo de reintentos para errores 5xx y errores de red. Los errores 4xx nunca se reintentan.                                             |
-| `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD`  | `5`                                                  | Número de operaciones lógicas fallidas consecutivas (post-retry-exhaustion) necesarias para abrir el circuit breaker.                           |
-| `FREEMATICA_CIRCUIT_BREAKER_TIMEOUT_MS` | `30000`                                              | Tiempo en ms que el circuit breaker permanece abierto antes de pasar a half-open.                                                               |
-| `FREEMATICA_MAX_RESPONSE_SIZE_MB`       | `10`                                                 | Tamaño máximo de respuesta aceptada del upstream en MB. Respuestas mayores se truncan con aviso en el campo `truncated`.                        |
-| `MCP_TRANSPORT`                         | `stdio`                                              | Transporte: `stdio` (para Claude Desktop/Code) o `http` (para Nubiia). Equivale al flag `--transport=`.                                         |
-| `MCP_PORT`                              | `3000`                                               | Puerto TCP donde el servidor MCP expone `/mcp` y `/health`. Ignorado en modo stdio.                                                             |
-| `MCP_ALLOWED_ORIGINS`                   | `*`                                                  | CORS: lista de orígenes permitidos separados por coma, o `*` para todos. En producción restringir al dominio de Nubiia. Ignorado en modo stdio. |
-| `LOG_LEVEL`                             | `info`                                               | Nivel de log para pino: `fatal`, `error`, `warn`, `info`, `debug`, `trace`. En producción usar `info`. En desarrollo usar `debug`.              |
+| Variable                                | Default                                              | Descripción                                                                                                                                                |
+| --------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FREEMATICA_BASE_URL`                   | `https://api-p01.clientservicepanel.com/restsat/api` | Base URL del API de Freemática. Cambiar solo si Freemática cambia el host o se usa un entorno alternativo.                                                 |
+| `FREEMATICA_TIMEOUT_MS`                 | `30000`                                              | Timeout por petición en milisegundos. Si el upstream no responde en este tiempo, el request se cancela con `network_error`.                                |
+| `FREEMATICA_MAX_RETRIES`                | `3`                                                  | Número máximo de reintentos para errores 5xx y errores de red. Los errores 4xx nunca se reintentan.                                                        |
+| `FREEMATICA_CIRCUIT_BREAKER_THRESHOLD`  | `5`                                                  | Número de operaciones lógicas fallidas consecutivas (post-retry-exhaustion) necesarias para abrir el circuit breaker.                                      |
+| `FREEMATICA_CIRCUIT_BREAKER_TIMEOUT_MS` | `30000`                                              | Tiempo en ms que el circuit breaker permanece abierto antes de pasar a half-open.                                                                          |
+| `FREEMATICA_MAX_RESPONSE_SIZE_MB`       | `10`                                                 | Tamaño máximo de respuesta aceptada del upstream en MB. Respuestas mayores se truncan con aviso en el campo `truncated`.                                   |
+| `FREEMATICA_ENABLE_WRITES`              | `false`                                              | Registra las tools de escritura (`freematica_create_*` / `freematica_update_*`). Sin ella el servidor es de solo lectura. Valores: `true`/`false`/`1`/`0`. |
+| `MCP_TRANSPORT`                         | `stdio`                                              | Transporte: `stdio` (para Claude Desktop/Code) o `http` (para Nubiia). Equivale al flag `--transport=`.                                                    |
+| `MCP_PORT`                              | `3000`                                               | Puerto TCP donde el servidor MCP expone `/mcp` y `/health`. Ignorado en modo stdio.                                                                        |
+| `MCP_ALLOWED_ORIGINS`                   | `*`                                                  | CORS: lista de orígenes permitidos separados por coma, o `*` para todos. En producción restringir al dominio de Nubiia. Ignorado en modo stdio.            |
+| `LOG_LEVEL`                             | `info`                                               | Nivel de log para pino: `fatal`, `error`, `warn`, `info`, `debug`, `trace`. En producción usar `info`. En desarrollo usar `debug`.                         |
 
 ### De dónde salen las credenciales `x-auth-*`
 

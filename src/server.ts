@@ -8,7 +8,7 @@ import { registerCarteraTools } from './tools/cartera.js';
 import { registerClientesTools } from './tools/clientes.js';
 import { registerContactosClientesTools } from './tools/contactos-clientes.js';
 import { registerContabilidadTools } from './tools/contabilidad.js';
-import { registerContratosTools } from './tools/contratos.js';
+import { registerContratosTools } from './tools/contratos/index.js';
 import { registerFacturasComprasTools } from './tools/facturas-compras.js';
 import { registerFacturasElectronicasTools } from './tools/facturas-electronicas.js';
 import { registerFacturasVentasTools } from './tools/facturas-ventas.js';
@@ -22,6 +22,12 @@ import { registerProveedoresTools } from './tools/proveedores.js';
 
 export interface CreateFreematicaServerOptions {
   client: FreematicaClient;
+  /**
+   * Registra también las tools de escritura (freematica_create_* /
+   * freematica_update_*). Default: false (servidor de solo lectura).
+   * Los transports lo alimentan desde FREEMATICA_ENABLE_WRITES.
+   */
+  enableWrites?: boolean;
 }
 
 export function createFreematicaServer(opts: CreateFreematicaServerOptions): McpServer {
@@ -30,7 +36,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
     { instructions: FREEMATICA_MCP_INSTRUCTIONS },
   );
 
-  registerContratosTools(server, opts.client);
+  registerContratosTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerMasterDataTools(server, opts.client);
   registerClientesTools(server, opts.client);
   registerContactosClientesTools(server, opts.client);

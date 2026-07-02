@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
+import { loadWritesConfig } from '../config.js';
 import { createFreematicaServer } from '../server.js';
 import { VERSION } from '../version.js';
 import { logger } from '../logger.js';
@@ -13,6 +14,8 @@ export interface HttpTransportConfig {
   port: number;
   client: FreematicaClient;
   allowedOrigins: string;
+  /** Override del flag de escrituras; si se omite se lee FREEMATICA_ENABLE_WRITES. */
+  enableWrites?: boolean;
 }
 
 export interface HttpAppResult {
@@ -95,7 +98,9 @@ export async function createHttpApp(config: HttpTransportConfig): Promise<HttpAp
         if (transport.sessionId) sessions.delete(transport.sessionId);
       };
 
-      const server = createFreematicaServer({ client: config.client });
+      const enableWrites =
+        config.enableWrites ?? loadWritesConfig().FREEMATICA_ENABLE_WRITES;
+      const server = createFreematicaServer({ client: config.client, enableWrites });
       await server.connect(transport);
 
       await transport.handleRequest(req, res, req.body);
