@@ -15,6 +15,7 @@ import {
   buildEstadoPedidoFiql,
   type ListPedidosCompraFilters,
 } from '../schemas/pedidos-compras.js';
+import { LOC_FIELD_MAP, type LocalizacionTipo } from '../schemas/localizaciones.js';
 import type { FreematicaListData } from '../types/api-envelope.js';
 import type { Cliente } from '../types/clientes.js';
 import type { ContactoCliente } from '../types/contactos-clientes.js';
@@ -1844,6 +1845,150 @@ export class FreematicaClient extends BaseClient {
   private logWrite(operation: string, endpoint: string, body: Record<string, unknown>): void {
     logger.info({ operation, endpoint, fields: Object.keys(body) }, 'freematica write');
     logger.debug({ operation, endpoint, body }, 'freematica write body');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Clientes, Contactos y Localizaciones — escritura (v0.8.0, sin delete)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Alta de cliente.
+   *
+   * Endpoint: POST /pgrl/v2/clientes — body VoClientes.
+   * Requeridos por el API: idReg, COD_GRUPO_CLI, COD_CLI, NOMBRE_CLI, NIF,
+   * TIPO_IMPTO, COD_DIVISA, TIPO_FACT.
+   */
+  async createCliente(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCliente', 'POST /pgrl/v2/clientes', body);
+    return this.post<Record<string, unknown>>('/pgrl/v2/clientes', body);
+  }
+
+  /**
+   * Actualización de cliente.
+   *
+   * Endpoint: PUT /pgrl/v2/clientes/{idReg} — body VoClientes completo
+   * (el caller hace fetch+merge antes de llamar).
+   */
+  async updateCliente(
+    idReg: string,
+    body: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    this.logWrite('updateCliente', `PUT /pgrl/v2/clientes/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pgrl/v2/clientes/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Detalle de un contacto de cliente por `idReg` opaco.
+   *
+   * Endpoint: GET /pgrl/v1/contactos-clientes/{idreg}
+   * (v2 solo expone el listado; el singular es v1 pero devuelve las mismas
+   * columnas CC_*). Se usa en el fetch+merge del update.
+   */
+  async getContactoCliente(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pgrl/v1/contactos-clientes/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Alta de contacto de cliente.
+   *
+   * Endpoint: POST /pgrl/v2/contactos-clientes — body VoContactosClientes.
+   * Requeridos por el API: CC_GRUPO_CLI, CC_CLI.
+   */
+  async createContactoCliente(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createContactoCliente', 'POST /pgrl/v2/contactos-clientes', body);
+    return this.post<Record<string, unknown>>('/pgrl/v2/contactos-clientes', body);
+  }
+
+  /**
+   * Actualización de contacto de cliente.
+   *
+   * Endpoint: PUT /pgrl/v2/contactos-clientes/{idReg}.
+   */
+  async updateContactoCliente(
+    idReg: string,
+    body: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    this.logWrite('updateContactoCliente', `PUT /pgrl/v2/contactos-clientes/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pgrl/v2/contactos-clientes/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Detalle de una localización de cliente por tipo e `idReg` opaco.
+   *
+   * Usa el GET singular v2 del tipo (v1 para factura, que no tiene v2; las
+   * columnas son las mismas). Se emplea en el fetch+merge de los updates.
+   */
+  async getLocalizacionCliente(
+    tipo: LocalizacionTipo,
+    idReg: string,
+  ): Promise<Record<string, unknown>> {
+    const base = LOC_FIELD_MAP[tipo].getPath;
+    return this.get<Record<string, unknown>>(`${base}/${encodeURIComponent(idReg)}`);
+  }
+
+  /**
+   * Lista paginada de localizaciones de envío de clientes.
+   *
+   * Endpoint: GET /pgrl/v2/localizaciones-envio-clientes
+   */
+  async listLocalizacionesEnvioClientes(
+    opts: ListOptions & { codCliente?: string; grupoCliente?: string } = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResourceWithFiql('/pgrl/v2/localizaciones-envio-clientes', opts, {
+      COD_CLI: opts.codCliente,
+      COD_GRUPO_CLI: opts.grupoCliente,
+    });
+  }
+
+  /**
+   * Lista paginada de localizaciones de factura de clientes.
+   *
+   * Endpoint: GET /pgrl/v2/localizaciones-factura-clientes
+   */
+  async listLocalizacionesFacturaClientes(
+    opts: ListOptions & { codCliente?: string; grupoCliente?: string } = {},
+  ): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResourceWithFiql('/pgrl/v2/localizaciones-factura-clientes', opts, {
+      COD_CLI: opts.codCliente,
+      COD_GRUPO_CLI: opts.grupoCliente,
+    });
+  }
+
+  /**
+   * Alta de localización de cliente (cobro, envío, factura o servicio).
+   *
+   * Endpoint: POST /pgrl/v2/localizaciones-{tipo}-clientes — body Vo del tipo.
+   */
+  async createLocalizacionCliente(
+    tipo: LocalizacionTipo,
+    body: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const path = LOC_FIELD_MAP[tipo].path;
+    this.logWrite('createLocalizacionCliente', `POST ${path}`, body);
+    return this.post<Record<string, unknown>>(path, body);
+  }
+
+  /**
+   * Actualización de localización de cliente (cobro, envío, factura o servicio).
+   *
+   * Endpoint: PUT /pgrl/v2/localizaciones-{tipo}-clientes/{idReg}.
+   */
+  async updateLocalizacionCliente(
+    tipo: LocalizacionTipo,
+    idReg: string,
+    body: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const path = `${LOC_FIELD_MAP[tipo].path}/${encodeURIComponent(idReg)}`;
+    this.logWrite('updateLocalizacionCliente', `PUT ${path}`, body);
+    return this.put<Record<string, unknown>>(path, body);
   }
 
   // ---------------------------------------------------------------------------

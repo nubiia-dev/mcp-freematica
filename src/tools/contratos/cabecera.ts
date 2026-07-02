@@ -10,7 +10,7 @@ import {
   buildContratoBody,
   type ContratoFields,
 } from '../../schemas/contratos.js';
-import { error, ok, okList } from '../helpers.js';
+import { error, ok, okList, type RegisterOptions } from '../helpers.js';
 
 const LIST_TOOL_NAME = 'freematica_list_contratos';
 const GET_TOOL_NAME = 'freematica_get_contrato';
@@ -60,9 +60,7 @@ const UPDATE_DESCRIPTION = [
   'o freematica_get_contrato). Solo se envían al API los campos informados.',
 ].join('\n');
 
-export interface RegisterOptions {
-  enableWrites: boolean;
-}
+export type { RegisterOptions } from '../helpers.js';
 
 /** Tools de cabecera de contrato: list/get (lectura) + create/update (escritura). */
 export function registerCabeceraTools(

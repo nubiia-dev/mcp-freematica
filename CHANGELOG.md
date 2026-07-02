@@ -2,6 +2,31 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — Clientes, Contactos y Localizaciones (branch feat/clientes-contactos-localizaciones-write)
+
+### Escritura de clientes, contactos y localizaciones de cliente (create/update, sin delete)
+
+#### Added
+
+**Escritura (6 tools, solo con `FREEMATICA_ENABLE_WRITES=true`):**
+
+- **`freematica_create_cliente`** / **`freematica_update_cliente`** — `POST/PUT /pgrl/v2/clientes`. El alta calcula el `idReg` requerido (Base64 "GRUPO\_\_COD"); el update es parcial: recupera el cliente actual, aplica los cambios y envía el objeto completo (fetch+merge).
+- **`freematica_create_contacto_cliente`** / **`freematica_update_contacto_cliente`** — `POST/PUT /pgrl/v2/contactos-clientes`. El update hace fetch+merge usando el GET singular v1 (mismas columnas CC\_\*).
+- **`freematica_create_localizacion_cliente`** / **`freematica_update_localizacion_cliente`** — una pareja de tools genérica con parámetro `tipo` (cobro | envio | factura | servicio) que cubre los 4 endpoints `POST/PUT /pgrl/v2/localizaciones-{tipo}-clientes`. Valida por tipo: `formaPago` obligatorio en cobro, `nombre` obligatorio salvo en envío. El update de factura usa el GET singular v1 (no existe en v2).
+
+**Lectura (2 tools):**
+
+- **`freematica_list_localizaciones_envio_clientes`** / **`freematica_list_localizaciones_factura_clientes`** — completan los listados de localizaciones (necesarios para obtener el `idReg` en los updates).
+
+**Infraestructura:**
+
+- Builders con nombres amigables + passthrough `camposAdicionales` (VoClientes tiene 109 columnas) en `src/schemas/clientes.ts` y `src/schemas/localizaciones.ts` (tabla `LOC_FIELD_MAP` con el mapeo de columnas por tipo).
+- `mergeForUpdate()`: patrón fetch+merge para updates parciales, eliminando metadatos de presentación (RowNumber, \_id, \_cellSettings) antes del PUT. El estado previo queda en el log de auditoría (debug).
+- `RegisterOptions` movido a `src/tools/helpers.ts` (compartido por todos los grupos con escritura).
+
+**Total tools registradas: 53 read-only (69 con escrituras)** (vs 51/61 en v0.7.0).
+**Tests: 807** (vs 764 en v0.7.0).
+
 ## [0.7.0] — 2026-07-02
 
 ### Contratos y Servicios: lectura + escritura (create/update, sin delete)

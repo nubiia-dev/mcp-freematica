@@ -1,5 +1,10 @@
 import { FreematicaError, type FreematicaErrorCode } from '../clients/base-client.js';
 
+/** Opciones de registro de tools con operaciones de escritura. */
+export interface RegisterOptions {
+  enableWrites: boolean;
+}
+
 export interface ToolTextContent {
   type: 'text';
   text: string;

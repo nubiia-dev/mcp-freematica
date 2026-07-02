@@ -91,6 +91,30 @@ Flujo típico para crear un contrato completo:
 3. freematica_create_servicio_historico_precios con los precios.
 4. (opcional) freematica_create_servicio_facturacion_txt.
 
+## Clientes, Contactos y Localizaciones — escritura
+
+Con FREEMATICA_ENABLE_WRITES=true (no existe borrado):
+
+- **freematica_create_cliente** — requeridos: grupoCliente, codCliente,
+  nombre, nif, tipoImpuesto, divisa, tipoFacturacion (D/M/Q). El idReg se
+  calcula automáticamente.
+- **freematica_update_cliente(idReg, …)** — actualización parcial: la tool
+  recupera el cliente y fusiona los cambios antes del PUT.
+- **freematica_create_contacto_cliente** — requeridos: grupoCliente y
+  codCliente. Opcionales: nombreApellidos, cargo, telefono, movil, email…
+- **freematica_update_contacto_cliente(idReg, …)** — parcial (fetch+merge).
+- **freematica_create_localizacion_cliente(tipo, …)** — tipo: cobro | envio |
+  factura | servicio. formaPago solo se exige en cobro; nombre en todos salvo
+  envío. Campos específicos del tipo vía camposAdicionales.
+- **freematica_update_localizacion_cliente(tipo, idReg, …)** — parcial
+  (fetch+merge). El idReg sale de la list tool del tipo.
+
+Flujo típico cliente nuevo completo:
+1. freematica_create_cliente
+2. freematica_create_contacto_cliente
+3. freematica_create_localizacion_cliente (tipo=servicio, y cobro/factura si aplica)
+4. freematica_create_contrato + servicios (ver sección Contratos)
+
 ## IDs opacos en endpoints de detalle
 
 Las tools \`freematica_get_*\` requieren un \`id\` que es el campo \`idReg\` de los

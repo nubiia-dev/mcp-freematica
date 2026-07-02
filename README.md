@@ -65,6 +65,8 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_get_servicio_contrato`                   | `GET /pvss/v2/contratos-servicios/{idReg}`                   | Detalle de un servicio de contrato                                                                 |
 | `freematica_list_contratos_opcionales`               | `GET /ppre/v2/contratos/opcionales`                          | Lista paginada de opcionales de contratos                                                          |
 | `freematica_get_contrato_opcionales`                 | `GET /ppre/v2/contratos/opcionales/{idReg}`                  | Detalle de un registro de opcionales                                                               |
+| `freematica_list_localizaciones_envio_clientes`      | `GET /pgrl/v2/localizaciones-envio-clientes`                 | Localizaciones de envío de clientes                                                                |
+| `freematica_list_localizaciones_factura_clientes`    | `GET /pgrl/v2/localizaciones-factura-clientes`               | Localizaciones de factura de clientes                                                              |
 
 ### Tools de escritura (requieren `FREEMATICA_ENABLE_WRITES=true`)
 
@@ -82,6 +84,12 @@ Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=tr
 | `freematica_update_servicio_facturacion`       | `PUT /pvss/v2/contratos/{id}/servicios-facturacion/{id}`        | Datos de facturación del servicio (precios hora, forma de pago…) |
 | `freematica_create_contrato_opcionales`        | `POST /ppre/v2/contratos/opcionales`                            | Alta de opcionales de contrato                                   |
 | `freematica_update_contrato_opcionales`        | `PUT /ppre/v2/contratos/opcionales/{idReg}`                     | Actualización de opcionales de contrato                          |
+| `freematica_create_cliente`                    | `POST /pgrl/v2/clientes`                                        | Alta de cliente (idReg derivado de grupo+código)                 |
+| `freematica_update_cliente`                    | `PUT /pgrl/v2/clientes/{idReg}`                                 | Actualización parcial de cliente (fetch+merge)                   |
+| `freematica_create_contacto_cliente`           | `POST /pgrl/v2/contactos-clientes`                              | Alta de contacto de cliente                                      |
+| `freematica_update_contacto_cliente`           | `PUT /pgrl/v2/contactos-clientes/{idReg}`                       | Actualización parcial de contacto (fetch+merge)                  |
+| `freematica_create_localizacion_cliente`       | `POST /pgrl/v2/localizaciones-{tipo}-clientes`                  | Alta de localización (tipo: cobro/envio/factura/servicio)        |
+| `freematica_update_localizacion_cliente`       | `PUT /pgrl/v2/localizaciones-{tipo}-clientes/{idReg}`           | Actualización parcial de localización (fetch+merge)              |
 
 ## Filtros tipados (FIQL interno)
 
