@@ -1,4 +1,4 @@
-import { BaseClient } from './base-client.js';
+import { BaseClient, FreematicaError } from './base-client.js';
 import { buildFiql, appendRquery, type FiqlGroup } from './fiql-builder.js';
 import { CATALOG_ENDPOINTS, type MasterDataCatalog } from '../schemas/master-data.js';
 import {
@@ -20,7 +20,15 @@ import type { Cliente } from '../types/clientes.js';
 import type { ContactoCliente } from '../types/contactos-clientes.js';
 import type { MasterDataItem } from '../types/master-data.js';
 import type { OportunidadNegocio } from '../types/oportunidades-negocio.js';
-import type { VoContratosServMatAsignado } from '../types/contratos.js';
+import type {
+  VoContrato,
+  VoContratoServicio,
+  VoContratosOpcionales,
+  VoContratosServMatAsignado,
+  VoServiciosFac,
+  VoServiciosFacTxt,
+  VoServiciosHistPr,
+} from '../types/contratos.js';
 import { logger } from '../logger.js';
 import { loadMaxResponseSizeMb } from '../utils/size-guardrail.js';
 
@@ -1444,6 +1452,398 @@ export class FreematicaClient extends BaseClient {
     const path = url.pathname + (url.search ? url.search : '');
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
     return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Contratos y Servicios (v0.7.0) — lectura
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de cabeceras de contratos.
+   *
+   * Endpoint: GET /pvss/v1/contratos
+   *
+   * IMPORTANTE: este endpoint IGNORA silenciosamente el query param `rQuery`
+   * (verificado empíricamente contra el API real el 2026-07-02: con un filtro
+   * FIQL válido devuelve el dataset completo sin error). Por eso solo se
+   * exponen los filtros nativos `codEmpresa` y `codDelegacion`; cualquier otro
+   * filtrado debe hacerse en cliente (ver `getContrato`).
+   *
+   * @param opts - Paginación + filtros nativos empresa/delegación + order.
+   * @returns Lista paginada de cabeceras de contrato (campos CTRT_*).
+   */
+  async listContratos(
+    opts: ListOptions & {
+      empresa?: string;
+      delegacion?: string;
+      order?: string;
+    } = {},
+  ): Promise<ListResult<VoContrato>> {
+    const url = new URL('https://placeholder/pvss/v1/contratos');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.empresa !== undefined) url.searchParams.set('codEmpresa', opts.empresa);
+    if (opts.delegacion !== undefined) url.searchParams.set('codDelegacion', opts.delegacion);
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<VoContrato>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Busca una cabecera de contrato por sus códigos naturales.
+   *
+   * No existe un endpoint GET singular para contratos pvss y el listado ignora
+   * `rQuery`, así que se pagina el listado (items=200, máximo permitido por el
+   * API) filtrando en cliente por CTRT_COD hasta encontrar la coincidencia.
+   *
+   * @param opts - Códigos naturales del contrato.
+   * @returns Cabecera del contrato.
+   * @throws FreematicaError('not_found') si no existe.
+   */
+  async getContrato(opts: {
+    empresa: string;
+    delegacion?: string;
+    codContrato: string;
+  }): Promise<VoContrato> {
+    const PAGE_SIZE = 200;
+    const MAX_PAGES = 100; // guardarraíl: 20.000 contratos
+
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const { items } = await this.listContratos({
+        empresa: opts.empresa,
+        delegacion: opts.delegacion,
+        page,
+        items: PAGE_SIZE,
+      });
+      const match = items.find(
+        (c) =>
+          String(c['CTRT_COD']) === opts.codContrato &&
+          String(c['CTRT_EMP']) === opts.empresa &&
+          (opts.delegacion === undefined || String(c['CTRT_DELEG']) === opts.delegacion),
+      );
+      if (match) return match;
+      if (items.length < PAGE_SIZE) break;
+    }
+    throw new FreematicaError(
+      'not_found',
+      `Contrato no encontrado: empresa=${opts.empresa} delegacion=${opts.delegacion ?? '*'} codContrato=${opts.codContrato}`,
+    );
+  }
+
+  /**
+   * Lista paginada de servicios de un contrato.
+   *
+   * Endpoint: GET /pvss/v1/contratos/{idContrato}/servicios
+   *
+   * @param idContrato - idReg opaco del contrato (Base64 "EMP__DELEG__COD").
+   * @param opts - Paginación + order.
+   * @returns Lista paginada de servicios (campos CTRTS_*).
+   */
+  async listServiciosContrato(
+    idContrato: string,
+    opts: ListOptions & { order?: string } = {},
+  ): Promise<ListResult<VoContratoServicio>> {
+    const url = new URL(
+      `https://placeholder/pvss/v1/contratos/${encodeURIComponent(idContrato)}/servicios`,
+    );
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<VoContratoServicio>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de un servicio de contrato por `idReg` opaco.
+   *
+   * Endpoint: GET /pvss/v2/contratos-servicios/{idreg}
+   *
+   * @param idReg - idReg opaco del servicio (Base64 "EMP__DELEG__CTRT__COD").
+   * @returns Servicio completo.
+   */
+  async getServicioContrato(idReg: string): Promise<VoContratoServicio> {
+    return this.get<VoContratoServicio>(
+      `/pvss/v2/contratos-servicios/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de opcionales de contratos.
+   *
+   * Endpoint: GET /ppre/v2/contratos/opcionales
+   *
+   * @param opts - Paginación + order.
+   * @returns Lista paginada de opcionales (campos CON2_*).
+   */
+  async listContratosOpcionales(
+    opts: ListOptions & { order?: string } = {},
+  ): Promise<ListResult<VoContratosOpcionales>> {
+    const url = new URL('https://placeholder/ppre/v2/contratos/opcionales');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<VoContratosOpcionales>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de un registro de opcionales de contrato por `idReg` opaco.
+   *
+   * Endpoint: GET /ppre/v2/contratos/opcionales/{idReg}
+   */
+  async getContratoOpcionales(idReg: string): Promise<VoContratosOpcionales> {
+    return this.get<VoContratosOpcionales>(
+      `/ppre/v2/contratos/opcionales/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Contratos y Servicios (v0.7.0) — escritura (create/update, sin delete)
+  //
+  // Todas las operaciones de escritura se registran en el log (nivel info con
+  // la operación y claves del registro; nivel debug con el body completo) para
+  // soportar auditoría y rollback manual.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Alta de cabecera de contrato.
+   *
+   * Endpoint: POST /pvss/v2/contratos — body VoContratos.
+   * Campos requeridos por el API: CTRT_DELEG, CTRT_DES, CTRT_FECHA, CTRT_COD_CLI.
+   *
+   * @param body - Campos CTRT_* del contrato.
+   * @returns El contrato creado (VoContratos).
+   */
+  async createContrato(body: VoContrato): Promise<VoContrato> {
+    this.logWrite('createContrato', 'POST /pvss/v2/contratos', body);
+    return this.post<VoContrato>('/pvss/v2/contratos', body);
+  }
+
+  /**
+   * Actualización de cabecera de contrato.
+   *
+   * Endpoint: PUT /pvss/v2/contratos/{idReg} — body VoContratos.
+   *
+   * @param idReg - idReg opaco del contrato.
+   * @param body - Campos CTRT_* a actualizar.
+   * @returns Respuesta del API.
+   */
+  async updateContrato(idReg: string, body: VoContrato): Promise<VoContrato> {
+    this.logWrite('updateContrato', `PUT /pvss/v2/contratos/${idReg}`, body);
+    return this.put<VoContrato>(`/pvss/v2/contratos/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /**
+   * Alta de un servicio en un contrato.
+   *
+   * Endpoint: POST /pvss/v2/contratos/{idReg}/servicios — body VoServicios.
+   * Campos requeridos por el API: CTRTS_EMP, CTRTS_DELEG, CTRTS_CTRT (los
+   * mismos valores codificados en el idReg del contrato).
+   *
+   * @param idContrato - idReg opaco del contrato.
+   * @param body - Campos CTRTS_* del servicio.
+   * @returns El servicio creado (VoServicios).
+   */
+  async createServicioContrato(
+    idContrato: string,
+    body: VoContratoServicio,
+  ): Promise<VoContratoServicio> {
+    this.logWrite(
+      'createServicioContrato',
+      `POST /pvss/v2/contratos/${idContrato}/servicios`,
+      body,
+    );
+    return this.post<VoContratoServicio>(
+      `/pvss/v2/contratos/${encodeURIComponent(idContrato)}/servicios`,
+      body,
+    );
+  }
+
+  /**
+   * Actualiza fechas de inicio y fin de un servicio.
+   *
+   * Endpoint: PUT /pvss/v2/contratos/{idContrato}/servicio/{idServicio}.
+   * Según el spec, este endpoint solo actualiza fecha inicio y fecha fin.
+   *
+   * @param idContrato - idReg opaco del contrato.
+   * @param idServicio - idReg opaco del servicio.
+   * @param body - Campos CTRTS_* (fechas) a actualizar.
+   * @returns Respuesta del API.
+   */
+  async updateServicioFechas(
+    idContrato: string,
+    idServicio: string,
+    body: VoContratoServicio,
+  ): Promise<VoContratoServicio> {
+    this.logWrite(
+      'updateServicioFechas',
+      `PUT /pvss/v2/contratos/${idContrato}/servicio/${idServicio}`,
+      body,
+    );
+    return this.put<VoContratoServicio>(
+      `/pvss/v2/contratos/${encodeURIComponent(idContrato)}/servicio/${encodeURIComponent(idServicio)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualiza los datos de facturación de un servicio.
+   *
+   * Endpoint: PUT /pvss/v2/contratos/{idContrato}/servicios-facturacion/{idServicio}.
+   *
+   * @param idContrato - idReg opaco del contrato.
+   * @param idServicio - idReg opaco del servicio.
+   * @param body - Campos CTRTF_* a actualizar.
+   * @returns Respuesta del API.
+   */
+  async updateServicioFacturacion(
+    idContrato: string,
+    idServicio: string,
+    body: VoServiciosFac,
+  ): Promise<VoServiciosFac> {
+    this.logWrite(
+      'updateServicioFacturacion',
+      `PUT /pvss/v2/contratos/${idContrato}/servicios-facturacion/${idServicio}`,
+      body,
+    );
+    return this.put<VoServiciosFac>(
+      `/pvss/v2/contratos/${encodeURIComponent(idContrato)}/servicios-facturacion/${encodeURIComponent(idServicio)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de un texto de facturación de un servicio.
+   *
+   * Endpoint: POST /pvss/v2/contratos/{idContrato}/servicios-facturacion-txt/{idServicio}.
+   *
+   * @param idContrato - idReg opaco del contrato.
+   * @param idServicio - idReg opaco del servicio.
+   * @param body - Campos CTRTFL_* del texto.
+   * @returns Respuesta del API.
+   */
+  async createServicioFacturacionTxt(
+    idContrato: string,
+    idServicio: string,
+    body: VoServiciosFacTxt,
+  ): Promise<VoServiciosFacTxt> {
+    this.logWrite(
+      'createServicioFacturacionTxt',
+      `POST /pvss/v2/contratos/${idContrato}/servicios-facturacion-txt/${idServicio}`,
+      body,
+    );
+    return this.post<VoServiciosFacTxt>(
+      `/pvss/v2/contratos/${encodeURIComponent(idContrato)}/servicios-facturacion-txt/${encodeURIComponent(idServicio)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de un registro de histórico de precios de un servicio.
+   *
+   * Endpoint: POST /pvss/v2/contratos/{idContrato}/servicios-historico-precios/{idServicio}.
+   *
+   * @param idContrato - idReg opaco del contrato.
+   * @param idServicio - idReg opaco del servicio.
+   * @param body - Campos SERVHPR_* del histórico.
+   * @returns Respuesta del API (VoServiciosHistPr).
+   */
+  async createServicioHistoricoPrecios(
+    idContrato: string,
+    idServicio: string,
+    body: VoServiciosHistPr,
+  ): Promise<VoServiciosHistPr> {
+    this.logWrite(
+      'createServicioHistoricoPrecios',
+      `POST /pvss/v2/contratos/${idContrato}/servicios-historico-precios/${idServicio}`,
+      body,
+    );
+    return this.post<VoServiciosHistPr>(
+      `/pvss/v2/contratos/${encodeURIComponent(idContrato)}/servicios-historico-precios/${encodeURIComponent(idServicio)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualiza un registro de histórico de precios de un servicio.
+   *
+   * Endpoint: PUT /pvss/v2/contratos/{idContrato}/servicios-historico-precios/{idServicio}.
+   *
+   * @param idContrato - idReg opaco del contrato.
+   * @param idServicio - idReg opaco del servicio.
+   * @param body - Campos SERVHPR_* a actualizar.
+   * @returns Respuesta del API.
+   */
+  async updateServicioHistoricoPrecios(
+    idContrato: string,
+    idServicio: string,
+    body: VoServiciosHistPr,
+  ): Promise<VoServiciosHistPr> {
+    this.logWrite(
+      'updateServicioHistoricoPrecios',
+      `PUT /pvss/v2/contratos/${idContrato}/servicios-historico-precios/${idServicio}`,
+      body,
+    );
+    return this.put<VoServiciosHistPr>(
+      `/pvss/v2/contratos/${encodeURIComponent(idContrato)}/servicios-historico-precios/${encodeURIComponent(idServicio)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de un registro de opcionales de contrato.
+   *
+   * Endpoint: POST /ppre/v2/contratos/opcionales — body VoContratosOpcionales.
+   * Campos requeridos por el API: CON2_CODEMP, CON2_DELEG, CON2_TIPOCONT,
+   * CON2_NUMCONT, CON2_FCHCONT.
+   *
+   * @param body - Campos CON2_* del registro.
+   * @returns El registro creado.
+   */
+  async createContratoOpcionales(body: VoContratosOpcionales): Promise<VoContratosOpcionales> {
+    this.logWrite('createContratoOpcionales', 'POST /ppre/v2/contratos/opcionales', body);
+    return this.post<VoContratosOpcionales>('/ppre/v2/contratos/opcionales', body);
+  }
+
+  /**
+   * Actualiza un registro de opcionales de contrato.
+   *
+   * Endpoint: PUT /ppre/v2/contratos/opcionales/{idReg}.
+   *
+   * @param idReg - idReg opaco del registro de opcionales.
+   * @param body - Campos CON2_* a actualizar.
+   * @returns Respuesta del API.
+   */
+  async updateContratoOpcionales(
+    idReg: string,
+    body: VoContratosOpcionales,
+  ): Promise<VoContratosOpcionales> {
+    this.logWrite(
+      'updateContratoOpcionales',
+      `PUT /ppre/v2/contratos/opcionales/${idReg}`,
+      body,
+    );
+    return this.put<VoContratosOpcionales>(
+      `/ppre/v2/contratos/opcionales/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Log de auditoría de operaciones de escritura.
+   *
+   * Nivel info: operación + endpoint + claves del body (sin valores).
+   * Nivel debug: body completo, para poder reconstruir la operación.
+   */
+  private logWrite(operation: string, endpoint: string, body: Record<string, unknown>): void {
+    logger.info({ operation, endpoint, fields: Object.keys(body) }, 'freematica write');
+    logger.debug({ operation, endpoint, body }, 'freematica write body');
   }
 
   // ---------------------------------------------------------------------------

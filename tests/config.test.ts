@@ -161,3 +161,38 @@ describe('loadConfig (retro-compat wrapper)', () => {
     expect(config.MCP_ALLOWED_ORIGINS).toBe('*');
   });
 });
+
+describe('loadWritesConfig', () => {
+  const ORIGINAL_ENV = process.env;
+
+  beforeEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+    delete process.env.FREEMATICA_ENABLE_WRITES;
+  });
+
+  afterEach(() => {
+    process.env = ORIGINAL_ENV;
+  });
+
+  it('defaults to writes disabled', async () => {
+    const { loadWritesConfig } = await import('../src/config.js');
+    expect(loadWritesConfig().FREEMATICA_ENABLE_WRITES).toBe(false);
+  });
+
+  it.each([
+    ['true', true],
+    ['1', true],
+    ['false', false],
+    ['0', false],
+  ] as const)('parses FREEMATICA_ENABLE_WRITES=%s as %s', async (raw, expected) => {
+    process.env.FREEMATICA_ENABLE_WRITES = raw;
+    const { loadWritesConfig } = await import('../src/config.js');
+    expect(loadWritesConfig().FREEMATICA_ENABLE_WRITES).toBe(expected);
+  });
+
+  it('rejects values outside the enum', async () => {
+    process.env.FREEMATICA_ENABLE_WRITES = 'yes';
+    const { loadWritesConfig } = await import('../src/config.js');
+    expect(() => loadWritesConfig()).toThrow(/FREEMATICA_ENABLE_WRITES/);
+  });
+});

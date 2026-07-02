@@ -3,7 +3,7 @@ export const FREEMATICA_MCP_INSTRUCTIONS = `
 
 Este servidor expone operaciones del API REST de Freemática como tools MCP.
 
-## Tools disponibles (8)
+## Tools destacadas (lista parcial; el resto se descubren vía tools/list)
 
 ### Materiales (1)
 
@@ -47,6 +47,49 @@ para que puedas paginar (\`page = total / items + 1\`).
 
 AVISO: NO uses \`page=0\` (este parámetro lo bloquea al mínimo 1). El API real
 trata \`page=0\` como "devuelve TODO el dataset" — puede ser muchos MB.
+
+## Contratos y Servicios
+
+Lectura (siempre disponibles):
+
+- **freematica_list_contratos(page, items, empresa?, delegacion?, order?)** —
+  Cabeceras de contratos (campos CTRT_*). AVISO: el API ignora los filtros
+  FIQL en este endpoint; solo funcionan empresa/delegacion (params nativos).
+- **freematica_get_contrato(empresa, codContrato, delegacion?)** — Busca un
+  contrato por códigos naturales paginando internamente (puede tardar en
+  datasets grandes). Devuelve la cabecera con su \`idReg\`.
+- **freematica_list_servicios_contrato(idContrato, page, items)** — Servicios
+  de un contrato (campos CTRTS_*). \`idContrato\` = idReg del contrato.
+- **freematica_get_servicio_contrato(idReg)** — Detalle de un servicio.
+- **freematica_list_contratos_opcionales(page, items)** /
+  **freematica_get_contrato_opcionales(idReg)** — Opcionales de contratos
+  (campos CON2_*, módulo ppre).
+
+Escritura (solo si el servidor arranca con FREEMATICA_ENABLE_WRITES=true;
+no existe borrado):
+
+- **freematica_create_contrato** / **freematica_update_contrato** — Alta y
+  actualización de cabeceras. Requeridos en alta: delegacion, descripcion,
+  fecha, codCliente.
+- **freematica_create_servicio_contrato(idContrato, …)** — Alta de servicio;
+  los campos de identificación se derivan del idReg del contrato.
+- **freematica_update_servicio_fechas(idContrato, idServicio, fechaAlta?,
+  fechaFin?)** — Único mecanismo de "baja" de un servicio: informar fechaFin.
+- **freematica_create_servicio_historico_precios** /
+  **freematica_update_servicio_historico_precios** — Los precios de un
+  servicio se gestionan como histórico versionado, separado del servicio.
+- **freematica_create_servicio_facturacion_txt** — Líneas de texto de factura.
+- **freematica_update_servicio_facturacion** — Datos de facturación (precios
+  hora, importes, forma de pago); campos avanzados vía camposAdicionales
+  (CTRTF_*).
+- **freematica_create_contrato_opcionales** /
+  **freematica_update_contrato_opcionales** — Opcionales (campos CON2_*).
+
+Flujo típico para crear un contrato completo:
+1. freematica_create_contrato → devuelve idReg.
+2. freematica_create_servicio_contrato por cada servicio.
+3. freematica_create_servicio_historico_precios con los precios.
+4. (opcional) freematica_create_servicio_facturacion_txt.
 
 ## IDs opacos en endpoints de detalle
 
