@@ -2,7 +2,7 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
-## [Unreleased] — Clientes, Contactos y Localizaciones (branch feat/clientes-contactos-localizaciones-write)
+## [0.8.0] — 2026-07-03
 
 ### Escritura de clientes, contactos y localizaciones de cliente (create/update, sin delete)
 
