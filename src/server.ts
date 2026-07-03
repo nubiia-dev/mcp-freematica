@@ -38,15 +38,15 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
 
   registerContratosTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerMasterDataTools(server, opts.client);
-  registerClientesTools(server, opts.client);
-  registerContactosClientesTools(server, opts.client);
+  registerClientesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerContactosClientesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerOportunidadesNegocioTools(server, opts.client);
   registerCarteraTools(server, opts.client);
   registerFacturasVentasTools(server, opts.client);
   registerFacturasComprasTools(server, opts.client);
   registerPedidosComprasTools(server, opts.client);
   registerProveedoresTools(server, opts.client);
-  registerLocalizacionesTools(server, opts.client);
+  registerLocalizacionesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerContabilidadTools(server, opts.client);
   registerPrlTools(server, opts.client);
   registerPersonalTools(server, opts.client);

@@ -60,6 +60,8 @@ const READ_ONLY_TOOLS = [
   'freematica_list_facturas_documentos',
   'freematica_list_facturas_electronicas',
   'freematica_list_localizaciones_cobro_clientes',
+  'freematica_list_localizaciones_envio_clientes',
+  'freematica_list_localizaciones_factura_clientes',
   'freematica_list_localizaciones_pago_proveedores',
   'freematica_list_localizaciones_servicio_clientes',
   'freematica_list_materiales_asignados_servicios',
@@ -73,11 +75,17 @@ const READ_ONLY_TOOLS = [
 ].sort();
 
 const WRITE_TOOLS = [
+  'freematica_create_cliente',
+  'freematica_create_contacto_cliente',
+  'freematica_create_localizacion_cliente',
   'freematica_create_contrato',
   'freematica_create_contrato_opcionales',
   'freematica_create_servicio_contrato',
   'freematica_create_servicio_facturacion_txt',
   'freematica_create_servicio_historico_precios',
+  'freematica_update_cliente',
+  'freematica_update_contacto_cliente',
+  'freematica_update_localizacion_cliente',
   'freematica_update_contrato',
   'freematica_update_contrato_opcionales',
   'freematica_update_servicio_facturacion',
@@ -86,13 +94,13 @@ const WRITE_TOOLS = [
 ].sort();
 
 describe('createFreematicaServer', () => {
-  it('registers all 51 expected read-only tools by default', () => {
+  it('registers all 53 expected read-only tools by default', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT });
     const names = registeredToolNames(server);
     expect(names).toEqual(READ_ONLY_TOOLS);
   });
 
-  it('registers the 10 write tools only with enableWrites=true', () => {
+  it('registers the 16 write tools only with enableWrites=true', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT, enableWrites: true });
     const names = registeredToolNames(server);
     expect(names).toEqual([...READ_ONLY_TOOLS, ...WRITE_TOOLS].sort());
