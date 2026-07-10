@@ -5,10 +5,29 @@ Este servidor expone operaciones del API REST de Freemática como tools MCP.
 
 ## Tools destacadas (lista parcial; el resto se descubren vía tools/list)
 
+### Artículos — catálogo de inventario (3)
+
+- **freematica_list_articulos(page, items, filtros?)** — Catálogo completo de
+  artículos/materiales/consumibles con referencias. Filtros (EXACTOS, sin
+  búsqueda parcial): codArticulo, tipoCodigo, codProveedor, linea, familia,
+  subfamilia, descripcion, codigoBarras, activo. Cada item incluye \`idReg\`.
+- **freematica_get_articulo(id)** — Detalle de un artículo. \`id\` = \`idReg\`.
+- **freematica_get_precio_articulo(id)** — Precios de venta (PRECIO_VENTA,
+  DESCUENTO, FACTURABLE). \`id\` = \`idReg\` de list_articulos.
+
 ### Materiales (1)
 
 - **freematica_list_materiales_asignados_servicios** — Lista de material
   asignado a servicios (sin parámetros). Devuelve { items, count, total }.
+  OJO: es material YA asignado a servicios de contratos; para el catálogo de
+  referencias/consumibles usa freematica_list_articulos.
+
+### Personal (2)
+
+- **freematica_list_personal(page, items, filtros?)** — Lista paginada de
+  empleados. Filtros EXACTOS (sin búsqueda parcial): empresa, delegacion,
+  codPersona, nombre, apellido, nif, situacion, departamento, seccion.
+- **freematica_get_persona(id)** — Detalle. \`id\` = \`idReg\` de list_personal.
 
 ### Datos maestros (1)
 

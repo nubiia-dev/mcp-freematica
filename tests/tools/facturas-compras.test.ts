@@ -97,7 +97,7 @@ describe('registerFacturasComprasTools', () => {
     const fake = [{ FCC_CODEMP: '1', FCC_CODPRO: 'P001' }];
     nock(BASE_URL)
       .get('/pcmp/v2/facturas-compras')
-      .query({ items: '10', page: '1', rquery: 'FCC_CODEMP==1;FCC_CODPRO==P001' })
+      .query({ items: '10', page: '1', rquery: "FCC_CODEMP=='1';FCC_CODPRO=='P001'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -156,7 +156,7 @@ describe('registerFacturasComprasTools', () => {
       .get('/pcmp/v2/facturas-compras')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('FCC_FCHFAC=ge=2024-01-01') && String(q.page) === '1';
+        return rquery.includes("FCC_FCHFAC=ge='2024-01-01'") && String(q.page) === '1';
       })
       .reply(200, listEnv(fake, 1));
 
@@ -180,8 +180,8 @@ describe('registerFacturasComprasTools', () => {
       .query(q => {
         const rquery = String(q.rquery ?? '');
         return (
-          rquery.includes('FCC_FCHFAC=ge=2024-01-01') &&
-          rquery.includes('FCC_FCHFAC=le=2024-01-31') &&
+          rquery.includes("FCC_FCHFAC=ge='2024-01-01'") &&
+          rquery.includes("FCC_FCHFAC=le='2024-01-31'") &&
           !rquery.includes('FCC_FCHFAC_HASTA')
         );
       })
@@ -207,7 +207,7 @@ describe('registerFacturasComprasTools', () => {
       .get('/pcmp/v2/facturas-compras')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('FCC_FCHFAC=le=2024-01-31') && !rquery.includes('FCC_FCHFAC=ge=');
+        return rquery.includes("FCC_FCHFAC=le='2024-01-31'") && !rquery.includes("FCC_FCHFAC=ge=");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -249,7 +249,7 @@ describe('registerFacturasComprasTools', () => {
       .get('/pcmp/v2/facturas-compras')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('FCC_DELEG==MAD') && rquery.includes('FCC_LIN_NEGOCIO==LN01');
+        return rquery.includes("FCC_DELEG=='MAD'") && rquery.includes("FCC_LIN_NEGOCIO=='LN01'");
       })
       .reply(200, listEnv(fake, 1));
 

@@ -18,10 +18,12 @@ const LIST_DESCRIPTION = [
   '',
   'Paginación 1-indexed.',
   '',
-  'El filtro `activo` es un booleano: true = FECHA_BAJA nula (proveedores activos);',
+  'El filtro `activo` es un booleano: true = FECHA_BAJA nula (proveedores activos,',
+  'filtrado sobre la página recibida — el total refleja el dataset sin filtrar);',
   'false = FECHA_BAJA informada (dados de baja).',
   '',
-  'El filtro `nombre` realiza búsqueda parcial mediante operador FIQL =lk= (LIKE).',
+  'El filtro `nombre` es de coincidencia EXACTA con el nombre completo',
+  '(el API no soporta búsqueda parcial en este endpoint).',
 ].join('\n');
 
 const GET_DESCRIPTION = [
@@ -53,8 +55,8 @@ const LIST_SCHEMA = {
     .min(1)
     .optional()
     .describe(
-      'Nombre del proveedor (NOMBRE_PRO). Búsqueda parcial — se usa operador FIQL =lk= (LIKE). ' +
-      'Ejemplo: "García" devuelve todos los proveedores cuyo nombre contenga "García".',
+      'Nombre del proveedor (NOMBRE_PRO). Coincidencia EXACTA con el nombre completo ' +
+      'tal cual figura en Freemática — "García" NO encuentra "García S.L.".',
     ),
   activo: z
     .boolean()
@@ -84,8 +86,8 @@ const LIST_SCHEMA = {
  * Registra las tools de proveedores en el servidor MCP.
  *
  * Tools registradas:
- * - `freematica_list_proveedores`: lista paginada con filtros FIQL (incluye búsqueda parcial por nombre
- *   con =lk= y filtro activo/inactivo vía FECHA_BAJA).
+ * - `freematica_list_proveedores`: lista paginada con filtros FIQL (nombre por coincidencia
+ *   exacta y filtro activo/inactivo vía FECHA_BAJA).
  * - `freematica_get_proveedor`: detalle por idReg opaco.
  *
  * @param server - Instancia del servidor MCP.

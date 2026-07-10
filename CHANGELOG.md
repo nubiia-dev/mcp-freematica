@@ -2,6 +2,40 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.9.0] — 2026-07-10
+
+### Catálogo de artículos + reparación integral de los filtros FIQL de lectura
+
+Origen: dos issues reportados por usuarios finales — `freematica_list_personal` devolvía 400 sistemático y no existía forma de consultar el catálogo de materiales para ofertas de consumibles. La investigación destapó además que la mayoría de filtros FIQL del conector estaban rotos o eran silenciosamente ignorados por el API. Todos los cambios están verificados contra el API real de producción (38 comprobaciones de smoke test con datos reales).
+
+#### Added
+
+- **`freematica_list_articulos`** — `GET /part/v1/articulos`. Catálogo completo de artículos/materiales/consumibles (6.304 referencias en producción) con paginación y filtros exactos: `codArticulo`, `tipoCodigo`, `codProveedor`, `linea`, `familia`, `subfamilia`, `descripcion`, `codigoBarras` y `activo` (mapea a `MOTIVO_BAJA` vacío/no vacío — las columnas de fecha no permiten comparar con vacío).
+- **`freematica_get_articulo`** — `GET /part/v1/articulos/{idreg}`. El API devuelve un envelope de lista con un único item; la tool lo desenvuelve.
+- **`freematica_get_precio_articulo`** — `GET /pgrl/v1/precio-articulo/{idreg}`. Devuelve `PRECIO_VENTA`, `DESCUENTO` y `FACTURABLE`.
+
+#### Fixed
+
+- **`freematica_list_personal` devolvía 400 SIEMPRE**: `/pers/v2/personal` es un endpoint de sincronización incremental que exige el parámetro `fchmodificacion` (400 "Parámetro [fchmodificacion] obligatorio") y además devuelve un subconjunto del dataset (3.984 vs 5.482 personas). Se cambia a **`/pers/v1/personal`** (dataset completo, con `idReg`), mismo precedente que el catálogo `delegaciones` en v0.6.x. Se elimina el filtro `activo` (la columna `VSSPER_ACTIVO` no existe en v1) y se documentan todos los filtros como coincidencia exacta (el endpoint no soporta `=lk=` ni wildcards).
+- **Quoting global de valores FIQL** (`fiql-builder`): el API exige comillas simples en los valores (`CAMPO=='valor'`). Sin ellas, las columnas de texto responden 400 "Error al ejecutar sentencia" (cuentas `COD_PLAN`, proveedores `NOMBRE_PRO`, personal) y **las columnas de fecha ignoran el filtro silenciosamente devolviendo el dataset completo** (cartera `CARCL_FECDOC=ge=…` devolvía 72.054 docs en vez de 16.165). El quoting se acepta también en columnas numéricas (verificado en todos los endpoints FIQL). El espacio deja de percent-encodearse dentro de valores: escapado rompía el match por doble encoding (`VSSPER_NOM=='ELIZABETH SUSANA'` funciona tal cual).
+- **`freematica_list_facturas_cabecera`: TODOS los filtros respondían 500** por usar nombres de columna inexistentes. Mapeo corregido contra la vista real: `FVC_EMP→FVC_CODEMP`, `FVC_CODAUX→FVC_CODCLI`, `FVC_CODREP→FVC_CODREPRES`, `FVC_SERFAC→FVC_SERIEFRA`, `FVC_NUMFAC→FVC_NUMFRA`, `FVC_CODFPAG→FVC_FPAGO`, `FVC_FECFAC→FVC_FCHFAC`, `FVC_TRSCONT (S/N)→FVC_TRASP_CONTAB (1/0)`.
+- **Subrecursos de factura con columnas inexistentes**: líneas `FVL_CODART→FVL_CODARTIC`, `FVL_CODFAM→FVL_COD_FAMILIA`, `FVL_CODSFAM→FVL_COD_SUBFAM`; IVA `FVI_TIPIVA→FVI_TIPO_IVA`; vencimientos `FVV_CODMPAG→FVV_MODOPAGO`, `FVV_FECVCTO→FVV_FCH_VTO`.
+- **`freematica_list_proveedores`**: el filtro `nombre` usaba `=lk=` (400 en el API real) — pasa a coincidencia exacta quoted. El filtro `activo` usaba el centinela `null` (devolvía 0 resultados): `activo=false` pasa a `FECHA_BAJA=ge='1900-01-01'` (7 bajas de 898 en producción); `activo=true` se resuelve post-filtrando la página en cliente (el FIQL de Freemática no tiene IS NULL: `==null` → 0 resultados, `=='null'` → 500).
+- **`freematica_list_cartera_clientes`**: `soloImpagados` usaba `CARCL_FECIMPAG!=null` (0 resultados) — pasa a `CARCL_FECIMPAG=ge='1900-01-01'` (382 impagados reales de 72.054 documentos).
+- **`freematica_list_localizaciones_servicio_clientes`**: se elimina el filtro `activo` — la vista no tiene columna `FECHA_BAJA` y filtrar por ella responde 400.
+
+- **`freematica_list_vigilancia_salud`: todos sus filtros FIQL eran placebo** — el endpoint ignora el parámetro `rquery` por completo (cualquier FIQL, incluso con campos inexistentes, responde 200 con el dataset íntegro sin filtrar). Se eliminan los 7 filtros FIQL (empresa, delegación, codPersona, tipoRevision, resultado, fechaCita desde/hasta) y queda `idRegPersona` (query param nativo, verificado: filtra correctamente por persona).
+- **`freematica_list_localizaciones_factura_clientes` devolvía 404 SIEMPRE** (desde v0.8.0): la lista solo existe en `/pgrl/v1/...` — el v2 de ese recurso es solo POST/PUT. Se cambia el endpoint a v1 (291 localizaciones en producción; filtro por COD_CLI verificado).
+- **Fecha-hasta rota en facturas-cabecera, cartera y export-asientos**: el operador `=le=` responde 400/500 en esos endpoints (en compras, vencimientos y artículos funciona). Se emula con `=lt=` del día siguiente (verificado). Además, **combinar fecha-desde y fecha-hasta sobre el mismo campo devuelve 0 filas** (bug del API, probado con paréntesis, orden inverso y rquery duplicado): esas tools ahora rechazan la combinación con un error claro en vez de devolver un resultado vacío engañoso.
+- **`fechaVencimientoHasta` de cartera eliminado**: el API ignora `=le=`/`=lt=` sobre CARCL_FECVCTO devolviendo el dataset completo (`=ge=` sí funciona y se mantiene como fechaVencimientoDesde).
+
+#### Changed
+
+- `server-instructions.ts`: nuevas secciones Artículos y Personal; aviso de que `freematica_list_materiales_asignados_servicios` es material ya asignado (para el catálogo usar `freematica_list_articulos`); documentado que la composición OR (`,`) de FIQL responde 400 (usar `=in=`).
+
+**Total tools registradas: 56 read-only (72 con escrituras)** (vs 53/69 en v0.8.0).
+**Tests: 818** (vs 807 en v0.8.0).
+
 ## [0.8.0] — 2026-07-03
 
 ### Escritura de clientes, contactos y localizaciones de cliente (create/update, sin delete)

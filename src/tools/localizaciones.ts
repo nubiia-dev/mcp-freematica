@@ -48,12 +48,9 @@ const SERVICIO_CLIENTES_DESCRIPTION = [
   '',
   'Las localizaciones de servicio son las direcciones donde se presta servicio a un cliente.',
   'Cada item contiene campos como COD_CLI (cliente), GRUPO_CLI (grupo), COD_PAIS, COD_PROVINCIA,',
-  'COD_REPRES (representante), FECHA_BAJA (estado activo/baja), más `idReg` opaco.',
+  'COD_REPRES (representante), más `idReg` opaco.',
   '',
   'Paginación 1-indexed.',
-  '',
-  'El filtro `activo` es un booleano: true = sin fecha de baja (localizaciones activas);',
-  'false = con fecha de baja (dadas de baja).',
 ].join('\n');
 
 const ENVIO_CLIENTES_DESCRIPTION = [
@@ -169,13 +166,6 @@ const ServicioClientesSchema = {
     .min(1)
     .optional()
     .describe('Código de representante asignado (COD_REPRES en Freemática).'),
-  activo: z
-    .boolean()
-    .optional()
-    .describe(
-      'Filtra por estado de la localización. true = sin fecha de baja (activas); ' +
-      'false = con fecha de baja (dadas de baja). FECHA_BAJA en Freemática.',
-    ),
 };
 
 // ---------------------------------------------------------------------------
@@ -191,7 +181,7 @@ const ServicioClientesSchema = {
  * - `freematica_list_localizaciones_pago_proveedores`: pagos de proveedores filtrados por
  *   codProveedor, grupoProveedor y formaPago.
  * - `freematica_list_localizaciones_servicio_clientes`: localizaciones de servicio de clientes
- *   con filtros por cliente, grupo, país, provincia, representante y activo/baja.
+ *   con filtros por cliente, grupo, país, provincia y representante.
  *
  * @param server - Instancia del servidor MCP.
  * @param client - Cliente Freemática autenticado.
@@ -270,7 +260,6 @@ export function registerLocalizacionesTools(
       codPais,
       codProvincia,
       representante,
-      activo,
     }): Promise<CallToolResult> => {
       try {
         const result = await client.listLocalizacionesServicioClientes({
@@ -281,7 +270,6 @@ export function registerLocalizacionesTools(
           codPais,
           codProvincia,
           representante,
-          activo,
         });
         return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
       } catch (err) {

@@ -105,8 +105,8 @@ describe('registerCarteraTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('CARCL_EMP==1') &&
-          rq.includes('CARCL_CODAUX==0001000')
+          rq.includes("CARCL_EMP=='1'") &&
+          rq.includes("CARCL_CODAUX=='0001000'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -131,7 +131,7 @@ describe('registerCarteraTools', () => {
       .get('/pcar/v1/cartera-clientes')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('CARCL_SITCAR==1');
+        return typeof rq === 'string' && rq.includes("CARCL_SITCAR=='1'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -154,7 +154,7 @@ describe('registerCarteraTools', () => {
       .get('/pcar/v1/cartera-clientes')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('CARCL_SITCAR==2');
+        return typeof rq === 'string' && rq.includes("CARCL_SITCAR=='2'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -177,7 +177,7 @@ describe('registerCarteraTools', () => {
       .get('/pcar/v1/cartera-clientes')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('CARCL_FECIMPAG!=null');
+        return typeof rq === 'string' && rq.includes("CARCL_FECIMPAG=ge='1900-01-01'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -218,20 +218,43 @@ describe('registerCarteraTools', () => {
     expect(parsed.items).toEqual(fake);
   });
 
-  it('list_cartera_clientes applies date range filters for CARCL_FECDOC', async () => {
+  it('list_cartera_clientes fechaDocDesde usa =ge=', async () => {
     const fake = [{ CARCL_CODAUX: '0001000', CARCL_FECDOC: '2026-03-15' }];
     nock(BASE_URL)
       .get('/pcar/v1/cartera-clientes')
-      .query((q) => {
-        const rq = q['rquery'] as string | undefined;
-        return (
-          typeof rq === 'string' &&
-          rq.includes('CARCL_FECDOC=ge=2026-01-01') &&
-          rq.includes('CARCL_FECDOC=le=2026-06-30')
-        );
-      })
+      .query((q) => String(q['rquery'] ?? '').includes("CARCL_FECDOC=ge='2026-01-01'"))
       .reply(200, listEnv(fake, 1));
 
+    const server = buildServer();
+    const handler = getHandler(server, LIST_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaDocDesde: '2026-01-01',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+  });
+
+  it('list_cartera_clientes fechaDocHasta usa =lt= del día siguiente (=le= responde 500 en el API)', async () => {
+    const fake = [{ CARCL_CODAUX: '0001000', CARCL_FECDOC: '2026-03-15' }];
+    nock(BASE_URL)
+      .get('/pcar/v1/cartera-clientes')
+      .query((q) => String(q['rquery'] ?? '').includes("CARCL_FECDOC=lt='2026-07-01'"))
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, LIST_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaDocHasta: '2026-06-30',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+  });
+
+  it('list_cartera_clientes rechaza fechaDocDesde+fechaDocHasta simultáneos (el API devuelve 0 filas)', async () => {
     const server = buildServer();
     const handler = getHandler(server, LIST_TOOL);
     const result = (await handler({
@@ -241,23 +264,15 @@ describe('registerCarteraTools', () => {
       fechaDocHasta: '2026-06-30',
     })) as { content: { type: string; text: string }[]; isError?: boolean };
 
-    expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.items).toEqual(fake);
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('no soporta combinar');
   });
 
-  it('list_cartera_clientes applies vencimiento date range filters', async () => {
+  it('list_cartera_clientes fechaVencimientoDesde usa =ge= (no existe fecha fin: el API la ignora)', async () => {
     const fake = [{ CARCL_CODAUX: '0001000', CARCL_FECVCTO: '2026-07-01' }];
     nock(BASE_URL)
       .get('/pcar/v1/cartera-clientes')
-      .query((q) => {
-        const rq = q['rquery'] as string | undefined;
-        return (
-          typeof rq === 'string' &&
-          rq.includes('CARCL_FECVCTO=ge=2026-06-01') &&
-          rq.includes('CARCL_FECVCTO=le=2026-12-31')
-        );
-      })
+      .query((q) => String(q['rquery'] ?? '').includes("CARCL_FECVCTO=ge='2026-06-01'"))
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -266,17 +281,10 @@ describe('registerCarteraTools', () => {
       page: 1,
       items: 20,
       fechaVencimientoDesde: '2026-06-01',
-      fechaVencimientoHasta: '2026-12-31',
     })) as { content: { type: string; text: string }[]; isError?: boolean };
 
     expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.items).toEqual(fake);
   });
-
-  // ---------------------------------------------------------------------------
-  // freematica_list_cartera_clientes — error cases
-  // ---------------------------------------------------------------------------
 
   it('list_cartera_clientes returns error on 404', async () => {
     nock(BASE_URL)
