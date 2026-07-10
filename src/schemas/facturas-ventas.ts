@@ -10,15 +10,15 @@ import { PaginationSchema } from './pagination.js';
  * Mapeo de filtros → campos FIQL de Freemática:
  * | Filtro lógico              | Campo FIQL       |
  * |----------------------------|------------------|
- * | empresa                    | FVC_EMP          |
- * | codCliente                 | FVC_CODAUX       |
- * | representante              | FVC_CODREP       |
- * | fechaFacturaDesde          | FVC_FECFAC =ge=  |
- * | fechaFacturaHasta          | FVC_FECFAC =le=  |
- * | serie                      | FVC_SERFAC       |
- * | numFactura                 | FVC_NUMFAC       |
- * | formaPago                  | FVC_CODFPAG      |
- * | traspasadoContabilidad     | FVC_TRSCONT      |
+ * | empresa                    | FVC_CODEMP          |
+ * | codCliente                 | FVC_CODCLI       |
+ * | representante              | FVC_CODREPRES       |
+ * | fechaFacturaDesde          | FVC_FCHFAC =ge=  |
+ * | fechaFacturaHasta          | FVC_FCHFAC =le=  |
+ * | serie                      | FVC_SERIEFRA       |
+ * | numFactura                 | FVC_NUMFRA       |
+ * | formaPago                  | FVC_FPAGO      |
+ * | traspasadoContabilidad     | FVC_TRASP_CONTAB      |
  * | delegacion                 | FVC_DELEG        |
  */
 export const ListFacturasCabeceraFiltersSchema = {
@@ -27,17 +27,17 @@ export const ListFacturasCabeceraFiltersSchema = {
     .string()
     .min(1)
     .optional()
-    .describe('Código de empresa Freemática (FVC_EMP). Ej.: "1".'),
+    .describe('Código de empresa Freemática (FVC_CODEMP). Ej.: "1".'),
   codCliente: z
     .string()
     .min(1)
     .optional()
-    .describe('Código natural del cliente facturado (FVC_CODAUX).'),
+    .describe('Código natural del cliente facturado (FVC_CODCLI).'),
   representante: z
     .string()
     .min(1)
     .optional()
-    .describe('Código del representante/comercial (FVC_CODREP).'),
+    .describe('Código del representante/comercial (FVC_CODREPRES).'),
   fechaFacturaDesde: z
     .string()
     .regex(
@@ -45,7 +45,7 @@ export const ListFacturasCabeceraFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha inicio de la factura (FVC_FECFAC). Formato YYYY-MM-DD. Inclusive.'),
+    .describe('Fecha inicio de la factura (FVC_FCHFAC). Formato YYYY-MM-DD. Inclusive.'),
   fechaFacturaHasta: z
     .string()
     .regex(
@@ -53,27 +53,27 @@ export const ListFacturasCabeceraFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha fin de la factura (FVC_FECFAC). Formato YYYY-MM-DD. Inclusive.'),
+    .describe('Fecha fin de la factura (FVC_FCHFAC). Formato YYYY-MM-DD. Inclusive.'),
   serie: z
     .string()
     .min(1)
     .optional()
-    .describe('Serie de facturación (FVC_SERFAC). Ej.: "A", "B".'),
+    .describe('Serie de facturación (FVC_SERIEFRA). Ej.: "A", "B".'),
   numFactura: z
     .string()
     .min(1)
     .optional()
-    .describe('Número de factura exacto (FVC_NUMFAC).'),
+    .describe('Número de factura exacto (FVC_NUMFRA).'),
   formaPago: z
     .string()
     .min(1)
     .optional()
-    .describe('Código de forma de pago (FVC_CODFPAG). Ej.: "REC", "TRF".'),
+    .describe('Código de forma de pago (FVC_FPAGO). Ej.: "REC", "TRF".'),
   traspasadoContabilidad: z
     .boolean()
     .optional()
     .describe(
-      'Si true, filtra facturas ya traspasadas a contabilidad (FVC_TRSCONT). Si false, las no traspasadas.',
+      'Si true, filtra facturas ya traspasadas a contabilidad (FVC_TRASP_CONTAB). Si false, las no traspasadas.',
     ),
   delegacion: z
     .string()
@@ -103,9 +103,9 @@ export type ListFacturasCabeceraFilters = {
  * Mapeo de filtros → campos FIQL de Freemática (prefijo `FVL_`):
  * | Filtro lógico  | Campo FIQL       |
  * |----------------|------------------|
- * | codArticulo    | FVL_CODART       |
- * | codFamilia     | FVL_CODFAM       |
- * | codSubfamilia  | FVL_CODSFAM      |
+ * | codArticulo    | FVL_CODARTIC       |
+ * | codFamilia     | FVL_COD_FAMILIA       |
+ * | codSubfamilia  | FVL_COD_SUBFAM      |
  * | delegacion     | FVL_DELEG        |
  */
 export const ListFacturaLineasFiltersSchema = {
@@ -114,17 +114,17 @@ export const ListFacturaLineasFiltersSchema = {
     .string()
     .min(1)
     .optional()
-    .describe('Código de artículo (FVL_CODART).'),
+    .describe('Código de artículo (FVL_CODARTIC).'),
   codFamilia: z
     .string()
     .min(1)
     .optional()
-    .describe('Código de familia de artículo (FVL_CODFAM).'),
+    .describe('Código de familia de artículo (FVL_COD_FAMILIA).'),
   codSubfamilia: z
     .string()
     .min(1)
     .optional()
-    .describe('Código de subfamilia de artículo (FVL_CODSFAM).'),
+    .describe('Código de subfamilia de artículo (FVL_COD_SUBFAM).'),
   delegacion: z
     .string()
     .min(1)
@@ -147,7 +147,7 @@ export type ListFacturaLineasFilters = {
  * Mapeo de filtros → campos FIQL de Freemática (prefijo `FVI_`):
  * | Filtro lógico  | Campo FIQL  |
  * |----------------|-------------|
- * | tipoIva        | FVI_TIPIVA  |
+ * | tipoIva        | FVI_TIPO_IVA  |
  */
 export const ListFacturaIvaFiltersSchema = {
   ...PaginationSchema,
@@ -155,7 +155,7 @@ export const ListFacturaIvaFiltersSchema = {
     .string()
     .min(1)
     .optional()
-    .describe('Tipo de IVA (FVI_TIPIVA). Ej.: "21", "10", "4".'),
+    .describe('Tipo de IVA (FVI_TIPO_IVA). Ej.: "21", "10", "4".'),
 };
 
 export type ListFacturaIvaFilters = {
@@ -170,9 +170,9 @@ export type ListFacturaIvaFilters = {
  * Mapeo de filtros → campos FIQL de Freemática (prefijo `FVV_`):
  * | Filtro lógico             | Campo FIQL       |
  * |---------------------------|------------------|
- * | fechaVencimientoDesde     | FVV_FECVCTO =ge= |
- * | fechaVencimientoHasta     | FVV_FECVCTO =le= |
- * | modoPago                  | FVV_CODMPAG      |
+ * | fechaVencimientoDesde     | FVV_FCH_VTO =ge= |
+ * | fechaVencimientoHasta     | FVV_FCH_VTO =le= |
+ * | modoPago                  | FVV_MODOPAGO      |
  */
 export const ListFacturaVencimientosFiltersSchema = {
   ...PaginationSchema,
@@ -183,7 +183,7 @@ export const ListFacturaVencimientosFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha inicio de vencimiento (FVV_FECVCTO). Formato YYYY-MM-DD. Inclusive.'),
+    .describe('Fecha inicio de vencimiento (FVV_FCH_VTO). Formato YYYY-MM-DD. Inclusive.'),
   fechaVencimientoHasta: z
     .string()
     .regex(
@@ -191,12 +191,12 @@ export const ListFacturaVencimientosFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha fin de vencimiento (FVV_FECVCTO). Formato YYYY-MM-DD. Inclusive.'),
+    .describe('Fecha fin de vencimiento (FVV_FCH_VTO). Formato YYYY-MM-DD. Inclusive.'),
   modoPago: z
     .string()
     .min(1)
     .optional()
-    .describe('Código de modo de pago (FVV_CODMPAG). Ej.: "TRF", "CHQ".'),
+    .describe('Código de modo de pago (FVV_MODOPAGO). Ej.: "TRF", "CHQ".'),
 };
 
 export type ListFacturaVencimientosFilters = {

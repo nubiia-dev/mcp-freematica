@@ -59,7 +59,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
         .get('/pcar/v1/cartera-clientes')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('CARCL_EMP==1');
+          return typeof rq === 'string' && rq.includes("CARCL_EMP=='1'");
         })
         .reply(200, listEnv(fake, 1));
       const result = await client.listCarteraClientes({ items: 10, page: 1, empresa: '1' });
@@ -73,7 +73,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
         .get('/pcar/v1/cartera-clientes')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('CARCL_SITCAR==1');
+          return typeof rq === 'string' && rq.includes("CARCL_SITCAR=='1'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listCarteraClientes({ items: 10, page: 1, estado: 'pendiente' });
@@ -86,7 +86,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
         .get('/pcar/v1/cartera-clientes')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('CARCL_SITCAR==2');
+          return typeof rq === 'string' && rq.includes("CARCL_SITCAR=='2'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listCarteraClientes({ items: 10, page: 1, estado: 'cancelado' });
@@ -99,20 +99,20 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
         .get('/pcar/v1/cartera-clientes')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('CARCL_SITCAR==3');
+          return typeof rq === 'string' && rq.includes("CARCL_SITCAR=='3'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listCarteraClientes({ items: 10, page: 1, estado: 'derivado' });
       expect(scope.isDone()).toBe(true);
     });
 
-    it('applies soloImpagados=true as CARCL_FECIMPAG!=null', async () => {
+    it("applies soloImpagados=true as CARCL_FECIMPAG=ge=1900-01-01", async () => {
       const fake = [{ CARCL_FECIMPAG: '2026-01-15' }];
       const scope = nock(BASE_URL)
         .get('/pcar/v1/cartera-clientes')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('CARCL_FECIMPAG!=null');
+          return typeof rq === 'string' && rq.includes("CARCL_FECIMPAG=ge='1900-01-01'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listCarteraClientes({ items: 10, page: 1, soloImpagados: true });
@@ -141,8 +141,8 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
           const rq = q['rquery'] as string | undefined;
           return (
             typeof rq === 'string' &&
-            rq.includes('CARCL_FECDOC=ge=2026-01-01') &&
-            rq.includes('CARCL_FECDOC=le=2026-06-30')
+            rq.includes("CARCL_FECDOC=ge='2026-01-01'") &&
+            rq.includes("CARCL_FECDOC=le='2026-06-30'")
           );
         })
         .reply(200, listEnv(fake, 1));
@@ -163,8 +163,8 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
           const rq = q['rquery'] as string | undefined;
           return (
             typeof rq === 'string' &&
-            rq.includes('CARCL_FECVCTO=ge=2026-06-01') &&
-            rq.includes('CARCL_FECVCTO=le=2026-12-31')
+            rq.includes("CARCL_FECVCTO=ge='2026-06-01'") &&
+            rq.includes("CARCL_FECVCTO=le='2026-12-31'")
           );
         })
         .reply(200, listEnv(fake, 1));
@@ -220,7 +220,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
 
   describe('listFacturasCabecera', () => {
     it('returns { items, total } from /pven/v1/facturas-cabecera with pagination', async () => {
-      const fake = [{ FVC_NUMFAC: '00001', FVC_TOTFAC: 1210.0 }];
+      const fake = [{ FVC_NUMFRA: '00001', FVC_TOTFAC: 1210.0 }];
       const scope = nock(BASE_URL)
         .get('/pven/v1/facturas-cabecera')
         .query({ items: '10', page: '1' })
@@ -231,15 +231,15 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
     });
 
     it('applies codCliente and serie FIQL filters', async () => {
-      const fake = [{ FVC_NUMFAC: '00001' }];
+      const fake = [{ FVC_NUMFRA: '00001' }];
       const scope = nock(BASE_URL)
         .get('/pven/v1/facturas-cabecera')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
           return (
             typeof rq === 'string' &&
-            rq.includes('FVC_CODAUX==0001000') &&
-            rq.includes('FVC_SERFAC==A')
+            rq.includes("FVC_CODCLI=='0001000'") &&
+            rq.includes("FVC_SERIEFRA=='A'")
           );
         })
         .reply(200, listEnv(fake, 1));
@@ -248,15 +248,15 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
     });
 
     it('applies fechaFactura range filters', async () => {
-      const fake = [{ FVC_NUMFAC: '00001' }];
+      const fake = [{ FVC_NUMFRA: '00001' }];
       const scope = nock(BASE_URL)
         .get('/pven/v1/facturas-cabecera')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
           return (
             typeof rq === 'string' &&
-            rq.includes('FVC_FECFAC=ge=2026-01-01') &&
-            rq.includes('FVC_FECFAC=le=2026-06-30')
+            rq.includes("FVC_FCHFAC=ge='2026-01-01'") &&
+            rq.includes("FVC_FCHFAC=le='2026-06-30'")
           );
         })
         .reply(200, listEnv(fake, 1));
@@ -269,26 +269,26 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('applies traspasadoContabilidad=true as FVC_TRSCONT==S', async () => {
+    it("applies traspasadoContabilidad=true as FVC_TRASP_CONTAB==1", async () => {
       const fake = [{ FVC_TRSCONT: 'S' }];
       const scope = nock(BASE_URL)
         .get('/pven/v1/facturas-cabecera')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('FVC_TRSCONT==S');
+          return typeof rq === 'string' && rq.includes("FVC_TRASP_CONTAB=='1'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listFacturasCabecera({ items: 10, page: 1, traspasadoContabilidad: true });
       expect(scope.isDone()).toBe(true);
     });
 
-    it('applies traspasadoContabilidad=false as FVC_TRSCONT==N', async () => {
+    it("applies traspasadoContabilidad=false as FVC_TRASP_CONTAB==0", async () => {
       const fake = [{ FVC_TRSCONT: 'N' }];
       const scope = nock(BASE_URL)
         .get('/pven/v1/facturas-cabecera')
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('FVC_TRSCONT==N');
+          return typeof rq === 'string' && rq.includes("FVC_TRASP_CONTAB=='0'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listFacturasCabecera({ items: 10, page: 1, traspasadoContabilidad: false });
@@ -318,7 +318,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
 
   describe('getFacturaCabecera', () => {
     it('returns the factura for idReg', async () => {
-      const fake = { FVC_NUMFAC: '00001', FVC_TOTFAC: 1210.0 };
+      const fake = { FVC_NUMFRA: '00001', FVC_TOTFAC: 1210.0 };
       nock(BASE_URL).get(`/pven/v1/facturas-cabecera/${IDREG_ENC}`).reply(200, detailEnv(fake));
       const result = await client.getFacturaCabecera(IDREG);
       expect(result).toEqual(fake);
@@ -354,7 +354,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
         .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/lineas`)
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('FVL_CODART==ART001');
+          return typeof rq === 'string' && rq.includes("FVL_CODARTIC=='ART001'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listFacturaLineas(IDREG, { items: 10, page: 1, codArticulo: 'ART001' });
@@ -362,15 +362,15 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
     });
 
     it('applies codFamilia and codSubfamilia FIQL filters', async () => {
-      const fake = [{ FVL_CODFAM: 'FAM01', FVL_CODSFAM: 'SFAM01' }];
+      const fake = [{ FVL_COD_FAMILIA: 'FAM01', FVL_COD_SUBFAM: 'SFAM01' }];
       const scope = nock(BASE_URL)
         .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/lineas`)
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
           return (
             typeof rq === 'string' &&
-            rq.includes('FVL_CODFAM==FAM01') &&
-            rq.includes('FVL_CODSFAM==SFAM01')
+            rq.includes("FVL_COD_FAMILIA=='FAM01'") &&
+            rq.includes("FVL_COD_SUBFAM=='SFAM01'")
           );
         })
         .reply(200, listEnv(fake, 1));
@@ -398,7 +398,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
 
   describe('listFacturaIva', () => {
     it('calls /pven/v1/facturas-cabecera/{idreg}/iva with pagination', async () => {
-      const fake = [{ FVI_TIPIVA: '21', FVI_CUOTA: 210.0 }];
+      const fake = [{ FVI_TIPO_IVA: '21', FVI_CUOTA: 210.0 }];
       const scope = nock(BASE_URL)
         .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/iva`)
         .query({ items: '10', page: '1' })
@@ -409,12 +409,12 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
     });
 
     it('applies tipoIva FIQL filter', async () => {
-      const fake = [{ FVI_TIPIVA: '21' }];
+      const fake = [{ FVI_TIPO_IVA: '21' }];
       const scope = nock(BASE_URL)
         .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/iva`)
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('FVI_TIPIVA==21');
+          return typeof rq === 'string' && rq.includes("FVI_TIPO_IVA=='21'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listFacturaIva(IDREG, { items: 10, page: 1, tipoIva: '21' });
@@ -436,7 +436,7 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
 
   describe('listFacturaVencimientos', () => {
     it('calls /pven/v1/facturas-cabecera/{idreg}/vencimientos with pagination', async () => {
-      const fake = [{ FVV_FECVCTO: '2026-07-01', FVV_IMPORTE: 1210.0 }];
+      const fake = [{ FVV_FCH_VTO: '2026-07-01', FVV_IMPORTE: 1210.0 }];
       const scope = nock(BASE_URL)
         .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/vencimientos`)
         .query({ items: '10', page: '1' })
@@ -447,28 +447,28 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
     });
 
     it('applies modoPago FIQL filter', async () => {
-      const fake = [{ FVV_CODMPAG: 'TRF' }];
+      const fake = [{ FVV_MODOPAGO: 'TRF' }];
       const scope = nock(BASE_URL)
         .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/vencimientos`)
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
-          return typeof rq === 'string' && rq.includes('FVV_CODMPAG==TRF');
+          return typeof rq === 'string' && rq.includes("FVV_MODOPAGO=='TRF'");
         })
         .reply(200, listEnv(fake, 1));
       await client.listFacturaVencimientos(IDREG, { items: 10, page: 1, modoPago: 'TRF' });
       expect(scope.isDone()).toBe(true);
     });
 
-    it('applies fecha range FIQL filters for FVV_FECVCTO', async () => {
-      const fake = [{ FVV_FECVCTO: '2026-07-01' }];
+    it('applies fecha range FIQL filters for FVV_FCH_VTO', async () => {
+      const fake = [{ FVV_FCH_VTO: '2026-07-01' }];
       const scope = nock(BASE_URL)
         .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/vencimientos`)
         .query((q) => {
           const rq = q['rquery'] as string | undefined;
           return (
             typeof rq === 'string' &&
-            rq.includes('FVV_FECVCTO=ge=2026-07-01') &&
-            rq.includes('FVV_FECVCTO=le=2026-12-31')
+            rq.includes("FVV_FCH_VTO=ge='2026-07-01'") &&
+            rq.includes("FVV_FCH_VTO=le='2026-12-31'")
           );
         })
         .reply(200, listEnv(fake, 1));

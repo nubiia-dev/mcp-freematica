@@ -97,7 +97,7 @@ describe('registerProveedoresTools', () => {
     const fake = [{ COD_PRO: 'P001', NIF: '12345678A' }];
     nock(BASE_URL)
       .get('/pgrl/v2/proveedores')
-      .query({ items: '10', page: '1', rquery: 'COD_PRO==P001;NIF==12345678A' })
+      .query({ items: '10', page: '1', rquery: "COD_PRO=='P001';NIF=='12345678A'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -114,13 +114,13 @@ describe('registerProveedoresTools', () => {
     expect(parsed.items).toEqual(fake);
   });
 
-  it('list passes =lk= FIQL for nombre partial search', async () => {
+  it('list passes exact quoted match for nombre (el API no soporta =lk=)', async () => {
     const fake = [{ COD_PRO: 'P001', NOMBRE_PRO: 'García S.L.' }];
     nock(BASE_URL)
       .get('/pgrl/v2/proveedores')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('NOMBRE_PRO') && rquery.includes('García');
+        return rquery.includes("NOMBRE_PRO=='García S.L.'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -129,7 +129,7 @@ describe('registerProveedoresTools', () => {
     const result = (await handler({
       page: 1,
       items: 20,
-      nombre: 'García',
+      nombre: 'García S.L.',
     })) as { content: { type: string; text: string }[]; isError?: boolean };
 
     expect(result.isError).toBeUndefined();
@@ -137,13 +137,18 @@ describe('registerProveedoresTools', () => {
     expect(parsed.items).toEqual(fake);
   });
 
-  it('list passes FECHA_BAJA==null for activo=true (proveedores activos)', async () => {
-    const fake = [{ COD_PRO: 'P001', FECHA_BAJA: null }];
+  it('activo=true no envía FECHA_BAJA al servidor y post-filtra las bajas de la página', async () => {
+    // El API no soporta IS NULL en FIQL (==null devuelve 0 resultados y
+    // =='null' revienta con 500), así que activo=true se resuelve en cliente.
+    const fake = [
+      { COD_PRO: 'P001', FECHA_BAJA: '' },
+      { COD_PRO: 'P099', FECHA_BAJA: '2023-01-01 00:00:00' },
+    ];
     nock(BASE_URL)
       .get('/pgrl/v2/proveedores')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('FECHA_BAJA==null');
+        return !rquery.includes('FECHA_BAJA');
       })
       .reply(200, listEnv(fake, 10));
 
@@ -156,15 +161,17 @@ describe('registerProveedoresTools', () => {
     })) as { content: { type: string; text: string }[]; isError?: boolean };
 
     expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.items).toEqual([{ COD_PRO: 'P001', FECHA_BAJA: '' }]);
   });
 
-  it('list passes FECHA_BAJA!=null for activo=false (proveedores de baja)', async () => {
+  it('activo=false filtra bajas con FECHA_BAJA=ge=1900-01-01 (el API no soporta !=null)', async () => {
     const fake = [{ COD_PRO: 'P099', FECHA_BAJA: '2023-01-01' }];
     nock(BASE_URL)
       .get('/pgrl/v2/proveedores')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('FECHA_BAJA!=null');
+        return rquery.includes("FECHA_BAJA=ge='1900-01-01'");
       })
       .reply(200, listEnv(fake, 3));
 
@@ -185,7 +192,7 @@ describe('registerProveedoresTools', () => {
       .get('/pgrl/v2/proveedores')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('COD_PAIS==ES') && rquery.includes('COD_PROVINCIA==28');
+        return rquery.includes("COD_PAIS=='ES'") && rquery.includes("COD_PROVINCIA=='28'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -207,7 +214,7 @@ describe('registerProveedoresTools', () => {
       .get('/pgrl/v2/proveedores')
       .query(q => {
         const rquery = String(q.rquery ?? '');
-        return rquery.includes('COD_GRUPO_PRO==G01') && rquery.includes('CMP_TIPO_IDENT==NIF');
+        return rquery.includes("COD_GRUPO_PRO=='G01'") && rquery.includes("CMP_TIPO_IDENT=='NIF'");
       })
       .reply(200, listEnv(fake, 1));
 

@@ -20,13 +20,16 @@ const GET_TOOL_NAME = 'freematica_get_persona';
 const LIST_DESCRIPTION = [
   'Devuelve la lista paginada de personas (empleados / personal) de Freemática.',
   '',
-  'Endpoint: GET /pers/v2/personal',
+  'Endpoint: GET /pers/v1/personal',
   '',
   'Permite filtrar por empresa (VSSPER_EMP), delegación (VSSPER_DELEG), código',
-  'de persona (VSSPER_COD), nombre (VSSPER_NOM, búsqueda parcial), primer',
-  'apellido (VSSPER_APELL1, búsqueda parcial), NIF (VSSPER_NIF), situación',
-  '(VSSPER_SIT), departamento (VSSPER_DPTO), sección (VSSPER_SECCION) y activo',
-  '(boolean traducido a FIQL VSSPER_ACTIVO==S o VSSPER_ACTIVO==N).',
+  'de persona (VSSPER_COD), nombre (VSSPER_NOM), primer apellido',
+  '(VSSPER_APELL1), NIF (VSSPER_NIF), situación (VSSPER_SIT), departamento',
+  '(VSSPER_DPTO) y sección (VSSPER_SECCION).',
+  '',
+  'AVISO: todos los filtros son de coincidencia EXACTA (el API no soporta',
+  'búsqueda parcial en este endpoint). Para localizar a una persona por nombre',
+  'parcial, lista sin filtros y filtra sobre los resultados.',
   '',
   'Cada item incluye `idReg` opaco para usar en freematica_get_persona.',
 ].join('\n');
@@ -67,16 +70,15 @@ const ListPersonalSchema = {
     .min(1)
     .optional()
     .describe(
-      'Nombre de la persona — búsqueda parcial con FIQL LIKE (campo VSSPER_NOM). ' +
-        'Introduce parte del nombre para buscar (ej. "Juan" encuentra "Juan Carlos").',
+      'Nombre de la persona (campo VSSPER_NOM). Coincidencia EXACTA — ' +
+        '"Juan" NO encuentra "Juan Carlos"; usa el nombre completo tal cual figura en Freemática.',
     ),
   apellido: z
     .string()
     .min(1)
     .optional()
     .describe(
-      'Primer apellido — búsqueda parcial con FIQL LIKE (campo VSSPER_APELL1). ' +
-        'Introduce parte del apellido para buscar.',
+      'Primer apellido (campo VSSPER_APELL1). Coincidencia EXACTA con el apellido completo.',
     ),
   nif: z
     .string()
@@ -98,13 +100,6 @@ const ListPersonalSchema = {
     .min(1)
     .optional()
     .describe('Código de sección (campo VSSPER_SECCION en Freemática).'),
-  activo: z
-    .boolean()
-    .optional()
-    .describe(
-      'Filtra por personas activas (true → VSSPER_ACTIVO==S) o inactivas (false → VSSPER_ACTIVO==N). ' +
-        'Si se omite, devuelve todas.',
-    ),
 };
 
 // ---------------------------------------------------------------------------
@@ -142,7 +137,6 @@ export function registerPersonalTools(server: McpServer, client: FreematicaClien
       situacion,
       departamento,
       seccion,
-      activo,
     }): Promise<CallToolResult> => {
       try {
         const result = await client.listPersonal({
@@ -157,7 +151,6 @@ export function registerPersonalTools(server: McpServer, client: FreematicaClien
           situacion,
           departamento,
           seccion,
-          activo,
         });
         return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
       } catch (err) {

@@ -90,7 +90,7 @@ describe('freematica_list_cuentas_contables', () => {
     const fake = [{ COD_CTA: '430', COD_PLAN: '0001' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas')
-      .query({ rquery: 'COD_PLAN==0001' })
+      .query({ rquery: "COD_PLAN=='0001'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -105,7 +105,7 @@ describe('freematica_list_cuentas_contables', () => {
     const fake = [{ COD_CTA: '430', CTA_ACTIVA: '1' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas')
-      .query({ rquery: 'CTA_ACTIVA==1' })
+      .query({ rquery: "CTA_ACTIVA=='1'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -120,7 +120,7 @@ describe('freematica_list_cuentas_contables', () => {
     const fake = [{ COD_CTA: '430', CTA_ACTIVA: '0' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas')
-      .query({ rquery: 'CTA_ACTIVA==0' })
+      .query({ rquery: "CTA_ACTIVA=='0'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -134,7 +134,7 @@ describe('freematica_list_cuentas_contables', () => {
     // prefijo "43" → COD_CTA=ge=43;COD_CTA=lt=44
     nock(BASE_URL)
       .get('/pcon/v2/cuentas')
-      .query({ rquery: 'COD_CTA=ge=43;COD_CTA=lt=44' })
+      .query({ rquery: "COD_CTA=ge='43';COD_CTA=lt='44'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -149,7 +149,7 @@ describe('freematica_list_cuentas_contables', () => {
     const fake = [{ COD_CTA: '430', COD_GRUPO_CTA: 'G1' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas')
-      .query({ rquery: 'COD_GRUPO_CTA==G1' })
+      .query({ rquery: "COD_GRUPO_CTA=='G1'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -164,7 +164,7 @@ describe('freematica_list_cuentas_contables', () => {
     const fake = [{ COD_CTA: '430' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas')
-      .query({ rquery: 'COD_PLAN==0001;CTA_ACTIVA==1;COD_GRUPO_CTA==G1' })
+      .query({ rquery: "COD_PLAN=='0001';CTA_ACTIVA=='1';COD_GRUPO_CTA=='G1'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -246,7 +246,7 @@ describe('freematica_list_cuentas_analiticas', () => {
     const fake = [{ COD_CTA_ANL: 'ANL001', AREA_ANL: 'COMPRAS' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas-analiticas')
-      .query({ rquery: 'AREA_ANL==COMPRAS' })
+      .query({ rquery: "AREA_ANL=='COMPRAS'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -261,7 +261,7 @@ describe('freematica_list_cuentas_analiticas', () => {
     const fake = [{ COD_CTA_ANL: 'ANL002', DELEG: 'MAD' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas-analiticas')
-      .query({ rquery: 'DELEG==MAD' })
+      .query({ rquery: "DELEG=='MAD'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -274,7 +274,7 @@ describe('freematica_list_cuentas_analiticas', () => {
     const fake = [{ COD_CTA_ANL: 'C430001' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas-analiticas')
-      .query({ rquery: 'COD_CTA_ANL=ge=C43;COD_CTA_ANL=lt=C44' })
+      .query({ rquery: "COD_CTA_ANL=ge='C43';COD_CTA_ANL=lt='C44'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -289,7 +289,7 @@ describe('freematica_list_cuentas_analiticas', () => {
     const fake = [{ COD_CTA_ANL: 'ANL001', CTA_ACTIVA_ANL: '1' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas-analiticas')
-      .query({ rquery: 'CTA_ACTIVA_ANL==1' })
+      .query({ rquery: "CTA_ACTIVA_ANL=='1'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -302,7 +302,7 @@ describe('freematica_list_cuentas_analiticas', () => {
     const fake = [{ COD_CTA_ANL: 'ANL001' }];
     nock(BASE_URL)
       .get('/pcon/v2/cuentas-analiticas')
-      .query({ rquery: 'COD_PLAN==0001;AREA_ANL==VEN;DELEG==MAD' })
+      .query({ rquery: "COD_PLAN=='0001';AREA_ANL=='VEN';DELEG=='MAD'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -456,7 +456,7 @@ describe('freematica_export_asientos', () => {
       .query({
         empresa: '0001',
         cal: 'GRAL',
-        rquery: 'ASI_FCHASI=ge=2024-01-01;ASI_FCHASI=le=2024-01-31',
+        rquery: "ASI_FCHASI=ge='2024-01-01';ASI_FCHASI=le='2024-01-31'",
       })
       .reply(200, listEnv(fake, 1));
 
@@ -477,7 +477,7 @@ describe('freematica_export_asientos', () => {
     const fake = [{ ASI_DIARIO: 'VEN' }];
     nock(BASE_URL)
       .get('/pcon/v2/export-asientos')
-      .query({ empresa: '0001', cal: 'GRAL', rquery: 'ASI_DIARIO==VEN' })
+      .query({ empresa: '0001', cal: 'GRAL', rquery: "ASI_DIARIO=='VEN'" })
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -635,7 +635,7 @@ describe('freematica_export_asientos', () => {
         empresa: '0001',
         cal: 'GRAL',
         periodo: '03',
-        rquery: 'ASI_FCHASI=ge=2024-03-01;ASI_DIARIO==COM',
+        rquery: "ASI_FCHASI=ge='2024-03-01';ASI_DIARIO=='COM'",
       })
       .reply(200, listEnv(fake, 1));
 

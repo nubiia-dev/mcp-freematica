@@ -249,7 +249,7 @@ describe('FreematicaClient', () => {
       const fake = [{ PERVS_EMP: '1' }];
       const scope = nock(BASE_URL)
         .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: 'PERVS_EMP==1;PERVS_DELEG==MAD' })
+        .query({ items: '20', page: '1', rquery: "PERVS_EMP=='1';PERVS_DELEG=='MAD'" })
         .reply(200, listEnv(fake, 1));
       const result = await client.listVigilanciaSalud({
         items: 20,
@@ -286,7 +286,7 @@ describe('FreematicaClient', () => {
       const fake = [{ PERVS_FCH_CITA: '2025-01-15' }];
       const scope = nock(BASE_URL)
         .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: 'PERVS_FCH_CITA=ge=2025-01-01' })
+        .query({ items: '20', page: '1', rquery: "PERVS_FCH_CITA=ge='2025-01-01'" })
         .reply(200, listEnv(fake, 1));
       const result = await client.listVigilanciaSalud({
         items: 20,
@@ -301,7 +301,7 @@ describe('FreematicaClient', () => {
       const fake = [{ PERVS_FCH_CITA: '2025-11-30' }];
       const scope = nock(BASE_URL)
         .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: 'PERVS_FCH_CITA=le=2025-12-31' })
+        .query({ items: '20', page: '1', rquery: "PERVS_FCH_CITA=le='2025-12-31'" })
         .reply(200, listEnv(fake, 1));
       const result = await client.listVigilanciaSalud({
         items: 20,
@@ -319,7 +319,7 @@ describe('FreematicaClient', () => {
         .query({
           items: '20',
           page: '1',
-          rquery: 'PERVS_FCH_CITA=ge=2025-01-01;PERVS_FCH_CITA=le=2025-12-31',
+          rquery: "PERVS_FCH_CITA=ge='2025-01-01';PERVS_FCH_CITA=le='2025-12-31'",
         })
         .reply(200, listEnv(fake, 1));
       const result = await client.listVigilanciaSalud({
@@ -361,7 +361,7 @@ describe('FreematicaClient', () => {
     it('calls /pers/v2/personal with pagination and no filters', async () => {
       const fake = [{ VSSPER_COD: 'P001' }];
       const scope = nock(BASE_URL)
-        .get('/pers/v2/personal')
+        .get('/pers/v1/personal')
         .query({ items: '10', page: '1' })
         .reply(200, listEnv(fake, 100));
       const result = await client.listPersonal({ items: 10, page: 1 });
@@ -386,13 +386,13 @@ describe('FreematicaClient', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('sends FIQL rquery with empresa and activo=S', async () => {
-      const fake = [{ VSSPER_EMP: '1', VSSPER_ACTIVO: 'S' }];
+    it('sends FIQL rquery with empresa and situacion (quoted)', async () => {
+      const fake = [{ VSSPER_EMP: '1', VSSPER_SIT: 'C' }];
       const scope = nock(BASE_URL)
-        .get('/pers/v2/personal')
-        .query({ items: '20', page: '1', rquery: 'VSSPER_EMP==1;VSSPER_ACTIVO==S' })
+        .get('/pers/v1/personal')
+        .query({ items: '20', page: '1', rquery: "VSSPER_EMP=='1';VSSPER_SIT=='C'" })
         .reply(200, listEnv(fake, 1));
-      const result = await client.listPersonal({ items: 20, page: 1, empresa: '1', activo: true });
+      const result = await client.listPersonal({ items: 20, page: 1, empresa: '1', situacion: 'C' });
       expect(result).toEqual({ items: fake, total: 1 });
       expect(scope.isDone()).toBe(true);
     });
@@ -416,8 +416,8 @@ describe('FreematicaClient', () => {
       const fake = [{ FCC_CODEMP: '1', FCC_CODPRO: 'P001' }];
       const scope = nock(BASE_URL)
         .get('/pcmp/v2/facturas-compras')
-        .query(q => String(q.rquery ?? '').includes('FCC_CODEMP==1') &&
-                    String(q.rquery ?? '').includes('FCC_CODPRO==P001'))
+        .query(q => String(q.rquery ?? '').includes("FCC_CODEMP=='1'") &&
+                    String(q.rquery ?? '').includes("FCC_CODPRO=='P001'"))
         .reply(200, listEnv(fake, 1));
       const result = await client.listFacturasCompras({
         items: 20,
@@ -429,20 +429,20 @@ describe('FreematicaClient', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('sends VSSPER_ACTIVO==N when activo=false', async () => {
-      const fake = [{ VSSPER_ACTIVO: 'N' }];
+    it('sends quoted NIF filter', async () => {
+      const fake = [{ VSSPER_NIF: '36921144' }];
       const scope = nock(BASE_URL)
-        .get('/pers/v2/personal')
-        .query({ items: '20', page: '1', rquery: 'VSSPER_ACTIVO==N' })
+        .get('/pers/v1/personal')
+        .query({ items: '20', page: '1', rquery: "VSSPER_NIF=='36921144'" })
         .reply(200, listEnv(fake, 1));
-      const result = await client.listPersonal({ items: 20, page: 1, activo: false });
+      const result = await client.listPersonal({ items: 20, page: 1, nif: '36921144' });
       expect(result).toEqual({ items: fake, total: 1 });
       expect(scope.isDone()).toBe(true);
     });
 
     it('propagates server_error on 500 envelope', async () => {
       nock(BASE_URL)
-        .get('/pers/v2/personal')
+        .get('/pers/v1/personal')
         .query({ items: '20', page: '1' })
         .reply(200, { errorCode: '500', errorMessage: 'Boom', data: null });
       await expect(client.listPersonal({ items: 20, page: 1 })).rejects.toMatchObject({
@@ -456,8 +456,8 @@ describe('FreematicaClient', () => {
       const fake = [{ FCC_DELEG: 'MAD', FCC_LIN_NEGOCIO: 'LN01' }];
       nock(BASE_URL)
         .get('/pcmp/v2/facturas-compras')
-        .query(q => String(q.rquery ?? '').includes('FCC_DELEG==MAD') &&
-                    String(q.rquery ?? '').includes('FCC_LIN_NEGOCIO==LN01'))
+        .query(q => String(q.rquery ?? '').includes("FCC_DELEG=='MAD'") &&
+                    String(q.rquery ?? '').includes("FCC_LIN_NEGOCIO=='LN01'"))
         .reply(200, listEnv(fake, 1));
       const result = await client.listFacturasCompras({
         items: 20,
@@ -477,7 +477,7 @@ describe('FreematicaClient', () => {
         .get('/pcmp/v2/facturas-compras')
         .query(q => {
           const rq = String(q.rquery ?? '');
-          return rq.includes('FCC_FCHFAC=ge=2024-01-01') && !rq.includes('FCC_FCHFAC=le=');
+          return rq.includes("FCC_FCHFAC=ge='2024-01-01'") && !rq.includes("FCC_FCHFAC=le=");
         })
         .reply(200, listEnv(fake, 1));
       const result = await client.listFacturasCompras({ items: 20, page: 1, fechaDesde: '2024-01-01' });
@@ -491,7 +491,7 @@ describe('FreematicaClient', () => {
         .get('/pcmp/v2/facturas-compras')
         .query(q => {
           const rq = String(q.rquery ?? '');
-          return rq.includes('FCC_FCHFAC=le=2024-01-31') && !rq.includes('FCC_FCHFAC=ge=');
+          return rq.includes("FCC_FCHFAC=le='2024-01-31'") && !rq.includes("FCC_FCHFAC=ge=");
         })
         .reply(200, listEnv(fake, 1));
       const result = await client.listFacturasCompras({ items: 20, page: 1, fechaHasta: '2024-01-31' });
@@ -508,8 +508,8 @@ describe('FreematicaClient', () => {
         .query(q => {
           const rq = String(q.rquery ?? '');
           return (
-            rq.includes('FCC_FCHFAC=ge=2024-01-01') &&
-            rq.includes('FCC_FCHFAC=le=2024-01-31') &&
+            rq.includes("FCC_FCHFAC=ge='2024-01-01'") &&
+            rq.includes("FCC_FCHFAC=le='2024-01-31'") &&
             !rq.includes('FCC_FCHFAC_HASTA')
           );
         })
@@ -528,8 +528,8 @@ describe('FreematicaClient', () => {
       const fake = [{ FCC_SERIEFRA: 'A', FCC_NUMFRA: '2024999' }];
       nock(BASE_URL)
         .get('/pcmp/v2/facturas-compras')
-        .query(q => String(q.rquery ?? '').includes('FCC_SERIEFRA==A') &&
-                    String(q.rquery ?? '').includes('FCC_NUMFRA==2024999'))
+        .query(q => String(q.rquery ?? '').includes("FCC_SERIEFRA=='A'") &&
+                    String(q.rquery ?? '').includes("FCC_NUMFRA=='2024999'"))
         .reply(200, listEnv(fake, 1));
       const result = await client.listFacturasCompras({
         items: 20,
@@ -695,7 +695,7 @@ describe('FreematicaClient', () => {
       const fake = [{ COD_PRO: 'P001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/proveedores')
-        .query({ items: '20', page: '1', rquery: 'COD_PRO==P001;NIF==12345678A' })
+        .query({ items: '20', page: '1', rquery: "COD_PRO=='P001';NIF=='12345678A'" })
         .reply(200, listEnv(fake, 1));
       const result = await client.listProveedores({
         items: 20,
@@ -706,21 +706,22 @@ describe('FreematicaClient', () => {
       expect(result.items).toEqual(fake);
     });
 
-    it('passes FECHA_BAJA==null for activo=true', async () => {
-      const fake = [{ COD_PRO: 'P001', FECHA_BAJA: null }];
+    it('activo=true no envía FECHA_BAJA al servidor y post-filtra bajas de la página', async () => {
+      const activos = [{ COD_PRO: 'P001', FECHA_BAJA: '' }];
+      const bajas = [{ COD_PRO: 'P099', FECHA_BAJA: '2023-01-01 00:00:00' }];
       nock(BASE_URL)
         .get('/pgrl/v2/proveedores')
-        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA==null'))
-        .reply(200, listEnv(fake, 10));
+        .query(q => !String(q.rquery ?? '').includes('FECHA_BAJA'))
+        .reply(200, listEnv([...activos, ...bajas], 10));
       const result = await client.listProveedores({ items: 20, page: 1, activo: true });
-      expect(result.items).toEqual(fake);
+      expect(result.items).toEqual(activos);
     });
 
-    it('passes FECHA_BAJA!=null for activo=false', async () => {
+    it('activo=false filtra bajas con FECHA_BAJA=ge=1900-01-01', async () => {
       const fake = [{ COD_PRO: 'P099', FECHA_BAJA: '2023-01-01' }];
       nock(BASE_URL)
         .get('/pgrl/v2/proveedores')
-        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA!=null'))
+        .query(q => String(q.rquery ?? '').includes("FECHA_BAJA=ge='1900-01-01'"))
         .reply(200, listEnv(fake, 3));
       const result = await client.listProveedores({ items: 20, page: 1, activo: false });
       expect(result.items).toEqual(fake);
@@ -789,7 +790,7 @@ describe('FreematicaClient', () => {
       const fake = [{ COD_CLI: 'C001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-cobro-clientes')
-        .query({ items: '20', page: '1', rquery: 'COD_CLI==C001' })
+        .query({ items: '20', page: '1', rquery: "COD_CLI=='C001'" })
         .reply(200, listEnv(fake, 1));
       const result = await client.listLocalizacionesCobroClientes({
         items: 20,
@@ -830,7 +831,7 @@ describe('FreematicaClient', () => {
       const fake = [{ COD_PRO: 'P001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-pago-proveedores')
-        .query({ items: '20', page: '1', rquery: 'COD_PRO==P001' })
+        .query({ items: '20', page: '1', rquery: "COD_PRO=='P001'" })
         .reply(200, listEnv(fake, 1));
       const result = await client.listLocalizacionesPagoProveedores({
         items: 20,
@@ -871,7 +872,7 @@ describe('FreematicaClient', () => {
       const fake = [{ COD_CLI: 'C001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-servicio-clientes')
-        .query({ items: '20', page: '1', rquery: 'COD_CLI==C001' })
+        .query({ items: '20', page: '1', rquery: "COD_CLI=='C001'" })
         .reply(200, listEnv(fake, 1));
       const result = await client.listLocalizacionesServicioClientes({
         items: 20,
@@ -881,31 +882,13 @@ describe('FreematicaClient', () => {
       expect(result.items).toEqual(fake);
     });
 
-    it('passes FECHA_BAJA==null for activo=true', async () => {
-      const fake = [{ COD_CLI: 'C001', FECHA_BAJA: null }];
+    it('nunca envía FECHA_BAJA en rquery (la vista no tiene esa columna)', async () => {
+      const fake = [{ COD_CLI: 'C001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-servicio-clientes')
-        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA==null'))
-        .reply(200, listEnv(fake, 5));
-      const result = await client.listLocalizacionesServicioClientes({
-        items: 20,
-        page: 1,
-        activo: true,
-      });
-      expect(result.items).toEqual(fake);
-    });
-
-    it('passes FECHA_BAJA!=null for activo=false', async () => {
-      const fake = [{ COD_CLI: 'C001', FECHA_BAJA: '2023-06-01' }];
-      nock(BASE_URL)
-        .get('/pgrl/v2/localizaciones-servicio-clientes')
-        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA!=null'))
-        .reply(200, listEnv(fake, 2));
-      const result = await client.listLocalizacionesServicioClientes({
-        items: 20,
-        page: 1,
-        activo: false,
-      });
+        .query(q => !String(q.rquery ?? '').includes('FECHA_BAJA'))
+        .reply(200, listEnv(fake, 1));
+      const result = await client.listLocalizacionesServicioClientes({ items: 20, page: 1 });
       expect(result.items).toEqual(fake);
     });
 
@@ -984,8 +967,8 @@ describe('FreematicaClient', () => {
       const scope = nock(BASE_URL)
         .get('/pcmp/v2/pedidos')
         .query(q =>
-          String(q.rquery ?? '').includes('ALCC_DELEG==MAD1') &&
-          String(q.rquery ?? '').includes('ALCC_FPAGO==TRF')
+          String(q.rquery ?? '').includes("ALCC_DELEG=='MAD1'") &&
+          String(q.rquery ?? '').includes("ALCC_FPAGO=='TRF'")
         )
         .reply(200, listEnv(fake, 1));
       const result = await client.listPedidosCompra({
@@ -1002,7 +985,7 @@ describe('FreematicaClient', () => {
       const fake = [{ ALCC_NUMDOC: 12345678 }];
       const scope = nock(BASE_URL)
         .get('/pcmp/v2/pedidos')
-        .query(q => String(q.rquery ?? '').includes('ALCC_NUMDOC==12345678'))
+        .query(q => String(q.rquery ?? '').includes("ALCC_NUMDOC=='12345678'"))
         .reply(200, listEnv(fake, 1));
       const result = await client.listPedidosCompra({ items: 20, page: 1, numPedido: 12345678 });
       expect(result).toEqual({ items: fake, total: 1 });
@@ -1013,7 +996,7 @@ describe('FreematicaClient', () => {
       const fake = [{ ALCC_REFERENCIA: 'REF-001' }];
       const scope = nock(BASE_URL)
         .get('/pcmp/v2/pedidos')
-        .query(q => String(q.rquery ?? '').includes('ALCC_REFERENCIA==REF-001'))
+        .query(q => String(q.rquery ?? '').includes("ALCC_REFERENCIA=='REF-001'"))
         .reply(200, listEnv(fake, 1));
       const result = await client.listPedidosCompra({ items: 20, page: 1, referencia: 'REF-001' });
       expect(result).toEqual({ items: fake, total: 1 });
@@ -1027,8 +1010,8 @@ describe('FreematicaClient', () => {
         .query(q => {
           const rq = String(q.rquery ?? '');
           return (
-            rq.includes('ALCC_FCHENTREGA=ge=2025-01-01') &&
-            rq.includes('ALCC_FCHENTREGA=le=2025-12-31')
+            rq.includes("ALCC_FCHENTREGA=ge='2025-01-01'") &&
+            rq.includes("ALCC_FCHENTREGA=le='2025-12-31'")
           );
         })
         .reply(200, listEnv(fake, 1));
@@ -1090,7 +1073,7 @@ describe('FreematicaClient', () => {
             q.hastaFecha === '2025-12-31';
           const rq = String(q.rquery ?? '');
           const hasFiql =
-            rq.includes('ALCC_DELEG==BCN1') &&
+            rq.includes("ALCC_DELEG=='BCN1'") &&
             rq.includes("ALCC_PED_RECIB!=''");
           return hasNatives && hasFiql;
         })

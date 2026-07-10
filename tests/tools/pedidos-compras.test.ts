@@ -207,7 +207,7 @@ describe('registerPedidosComprasTools', () => {
     const fake = [{ ALCC_NUMDOC: 12345678 }];
     nock(BASE_URL)
       .get('/pcmp/v2/pedidos')
-      .query(q => String(q.rquery ?? '').includes('ALCC_NUMDOC==12345678'))
+      .query(q => String(q.rquery ?? '').includes("ALCC_NUMDOC=='12345678'"))
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -227,7 +227,7 @@ describe('registerPedidosComprasTools', () => {
     const fake = [{ ALCC_DELEG: 'MAD1' }];
     nock(BASE_URL)
       .get('/pcmp/v2/pedidos')
-      .query(q => String(q.rquery ?? '').includes('ALCC_DELEG==MAD1'))
+      .query(q => String(q.rquery ?? '').includes("ALCC_DELEG=='MAD1'"))
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -247,7 +247,7 @@ describe('registerPedidosComprasTools', () => {
       .get('/pcmp/v2/pedidos')
       .query(q => {
         const rq = String(q.rquery ?? '');
-        return rq.includes('ALCC_CODDOC==PCMP') && rq.includes('ALCC_COD_CLIENTE==0001000');
+        return rq.includes("ALCC_CODDOC=='PCMP'") && rq.includes("ALCC_COD_CLIENTE=='0001000'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -267,7 +267,7 @@ describe('registerPedidosComprasTools', () => {
     const fake = [{ ALCC_REFERENCIA: 'REF-2025-001' }];
     nock(BASE_URL)
       .get('/pcmp/v2/pedidos')
-      .query(q => String(q.rquery ?? '').includes('ALCC_REFERENCIA==REF-2025-001'))
+      .query(q => String(q.rquery ?? '').includes("ALCC_REFERENCIA=='REF-2025-001'"))
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -285,7 +285,7 @@ describe('registerPedidosComprasTools', () => {
     const fake = [{ ALCC_FCHENTREGA: '2025-06-15' }];
     nock(BASE_URL)
       .get('/pcmp/v2/pedidos')
-      .query(q => String(q.rquery ?? '').includes('ALCC_FCHENTREGA=ge=2025-01-01'))
+      .query(q => String(q.rquery ?? '').includes("ALCC_FCHENTREGA=ge='2025-01-01'"))
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -303,7 +303,7 @@ describe('registerPedidosComprasTools', () => {
     const fake = [{ ALCC_FCHENTREGA: '2025-06-15' }];
     nock(BASE_URL)
       .get('/pcmp/v2/pedidos')
-      .query(q => String(q.rquery ?? '').includes('ALCC_FCHENTREGA=le=2025-12-31'))
+      .query(q => String(q.rquery ?? '').includes("ALCC_FCHENTREGA=le='2025-12-31'"))
       .reply(200, listEnv(fake, 1));
 
     const server = buildServer();
@@ -324,8 +324,8 @@ describe('registerPedidosComprasTools', () => {
       .query(q => {
         const rq = String(q.rquery ?? '');
         return (
-          rq.includes('ALCC_FCHENTREGA=ge=2025-01-01') &&
-          rq.includes('ALCC_FCHENTREGA=le=2025-12-31')
+          rq.includes("ALCC_FCHENTREGA=ge='2025-01-01'") &&
+          rq.includes("ALCC_FCHENTREGA=le='2025-12-31'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -428,7 +428,7 @@ describe('registerPedidosComprasTools', () => {
           q.hastaFecha === '2025-12-31';
         // Verificar que hay FIQL en rquery
         const rq = String(q.rquery ?? '');
-        const hasFiql = rq.includes('ALCC_DELEG==BCN1') && rq.includes('ALCC_FPAGO==TRF');
+        const hasFiql = rq.includes("ALCC_DELEG=='BCN1'") && rq.includes("ALCC_FPAGO=='TRF'");
         return hasNatives && hasFiql;
       })
       .reply(200, listEnv(fake, 1));
@@ -458,9 +458,9 @@ describe('registerPedidosComprasTools', () => {
       .query(q => {
         const rq = String(q.rquery ?? '');
         return (
-          rq.includes('ALCC_NUMDOC==12345') &&
-          rq.includes('ALCC_COD_INSTALADOR==INST01') &&
-          rq.includes('ALCC_COD_MANTENEDOR==MANT01') &&
+          rq.includes("ALCC_NUMDOC=='12345'") &&
+          rq.includes("ALCC_COD_INSTALADOR=='INST01'") &&
+          rq.includes("ALCC_COD_MANTENEDOR=='MANT01'") &&
           rq.includes("ALCC_PED_BLOQ!=''")
         );
       })

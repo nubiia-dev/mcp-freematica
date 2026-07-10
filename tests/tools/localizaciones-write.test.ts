@@ -60,7 +60,7 @@ describe('localizaciones tools (nuevas list + write)', () => {
   it('list_localizaciones_envio_clientes lista con filtro FIQL por cliente', async () => {
     nock(BASE_URL)
       .get('/pgrl/v2/localizaciones-envio-clientes')
-      .query((q) => q['rquery'] === 'COD_CLI==1174' && q['page'] === '1')
+      .query((q) => q['rquery'] === "COD_CLI=='1174'" && q['page'] === '1')
       .reply(200, {
         errorCode: '200',
         errorMessage: '',

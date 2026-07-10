@@ -69,7 +69,7 @@ describe('registerPersonalTools', () => {
     it('returns paginated results with no filters', async () => {
       const fake = [{ VSSPER_COD: 'P001', VSSPER_NOM: 'Juan' }];
       nock(BASE_URL)
-        .get('/pers/v2/personal')
+        .get('/pers/v1/personal')
         .query({ items: '20', page: '1' })
         .reply(200, listEnv(fake, 200));
 
@@ -91,8 +91,8 @@ describe('registerPersonalTools', () => {
     it('sends empresa and delegacion as FIQL rquery', async () => {
       const fake = [{ VSSPER_EMP: '1', VSSPER_DELEG: 'MAD' }];
       nock(BASE_URL)
-        .get('/pers/v2/personal')
-        .query({ items: '20', page: '1', rquery: 'VSSPER_EMP==1;VSSPER_DELEG==MAD' })
+        .get('/pers/v1/personal')
+        .query({ items: '20', page: '1', rquery: "VSSPER_EMP=='1';VSSPER_DELEG=='MAD'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -107,16 +107,16 @@ describe('registerPersonalTools', () => {
       expect(parsed.items).toEqual(fake);
     });
 
-    it('translates activo=true to VSSPER_ACTIVO==S in FIQL', async () => {
-      const fake = [{ VSSPER_ACTIVO: 'S', VSSPER_COD: 'P002' }];
+    it('sends codPersona and situacion as quoted FIQL fields', async () => {
+      const fake = [{ VSSPER_COD: '2589', VSSPER_SIT: 'C' }];
       nock(BASE_URL)
-        .get('/pers/v2/personal')
-        .query({ items: '20', page: '1', rquery: 'VSSPER_ACTIVO==S' })
+        .get('/pers/v1/personal')
+        .query({ items: '20', page: '1', rquery: "VSSPER_COD=='2589';VSSPER_SIT=='C'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20, activo: true })) as {
+      const result = (await handler({ page: 1, items: 20, codPersona: '2589', situacion: 'C' })) as {
         content: { text: string }[];
         isError?: boolean;
       };
@@ -126,16 +126,16 @@ describe('registerPersonalTools', () => {
       expect(parsed.items).toEqual(fake);
     });
 
-    it('translates activo=false to VSSPER_ACTIVO==N in FIQL', async () => {
-      const fake = [{ VSSPER_ACTIVO: 'N', VSSPER_COD: 'P003' }];
+    it('quotes values with spaces without percent-encoding them', async () => {
+      const fake = [{ VSSPER_NOM: 'ELIZABETH SUSANA' }];
       nock(BASE_URL)
-        .get('/pers/v2/personal')
-        .query({ items: '20', page: '1', rquery: 'VSSPER_ACTIVO==N' })
+        .get('/pers/v1/personal')
+        .query({ items: '20', page: '1', rquery: "VSSPER_NOM=='ELIZABETH SUSANA'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20, activo: false })) as {
+      const result = (await handler({ page: 1, items: 20, nombre: 'ELIZABETH SUSANA' })) as {
         content: { text: string }[];
         isError?: boolean;
       };
@@ -148,8 +148,8 @@ describe('registerPersonalTools', () => {
     it('sends nombre and apellido as FIQL fields', async () => {
       const fake = [{ VSSPER_NOM: 'Juan', VSSPER_APELL1: 'Garcia' }];
       nock(BASE_URL)
-        .get('/pers/v2/personal')
-        .query({ items: '20', page: '1', rquery: 'VSSPER_NOM==Juan;VSSPER_APELL1==Garcia' })
+        .get('/pers/v1/personal')
+        .query({ items: '20', page: '1', rquery: "VSSPER_NOM=='Juan';VSSPER_APELL1=='Garcia'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -165,8 +165,8 @@ describe('registerPersonalTools', () => {
     it('sends nif as FIQL field', async () => {
       const fake = [{ VSSPER_NIF: '12345678A' }];
       nock(BASE_URL)
-        .get('/pers/v2/personal')
-        .query({ items: '20', page: '1', rquery: 'VSSPER_NIF==12345678A' })
+        .get('/pers/v1/personal')
+        .query({ items: '20', page: '1', rquery: "VSSPER_NIF=='12345678A'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -181,7 +181,7 @@ describe('registerPersonalTools', () => {
 
     it('returns error server_error on 500', async () => {
       nock(BASE_URL)
-        .get('/pers/v2/personal')
+        .get('/pers/v1/personal')
         .query({ items: '20', page: '1' })
         .reply(200, { errorCode: '500', errorMessage: 'Boom', data: null });
 
@@ -199,7 +199,7 @@ describe('registerPersonalTools', () => {
 
     it('returns error invalid_token on 401', async () => {
       nock(BASE_URL)
-        .get('/pers/v2/personal')
+        .get('/pers/v1/personal')
         .query({ items: '20', page: '1' })
         .reply(200, { errorCode: '401', errorMessage: 'Unauthorized', data: null });
 

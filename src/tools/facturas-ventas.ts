@@ -20,9 +20,9 @@ const LIST_VENCIMIENTOS_TOOL = 'freematica_list_factura_vencimientos';
 const LIST_CABECERA_DESCRIPTION = [
   'Devuelve la lista paginada de cabeceras de facturas de ventas.',
   '',
-  'Cada item contiene ~50 campos: FVC_NUMFAC (número factura), FVC_SERFAC (serie), FVC_CODAUX (cliente),',
-  'FVC_FECFAC (fecha factura), FVC_BASEIMPONIBLE (base), FVC_TOTFAC (total factura),',
-  'FVC_TRSCONT (traspasado a contabilidad), FVC_DELEG (delegación), más `idReg` opaco para el endpoint singular.',
+  'Cada item contiene ~70 campos: FVC_NUMFRA (número factura), FVC_SERIEFRA (serie), FVC_CODCLI (cliente),',
+  'FVC_FCHFAC (fecha factura), FVC_BASEIVA_DV (base), FVC_TOTFRA_DV (total factura),',
+  'FVC_TRASP_CONTAB (traspasado a contabilidad), FVC_DELEG (delegación), más `idReg` opaco para el endpoint singular.',
   '',
   'Filtros disponibles:',
   '- empresa, codCliente, representante',
@@ -38,7 +38,7 @@ const GET_CABECERA_DESCRIPTION = [
   'Devuelve el detalle completo de una factura de ventas (cabecera).',
   '',
   'El parámetro `id` DEBE ser el campo `idReg` (string opaco base64) que aparece en los items de',
-  'freematica_list_facturas_cabecera. NO usar FVC_NUMFAC ni FVC_SERFAC.',
+  'freematica_list_facturas_cabecera. NO usar FVC_NUMFRA ni FVC_SERIEFRA.',
 ].join('\n');
 
 const LIST_LINEAS_DESCRIPTION = [
@@ -46,8 +46,8 @@ const LIST_LINEAS_DESCRIPTION = [
   '',
   'Requiere el `idFactura` (idReg opaco) de la factura cabecera.',
   '',
-  'Cada línea contiene: FVL_CODART (artículo), FVL_DESART (descripción), FVL_CANTFAC (cantidad),',
-  'FVL_PRECIOVENTA (precio), FVL_PORDTO (% descuento), FVL_IMPORTE (importe línea), FVL_CODFAM, FVL_CODSFAM.',
+  'Cada línea contiene: FVL_CODARTIC (artículo), FVL_DESCRIP (descripción), FVL_IMPORTE (importe línea),',
+  'FVL_IMP_IVA (IVA), FVL_COD_FAMILIA, FVL_COD_SUBFAM, FVL_DELEG.',
   '',
   'Filtros disponibles: codArticulo, codFamilia, codSubfamilia, delegacion.',
 ].join('\n');
@@ -57,10 +57,10 @@ const LIST_IVA_DESCRIPTION = [
   '',
   'Requiere el `idFactura` (idReg opaco) de la factura cabecera.',
   '',
-  'Cada línea contiene: FVI_TIPIVA (tipo IVA), FVI_PORCENTAJE (%), FVI_BASE (base imponible),',
-  'FVI_CUOTA (cuota IVA), FVI_TOTAL (total con IVA).',
+  'Cada línea contiene: FVI_TIPO_IVA (tipo IVA), FVI_POR_IVA_DV (%), FVI_IMPBRUT_DV (base imponible),',
+  'FVI_IMPDTO_DV (descuento) y demás importes FVI_*.',
   '',
-  'Filtro disponible: tipoIva (FVI_TIPIVA exacto, ej. "21", "10", "4").',
+  'Filtro disponible: tipoIva (FVI_TIPO_IVA exacto).',
 ].join('\n');
 
 const LIST_VENCIMIENTOS_DESCRIPTION = [
@@ -68,8 +68,8 @@ const LIST_VENCIMIENTOS_DESCRIPTION = [
   '',
   'Requiere el `idFactura` (idReg opaco) de la factura cabecera.',
   '',
-  'Cada vencimiento contiene: FVV_FECVCTO (fecha vencimiento), FVV_IMPORTE (importe a cobrar),',
-  'FVV_CODMPAG (modo de pago), FVV_ESTADO (estado del vencimiento).',
+  'Cada vencimiento contiene: FVV_FCH_VTO (fecha vencimiento), FVV_IMP_VTO (importe a cobrar),',
+  'FVV_MODOPAGO (modo de pago), FVV_NUM_VTO (número de vencimiento).',
   '',
   'Filtros disponibles: fechaVencimientoDesde/Hasta, modoPago.',
 ].join('\n');

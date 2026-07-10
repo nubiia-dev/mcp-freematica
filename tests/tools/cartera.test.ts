@@ -105,8 +105,8 @@ describe('registerCarteraTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('CARCL_EMP==1') &&
-          rq.includes('CARCL_CODAUX==0001000')
+          rq.includes("CARCL_EMP=='1'") &&
+          rq.includes("CARCL_CODAUX=='0001000'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -131,7 +131,7 @@ describe('registerCarteraTools', () => {
       .get('/pcar/v1/cartera-clientes')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('CARCL_SITCAR==1');
+        return typeof rq === 'string' && rq.includes("CARCL_SITCAR=='1'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -154,7 +154,7 @@ describe('registerCarteraTools', () => {
       .get('/pcar/v1/cartera-clientes')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('CARCL_SITCAR==2');
+        return typeof rq === 'string' && rq.includes("CARCL_SITCAR=='2'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -177,7 +177,7 @@ describe('registerCarteraTools', () => {
       .get('/pcar/v1/cartera-clientes')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('CARCL_FECIMPAG!=null');
+        return typeof rq === 'string' && rq.includes("CARCL_FECIMPAG=ge='1900-01-01'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -226,8 +226,8 @@ describe('registerCarteraTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('CARCL_FECDOC=ge=2026-01-01') &&
-          rq.includes('CARCL_FECDOC=le=2026-06-30')
+          rq.includes("CARCL_FECDOC=ge='2026-01-01'") &&
+          rq.includes("CARCL_FECDOC=le='2026-06-30'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -254,8 +254,8 @@ describe('registerCarteraTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('CARCL_FECVCTO=ge=2026-06-01') &&
-          rq.includes('CARCL_FECVCTO=le=2026-12-31')
+          rq.includes("CARCL_FECVCTO=ge='2026-06-01'") &&
+          rq.includes("CARCL_FECVCTO=le='2026-12-31'")
         );
       })
       .reply(200, listEnv(fake, 1));

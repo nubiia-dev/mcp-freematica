@@ -274,7 +274,7 @@ describe('registerPrlTools', () => {
       const fake = [{ PERVS_EMP: '1', PERVS_DELEG: 'MAD' }];
       nock(BASE_URL)
         .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: 'PERVS_EMP==1;PERVS_DELEG==MAD' })
+        .query({ items: '20', page: '1', rquery: "PERVS_EMP=='1';PERVS_DELEG=='MAD'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -331,7 +331,7 @@ describe('registerPrlTools', () => {
         .query({
           items: '20',
           page: '1',
-          rquery: 'PERVS_FCH_CITA=ge=2025-01-01;PERVS_FCH_CITA=le=2025-12-31',
+          rquery: "PERVS_FCH_CITA=ge='2025-01-01';PERVS_FCH_CITA=le='2025-12-31'",
         })
         .reply(200, listEnv(fake, 1));
 

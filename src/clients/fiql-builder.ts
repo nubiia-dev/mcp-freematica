@@ -15,11 +15,22 @@
  *   - `;`    AND (combina expresiones)
  *   - `,`    OR  (combina expresiones)
  *
+ * Quoting de valores: TODOS los valores escalares se emiten entre comillas
+ * simples (`CAMPO=='valor'`). El API de Freemática lo exige para columnas de
+ * texto y fecha (sin comillas responde 400 "Error al ejecutar sentencia" o
+ * ignora el filtro silenciosamente) y lo acepta también en columnas
+ * numéricas. Verificado empíricamente contra /pers/v1/personal,
+ * /part/v1/articulos, /pcon/v2/cuentas, /pven/v1/facturas-cabecera,
+ * /pcar/v1/cartera-clientes y /pgrl/v2/proveedores.
+ *
  * Caracteres que requieren escape en valores FIQL:
- *   `;` `,` `(` `)` `"` `'` espacios → percent-encoding (%3B, %2C, %28, %29, %22, %27, %20)
+ *   `;` `,` `(` `)` `"` `'` → percent-encoding (%3B, %2C, %28, %29, %22, %27)
  *   `=` → %3D  (evita ambigüedad con operadores FIQL del tipo `=op=`)
  *   `!` → %21  (evita ambigüedad con el operador `!=`)
  *   El `==` en un valor se convierte en `%3D%3D` automáticamente.
+ *   El espacio NO se escapea: dentro de comillas simples el API lo acepta
+ *   tal cual, y percent-encodearlo rompe el match (doble encoding al pasar
+ *   la FIQL por URLSearchParams).
  */
 
 /**
@@ -87,7 +98,7 @@ const OP_MAP: Record<FiqlOp, string> = {
  *   `CAMPO==x=gt=0`  → parser puede interpretar `x=gt=0` como sub-operador
  *   `CAMPO==123==EVIL` → parser puede ver un doble operador
  */
-const FIQL_RESERVED_RE = /[;,()"' =!]/g;
+const FIQL_RESERVED_RE = /[;,()"'=!]/g;
 
 const RESERVED_ENCODE_MAP: Record<string, string> = {
   ';': '%3B',
@@ -96,7 +107,6 @@ const RESERVED_ENCODE_MAP: Record<string, string> = {
   ')': '%29',
   '"': '%22',
   "'": '%27',
-  ' ': '%20',
   '=': '%3D',
   '!': '%21',
 };
@@ -116,13 +126,18 @@ function escapeFiqlValue(raw: string): string {
 }
 
 /**
- * Convierte un valor primitivo a string FIQL escapado.
+ * Convierte un valor primitivo a string FIQL escapado y quoted.
+ *
+ * El valor SIEMPRE va entre comillas simples: es el formato que exige el
+ * API de Freemática para columnas de texto/fecha y que acepta también en
+ * columnas numéricas. Las comillas simples internas van percent-encoded
+ * (%27) para que no puedan cerrar el quoting.
  *
  * @param val - Primitivo (`string | number | boolean`).
- * @returns Representación FIQL del valor.
+ * @returns Representación FIQL del valor (ej. `'123'`).
  */
 function primitiveToFiql(val: string | number | boolean): string {
-  return escapeFiqlValue(String(val));
+  return `'${escapeFiqlValue(String(val))}'`;
 }
 
 /**
@@ -141,7 +156,7 @@ function buildExpression(key: string, fiqlValue: FiqlValue): string {
     if (op === 'in') {
       const arr = Array.isArray(value) ? value : [value];
       if (arr.length === 0) return '';
-      const encoded = arr.map((v) => escapeFiqlValue(String(v))).join(',');
+      const encoded = arr.map((v) => primitiveToFiql(v as string | number)).join(',');
       return `${key}${fiqlOp}(${encoded})`;
     }
 
@@ -219,19 +234,19 @@ function isComposition(
  * **Grupo plano** (se unen con AND):
  * ```ts
  * buildFiql({ COD_CLI: '123', ESTADO: 'activo' })
- * // → 'COD_CLI==123;ESTADO==activo'
+ * // → "COD_CLI=='123';ESTADO=='activo'"
  * ```
  *
  * **Operador explícito**:
  * ```ts
  * buildFiql({ IMPORTE: { op: 'gt', value: 1000 } })
- * // → 'IMPORTE=gt=1000'
+ * // → "IMPORTE=gt='1000'"
  * ```
  *
  * **Operador IN con array**:
  * ```ts
  * buildFiql({ COD_CLI: { op: 'in', value: ['A1', 'A2'] } })
- * // → 'COD_CLI=in=(A1,A2)'
+ * // → "COD_CLI=in=('A1','A2')"
  * ```
  *
  * **Composición AND/OR**:
@@ -239,19 +254,25 @@ function isComposition(
  * buildFiql({
  *   and: [{ EMPRESA: '1' }, { DELEGACION: 'MAD' }],
  * })
- * // → 'EMPRESA==1;DELEGACION==MAD'
+ * // → "EMPRESA=='1';DELEGACION=='MAD'"
  *
  * buildFiql({
  *   or: [{ ESTADO: 'activo' }, { ESTADO: 'pendiente' }],
  * })
- * // → 'ESTADO==activo,ESTADO==pendiente'
+ * // → "ESTADO=='activo',ESTADO=='pendiente'"
  * ```
  *
+ * AVISO: la composición OR (`,`) responde 400 en los endpoints probados del
+ * API real (pers, part); para expresar "uno de varios valores" usar el
+ * operador `in`, que sí está soportado.
+ *
  * ### Reglas
+ * - Todos los valores escalares se emiten entre comillas simples.
  * - Los valores `undefined` se omiten silenciosamente.
  * - Si todos los filtros son `undefined` o el objeto está vacío → retorna `""`.
- * - Los caracteres reservados FIQL (`;`, `,`, `(`, `)`, `"`, `'`, espacio, `=`, `!`)
- *   en los valores se percent-encodean automáticamente.
+ * - Los caracteres reservados FIQL (`;`, `,`, `(`, `)`, `"`, `'`, `=`, `!`)
+ *   en los valores se percent-encodean automáticamente. El espacio va tal
+ *   cual (protegido por el quoting).
  * - Las claves `and`/`or` sólo activan composición si su valor es un `Array`.
  *   Si el valor es un string, number u otro tipo primitivo, se tratan como
  *   nombres de campo ordinarios (ej. `{ and: 'val' }` → `AND==val`).

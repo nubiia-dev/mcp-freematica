@@ -338,12 +338,11 @@ export class FreematicaClient extends BaseClient {
   /**
    * Lista paginada de personas (empleados) con filtros FIQL opcionales.
    *
-   * Endpoint: GET /pers/v2/personal
+   * Endpoint: GET /pers/v1/personal
    *
-   * El filtro `activo` (boolean) se traduce a `VSSPER_ACTIVO==S` (true) o
-   * `VSSPER_ACTIVO==N` (false). Las búsquedas por `nombre` y `apellido` usan
-   * el operador de igualdad estándar FIQL (el servidor aplica LIKE internamente
-   * para estos campos).
+   * Todos los filtros son de coincidencia EXACTA: el endpoint no soporta
+   * búsqueda parcial (=lk= responde 400 y los wildcards % / * devuelven 0
+   * resultados — verificado contra el API real).
    *
    * @param opts - Opciones de paginación y filtrado.
    * @returns Lista paginada de personas.
@@ -360,9 +359,14 @@ export class FreematicaClient extends BaseClient {
     situacion?: string;
     departamento?: string;
     seccion?: string;
-    activo?: boolean;
   }): Promise<ListResult<Record<string, unknown>>> {
-    const url = new URL('placeholder://x/pers/v2/personal');
+    // v1, no v2: /pers/v2/personal es un endpoint de sincronización incremental
+    // que exige el parámetro nativo `fchmodificacion` (sin él → 400 "Parámetro
+    // [fchmodificacion] obligatorio") y devuelve un subconjunto del dataset.
+    // /pers/v1/personal devuelve el dataset completo con idReg. Verificado
+    // contra el API real (v1: 5482 personas; v2 con fchmodificacion=1900-01-01:
+    // 3984). El campo VSSPER_ACTIVO no existe en v1 (filtrarlo → 400).
+    const url = new URL('placeholder://x/pers/v1/personal');
     if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
 
@@ -376,12 +380,11 @@ export class FreematicaClient extends BaseClient {
     if (opts.situacion !== undefined) fiqlGroup['VSSPER_SIT'] = opts.situacion;
     if (opts.departamento !== undefined) fiqlGroup['VSSPER_DPTO'] = opts.departamento;
     if (opts.seccion !== undefined) fiqlGroup['VSSPER_SECCION'] = opts.seccion;
-    if (opts.activo !== undefined) fiqlGroup['VSSPER_ACTIVO'] = opts.activo ? 'S' : 'N';
 
     appendRquery(url, buildFiql(fiqlGroup as Parameters<typeof buildFiql>[0]));
 
     const qs = url.searchParams.toString();
-    const path = qs ? `/pers/v2/personal?${qs}` : '/pers/v2/personal';
+    const path = qs ? `/pers/v1/personal?${qs}` : '/pers/v1/personal';
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
     return { items: data.items, total: Number(data.total) };
   }
@@ -620,12 +623,11 @@ export class FreematicaClient extends BaseClient {
    * Construye la FIQL a partir de los filtros tipados y la añade como `rquery`
    * usando `appendRquery()` (patrón canónico del foundation TD-117).
    *
-   * El filtro `soloImpagados=true` genera `CARCL_FECIMPAG!=null`, donde el
-   * valor `'null'` es la convención centinela de Freemática para indicar "sin
-   * valor" en campos de fecha opcionales (assumption empírica: observado en
-   * datos reales de la API; documentado para futuras implementaciones).
-   * El operador `ne` se pasa vía `buildFiql` para garantizar escaping
-   * consistente con el resto de filtros.
+   * El filtro `soloImpagados=true` genera `CARCL_FECIMPAG=ge='1900-01-01'`
+   * (cualquier fecha de impago con valor). El FIQL de Freemática no tiene
+   * IS NOT NULL: `!=null` devuelve 0 resultados silenciosamente y `!='null'`
+   * responde 500 (verificado contra el API real; con este rango devuelve
+   * 382 impagados de 72054 documentos).
    *
    * El filtro `estado` mapea a los valores numéricos de `CARCL_SITCAR`
    * (1=pendiente, 2=cancelado, 3=derivado).
@@ -663,11 +665,12 @@ export class FreematicaClient extends BaseClient {
     if (opts.fechaVencimientoDesde !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
     if (opts.fechaVencimientoHasta !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
 
-    // soloImpagados: 'null' es el centinela de Freemática para fecha sin valor.
-    // Se pasa por buildFiql (op 'ne') igual que el resto de filtros para
-    // garantizar escaping uniforme y legibilidad del código.
+    // soloImpagados: el FIQL de Freemática no soporta IS NOT NULL (`!=null`
+    // devuelve 0 resultados y `!='null'` responde 500 — verificado contra el
+    // API real). El rango de fecha equivale: cualquier CARCL_FECIMPAG con
+    // valor es >= 1900-01-01.
     if (opts.soloImpagados === true) {
-      parts.push(buildFiql({ CARCL_FECIMPAG: { op: 'ne', value: 'null' } }));
+      parts.push(buildFiql({ CARCL_FECIMPAG: { op: 'ge', value: '1900-01-01' } }));
     }
 
     appendRquery(url, parts.join(';'));
@@ -814,13 +817,16 @@ export class FreematicaClient extends BaseClient {
   /**
    * Lista paginada de proveedores con filtros FIQL.
    *
-   * El filtro `activo` mapea a FECHA_BAJA:
-   * - `true`  → FECHA_BAJA es nula (proveedor activo). Se usa el operador `=is-null=true` si el
-   *             API lo soporta; como fallback se omite el filtro y se filtra post-process.
-   *             En Freemática el convenio estándar es: activo=true → `FECHA_BAJA==null` (FIQL `==null`).
-   * - `false` → FECHA_BAJA tiene valor (proveedor de baja).
+   * El filtro `activo` mapea a FECHA_BAJA. El API no soporta IS NULL en FIQL
+   * (`==null` devuelve 0 resultados y `=='null'` responde 500 — verificado
+   * contra el API real), así que:
+   * - `false` → `FECHA_BAJA=ge='1900-01-01'` (cualquier fecha de baja).
+   * - `true`  → sin filtro server-side; las bajas se descartan post-process
+   *             sobre la página recibida (FECHA_BAJA con valor). El `total`
+   *             devuelto es el del dataset sin filtrar.
    *
-   * El filtro `nombre` usa operador FIQL `=lk=` para búsqueda parcial (LIKE).
+   * El filtro `nombre` es coincidencia EXACTA: el operador `=lk=` responde
+   * 400 en este endpoint y los wildcards % devuelven 0 resultados.
    *
    * Endpoint: GET /pgrl/v2/proveedores
    */
@@ -851,15 +857,13 @@ export class FreematicaClient extends BaseClient {
     };
 
     if (opts.nombre !== undefined) {
-      filters['NOMBRE_PRO'] = { op: 'lk', value: opts.nombre };
+      filters['NOMBRE_PRO'] = opts.nombre;
     }
 
-    if (opts.activo === true) {
-      // Activos: FECHA_BAJA nula. FIQL: FECHA_BAJA==null
-      filters['FECHA_BAJA'] = 'null';
-    } else if (opts.activo === false) {
-      // Dados de baja: FECHA_BAJA tiene valor (not null). FIQL: FECHA_BAJA!=null
-      filters['FECHA_BAJA'] = { op: 'ne', value: 'null' };
+    if (opts.activo === false) {
+      // Dados de baja: cualquier FECHA_BAJA con valor. IS NOT NULL no existe
+      // en el FIQL de Freemática; el rango de fecha equivale.
+      filters['FECHA_BAJA'] = { op: 'ge', value: '1900-01-01' };
     }
 
     const fiql = buildFiql(filters as Parameters<typeof buildFiql>[0]);
@@ -867,7 +871,17 @@ export class FreematicaClient extends BaseClient {
 
     const path = url.pathname + (url.search ? url.search : '');
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
-    return { items: data.items, total: Number(data.total) };
+
+    // activo=true: descartar bajas de la página (no expresable en FIQL).
+    const items =
+      opts.activo === true
+        ? data.items.filter((p) => {
+            const fb = p['FECHA_BAJA'];
+            return fb === undefined || fb === null || String(fb).trim() === '';
+          })
+        : data.items;
+
+    return { items, total: Number(data.total) };
   }
 
   // ---------------------------------------------------------------------------
@@ -889,26 +903,31 @@ export class FreematicaClient extends BaseClient {
 
     const fiqlParts: string[] = [];
 
-    // Standard equality filters
+    // Standard equality filters. Nombres de columna verificados contra el API
+    // real: la vista de facturas-cabecera expone FVC_CODEMP, FVC_CODCLI,
+    // FVC_CODREPRES, FVC_SERIEFRA, FVC_NUMFRA, FVC_FPAGO, FVC_FCHFAC y
+    // FVC_TRASP_CONTAB ('1'/'0'). Los nombres anteriores (FVC_EMP, FVC_CODAUX,
+    // FVC_CODREP, FVC_SERFAC, FVC_NUMFAC, FVC_CODFPAG, FVC_FECFAC,
+    // FVC_TRSCONT) no existen y provocaban 500 en cada consulta con filtro.
     const eqGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
-    if (opts.empresa !== undefined) eqGroup['FVC_EMP'] = opts.empresa;
-    if (opts.codCliente !== undefined) eqGroup['FVC_CODAUX'] = opts.codCliente;
-    if (opts.representante !== undefined) eqGroup['FVC_CODREP'] = opts.representante;
-    if (opts.serie !== undefined) eqGroup['FVC_SERFAC'] = opts.serie;
-    if (opts.numFactura !== undefined) eqGroup['FVC_NUMFAC'] = opts.numFactura;
-    if (opts.formaPago !== undefined) eqGroup['FVC_CODFPAG'] = opts.formaPago;
+    if (opts.empresa !== undefined) eqGroup['FVC_CODEMP'] = opts.empresa;
+    if (opts.codCliente !== undefined) eqGroup['FVC_CODCLI'] = opts.codCliente;
+    if (opts.representante !== undefined) eqGroup['FVC_CODREPRES'] = opts.representante;
+    if (opts.serie !== undefined) eqGroup['FVC_SERIEFRA'] = opts.serie;
+    if (opts.numFactura !== undefined) eqGroup['FVC_NUMFRA'] = opts.numFactura;
+    if (opts.formaPago !== undefined) eqGroup['FVC_FPAGO'] = opts.formaPago;
     if (opts.delegacion !== undefined) eqGroup['FVC_DELEG'] = opts.delegacion;
 
     const eqFiql = buildFiql(eqGroup);
     if (eqFiql) fiqlParts.push(eqFiql);
 
     // Date range filters
-    if (opts.fechaFacturaDesde !== undefined) fiqlParts.push(buildFiql({ FVC_FECFAC: { op: 'ge', value: opts.fechaFacturaDesde } }));
-    if (opts.fechaFacturaHasta !== undefined) fiqlParts.push(buildFiql({ FVC_FECFAC: { op: 'le', value: opts.fechaFacturaHasta } }));
+    if (opts.fechaFacturaDesde !== undefined) fiqlParts.push(buildFiql({ FVC_FCHFAC: { op: 'ge', value: opts.fechaFacturaDesde } }));
+    if (opts.fechaFacturaHasta !== undefined) fiqlParts.push(buildFiql({ FVC_FCHFAC: { op: 'le', value: opts.fechaFacturaHasta } }));
 
-    // Boolean: traspasadoContabilidad
+    // Boolean: traspasadoContabilidad — la columna real usa '1'/'0'
     if (opts.traspasadoContabilidad !== undefined) {
-      fiqlParts.push(buildFiql({ FVC_TRSCONT: opts.traspasadoContabilidad ? 'S' : 'N' }));
+      fiqlParts.push(buildFiql({ FVC_TRASP_CONTAB: opts.traspasadoContabilidad ? '1' : '0' }));
     }
 
     appendRquery(url, fiqlParts.join(';'));
@@ -979,7 +998,11 @@ export class FreematicaClient extends BaseClient {
    * Lista paginada de localizaciones de servicio de clientes.
    *
    * Filtros soportados: codCliente (COD_CLI), grupoCliente (GRUPO_CLI), codPais (COD_PAIS),
-   * codProvincia (COD_PROVINCIA), representante (COD_REPRES), activo (FECHA_BAJA nulo/no nulo).
+   * codProvincia (COD_PROVINCIA), representante (COD_REPRES).
+   *
+   * La vista NO tiene columna FECHA_BAJA (filtrar por ella responde 400
+   * "Error en rquery" — verificado contra el API real), así que no existe
+   * filtro activo/baja en este recurso.
    *
    * Endpoint: GET /pgrl/v2/localizaciones-servicio-clientes
    */
@@ -990,7 +1013,6 @@ export class FreematicaClient extends BaseClient {
       codPais?: string;
       codProvincia?: string;
       representante?: string;
-      activo?: boolean;
     } = {},
   ): Promise<ListResult<Record<string, unknown>>> {
     const fiqlFilters: Record<string, unknown> = {
@@ -1000,12 +1022,6 @@ export class FreematicaClient extends BaseClient {
       COD_PROVINCIA: opts.codProvincia,
       COD_REPRES: opts.representante,
     };
-
-    if (opts.activo === true) {
-      fiqlFilters['FECHA_BAJA'] = 'null';
-    } else if (opts.activo === false) {
-      fiqlFilters['FECHA_BAJA'] = { op: 'ne', value: 'null' };
-    }
 
     return this.listResourceWithFiql(
       '/pgrl/v2/localizaciones-servicio-clientes',
@@ -1042,10 +1058,12 @@ export class FreematicaClient extends BaseClient {
     if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
 
+    // Nombres de columna verificados contra el API real (las líneas exponen
+    // FVL_CODARTIC, FVL_COD_FAMILIA, FVL_COD_SUBFAM y FVL_DELEG).
     const fiqlGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
-    if (opts.codArticulo !== undefined) fiqlGroup['FVL_CODART'] = opts.codArticulo;
-    if (opts.codFamilia !== undefined) fiqlGroup['FVL_CODFAM'] = opts.codFamilia;
-    if (opts.codSubfamilia !== undefined) fiqlGroup['FVL_CODSFAM'] = opts.codSubfamilia;
+    if (opts.codArticulo !== undefined) fiqlGroup['FVL_CODARTIC'] = opts.codArticulo;
+    if (opts.codFamilia !== undefined) fiqlGroup['FVL_COD_FAMILIA'] = opts.codFamilia;
+    if (opts.codSubfamilia !== undefined) fiqlGroup['FVL_COD_SUBFAM'] = opts.codSubfamilia;
     if (opts.delegacion !== undefined) fiqlGroup['FVL_DELEG'] = opts.delegacion;
 
     appendRquery(url, buildFiql(fiqlGroup));
@@ -1069,8 +1087,9 @@ export class FreematicaClient extends BaseClient {
     if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
 
+    // Columna real: FVI_TIPO_IVA (verificado contra el API; FVI_TIPIVA no existe).
     const fiqlGroup: Record<string, import('./fiql-builder.js').FiqlValue | undefined> = {};
-    if (opts.tipoIva !== undefined) fiqlGroup['FVI_TIPIVA'] = opts.tipoIva;
+    if (opts.tipoIva !== undefined) fiqlGroup['FVI_TIPO_IVA'] = opts.tipoIva;
 
     appendRquery(url, buildFiql(fiqlGroup));
 
@@ -1093,10 +1112,12 @@ export class FreematicaClient extends BaseClient {
     if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
 
+    // Columnas reales: FVV_MODOPAGO y FVV_FCH_VTO (verificado contra el API;
+    // FVV_CODMPAG y FVV_FECVCTO no existen).
     const fiqlParts: string[] = [];
-    if (opts.modoPago !== undefined) fiqlParts.push(buildFiql({ FVV_CODMPAG: opts.modoPago }));
-    if (opts.fechaVencimientoDesde !== undefined) fiqlParts.push(buildFiql({ FVV_FECVCTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
-    if (opts.fechaVencimientoHasta !== undefined) fiqlParts.push(buildFiql({ FVV_FECVCTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
+    if (opts.modoPago !== undefined) fiqlParts.push(buildFiql({ FVV_MODOPAGO: opts.modoPago }));
+    if (opts.fechaVencimientoDesde !== undefined) fiqlParts.push(buildFiql({ FVV_FCH_VTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
+    if (opts.fechaVencimientoHasta !== undefined) fiqlParts.push(buildFiql({ FVV_FCH_VTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
 
     appendRquery(url, fiqlParts.join(';'));
 

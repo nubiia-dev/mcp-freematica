@@ -115,8 +115,8 @@ describe('registerFacturasVentasTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('FVC_CODAUX==0001000') &&
-          rq.includes('FVC_SERFAC==A')
+          rq.includes("FVC_CODCLI=='0001000'") &&
+          rq.includes("FVC_SERIEFRA=='A'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -143,8 +143,8 @@ describe('registerFacturasVentasTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('FVC_FECFAC=ge=2026-01-01') &&
-          rq.includes('FVC_FECFAC=le=2026-06-30')
+          rq.includes("FVC_FCHFAC=ge='2026-01-01'") &&
+          rq.includes("FVC_FCHFAC=le='2026-06-30'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -169,7 +169,7 @@ describe('registerFacturasVentasTools', () => {
       .get('/pven/v1/facturas-cabecera')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVC_TRSCONT==S');
+        return typeof rq === 'string' && rq.includes("FVC_TRASP_CONTAB=='1'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -192,7 +192,7 @@ describe('registerFacturasVentasTools', () => {
       .get('/pven/v1/facturas-cabecera')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVC_TRSCONT==N');
+        return typeof rq === 'string' && rq.includes("FVC_TRASP_CONTAB=='0'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -342,7 +342,7 @@ describe('registerFacturasVentasTools', () => {
       .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/lineas`)
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVL_CODART==ART001');
+        return typeof rq === 'string' && rq.includes("FVL_CODARTIC=='ART001'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -431,7 +431,7 @@ describe('registerFacturasVentasTools', () => {
       .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/iva`)
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVI_TIPIVA==21');
+        return typeof rq === 'string' && rq.includes("FVI_TIPO_IVA=='21'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -522,9 +522,9 @@ describe('registerFacturasVentasTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('FVV_CODMPAG==TRF') &&
-          rq.includes('FVV_FECVCTO=ge=2026-07-01') &&
-          rq.includes('FVV_FECVCTO=le=2026-12-31')
+          rq.includes("FVV_MODOPAGO=='TRF'") &&
+          rq.includes("FVV_FCH_VTO=ge='2026-07-01'") &&
+          rq.includes("FVV_FCH_VTO=le='2026-12-31'")
         );
       })
       .reply(200, listEnv(fake, 1));
