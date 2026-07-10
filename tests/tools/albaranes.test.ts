@@ -320,7 +320,7 @@ describe('registerAlbaranesTools', () => {
       .get('/pven/v2/albaranes-facturas')
       .query((q) => {
         const rQuery = String(q['rquery'] ?? '');
-        return rQuery.includes('FVCA_CODEMP==1');
+        return rQuery.includes("FVCA_CODEMP=='1'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -339,7 +339,7 @@ describe('registerAlbaranesTools', () => {
       .get('/pven/v2/albaranes-facturas')
       .query((q) => {
         const rQuery = String(q['rquery'] ?? '');
-        return rQuery.includes('FVCA_SERIEFRA==A') && rQuery.includes('FVCA_NUMFRA==2024001');
+        return rQuery.includes("FVCA_SERIEFRA=='A'") && rQuery.includes("FVCA_NUMFRA=='2024001'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -360,7 +360,7 @@ describe('registerAlbaranesTools', () => {
       .get('/pven/v2/albaranes-facturas')
       .query((q) => {
         const rQuery = String(q['rquery'] ?? '');
-        return rQuery.includes('FVCA_CODCLI==CLI001');
+        return rQuery.includes("FVCA_CODCLI=='CLI001'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -510,7 +510,7 @@ describe('registerAlbaranesTools', () => {
       .get('/pvss/v1/facturacion-resultados')
       .query((q) => {
         const rquery = String(q['rquery'] ?? '');
-        return rquery.includes('FACT_EMP==1');
+        return rquery.includes("FACT_EMP=='1'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -530,10 +530,10 @@ describe('registerAlbaranesTools', () => {
       .query((q) => {
         const rquery = String(q['rquery'] ?? '');
         return (
-          rquery.includes('FACT_EMP==1') &&
-          rquery.includes('FACT_DELEG==MAD') &&
-          rquery.includes('FACT_CAL==2024') &&
-          rquery.includes('FACT_MES==3')
+          rquery.includes("FACT_EMP=='1'") &&
+          rquery.includes("FACT_DELEG=='MAD'") &&
+          rquery.includes("FACT_CAL=='2024'") &&
+          rquery.includes("FACT_MES=='3'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -560,10 +560,10 @@ describe('registerAlbaranesTools', () => {
       .query((q) => {
         const rquery = String(q['rquery'] ?? '');
         return (
-          rquery.includes('FACT_CTRT==CT001') &&
-          rquery.includes('FACT_SERV==SV01') &&
-          rquery.includes('FACT_TIPFAC==M') &&
-          rquery.includes('FACT_TRASP==S')
+          rquery.includes("FACT_CTRT=='CT001'") &&
+          rquery.includes("FACT_SERV=='SV01'") &&
+          rquery.includes("FACT_TIPFAC=='M'") &&
+          rquery.includes("FACT_TRASP=='S'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -606,7 +606,7 @@ describe('registerAlbaranesTools', () => {
       .get('/pvss/v1/facturacion-resultados')
       .query((q) => {
         const rquery = String(q['rquery'] ?? '');
-        return rquery.includes('FACT_COD_CLI==CLI001');
+        return rquery.includes("FACT_COD_CLI=='CLI001'");
       })
       .reply(200, listEnv(fake, 1));
 

@@ -22,12 +22,14 @@ import { PaginationSchema } from './pagination.js';
  *   - recibido=true   → `ALCC_PED_RECIB!=''` (campo tiene valor → recibido)
  *   - pendiente       → ambos campos vacíos
  *
- * Esta convención NO ha sido verificada contra la API real de Freemática.
- * Si en pruebas funcionales el filtro no actúa correctamente, puede que el
- * centinela sea el literal `null` (como en CARCL_FECIMPAG), un valor 'S'/'N'
- * o un valor numérico '1'/'0'. Documentado para futura verificación empírica.
- *
- * TODO(TD-152): verificar contra API real cuando esté disponible.
+ * Verificación parcial contra la API real (v0.9.0): estado=bloqueado devuelve
+ * 7059/33545 pedidos (subconjunto real) y estado=pendiente devuelve 0 en esta
+ * organización — la convención `!=''`/`==''` funciona sobre columnas de texto.
+ * AVISO: NO usar el literal `null` como centinela alternativo — está
+ * desacreditado empíricamente en v0.9.0 (`==null` devuelve 0 resultados
+ * silenciosamente y `=='null'` responde 500; ver CARCL_FECIMPAG y FECHA_BAJA
+ * de proveedores, que migraron a rangos de fecha). Sobre columnas de FECHA la
+ * comparación con `''` tampoco funciona (devuelve 0).
  */
 export const EstadoPedidoEnum = z.enum(['pendiente', 'bloqueado', 'recibido']);
 

@@ -56,7 +56,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA: '430', COD_PLAN: '0001' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas')
-        .query({ rquery: 'COD_PLAN==0001' })
+        .query({ rquery: "COD_PLAN=='0001'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasContables({ codPlan: '0001' });
@@ -68,7 +68,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA: '430' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas')
-        .query({ rquery: 'CTA_ACTIVA==1' })
+        .query({ rquery: "CTA_ACTIVA=='1'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasContables({ activa: true });
@@ -80,7 +80,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA: '430' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas')
-        .query({ rquery: 'CTA_ACTIVA==0' })
+        .query({ rquery: "CTA_ACTIVA=='0'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasContables({ activa: false });
@@ -92,7 +92,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA: '430', COD_GRUPO_CTA: 'G1' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas')
-        .query({ rquery: 'COD_GRUPO_CTA==G1' })
+        .query({ rquery: "COD_GRUPO_CTA=='G1'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasContables({ grupoCuenta: 'G1' });
@@ -104,7 +104,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA: '4300' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas')
-        .query({ rquery: 'COD_CTA=ge=43;COD_CTA=lt=44' })
+        .query({ rquery: "COD_CTA=ge='43';COD_CTA=lt='44'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasContables({ prefijoCuenta: '43' });
@@ -116,7 +116,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA: '430' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas')
-        .query({ rquery: 'COD_CTA=ge=4;COD_CTA=lt=5' })
+        .query({ rquery: "COD_CTA=ge='4';COD_CTA=lt='5'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasContables({ prefijoCuenta: '4' });
@@ -128,7 +128,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA: '430' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas')
-        .query({ rquery: 'COD_PLAN==0001;CTA_ACTIVA==1;COD_GRUPO_CTA==G1' })
+        .query({ rquery: "COD_PLAN=='0001';CTA_ACTIVA=='1';COD_GRUPO_CTA=='G1'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasContables({
@@ -177,7 +177,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA_ANL: 'ANL001', AREA_ANL: 'VEN' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas-analiticas')
-        .query({ rquery: 'AREA_ANL==VEN' })
+        .query({ rquery: "AREA_ANL=='VEN'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasAnaliticas({ area: 'VEN' });
@@ -189,7 +189,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA_ANL: 'ANL002', DELEG: 'SEV' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas-analiticas')
-        .query({ rquery: 'DELEG==SEV' })
+        .query({ rquery: "DELEG=='SEV'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasAnaliticas({ delegacion: 'SEV' });
@@ -201,7 +201,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA_ANL: 'C430001' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas-analiticas')
-        .query({ rquery: 'COD_CTA_ANL=ge=C43;COD_CTA_ANL=lt=C44' })
+        .query({ rquery: "COD_CTA_ANL=ge='C43';COD_CTA_ANL=lt='C44'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasAnaliticas({ prefijoCuenta: 'C43' });
@@ -213,7 +213,7 @@ describe('FreematicaClient — contabilidad', () => {
       const fake = [{ COD_CTA_ANL: 'ANL001' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas-analiticas')
-        .query({ rquery: 'CTA_ACTIVA_ANL==1' })
+        .query({ rquery: "CTA_ACTIVA_ANL=='1'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.listCuentasAnaliticas({ activa: true });
@@ -226,7 +226,7 @@ describe('FreematicaClient — contabilidad', () => {
       const scope = nock(BASE_URL)
         .get('/pcon/v2/cuentas-analiticas')
         .query({
-          rquery: 'COD_PLAN==0001;CTA_ACTIVA_ANL==1;COD_GRUPO_ANL==GA1;AREA_ANL==COM;DELEG==MAD',
+          rquery: "COD_PLAN=='0001';CTA_ACTIVA_ANL=='1';COD_GRUPO_ANL=='GA1';AREA_ANL=='COM';DELEG=='MAD'",
         })
         .reply(200, listEnv(fake, 1));
 
@@ -281,14 +281,14 @@ describe('FreematicaClient — contabilidad', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('filtra por rango de fechas — FIQL ge + le sobre ASI_FCHASI', async () => {
+    it('filtra por fechaDesde — FIQL =ge= sobre ASI_FCHASI', async () => {
       const fake = [{ ASI_NUMERO: '3' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/export-asientos')
         .query({
           empresa: '0001',
           cal: 'GRAL',
-          rquery: 'ASI_FCHASI=ge=2024-01-01;ASI_FCHASI=le=2024-01-31',
+          rquery: "ASI_FCHASI=ge='2024-01-01'",
         })
         .reply(200, listEnv(fake, 1));
 
@@ -296,17 +296,47 @@ describe('FreematicaClient — contabilidad', () => {
         empresa: '0001',
         cal: 'GRAL',
         fechaDesde: '2024-01-01',
+      });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('filtra por fechaHasta — =lt= del día siguiente (=le= responde 400 en el API)', async () => {
+      const fake = [{ ASI_NUMERO: '3' }];
+      const scope = nock(BASE_URL)
+        .get('/pcon/v2/export-asientos')
+        .query({
+          empresa: '0001',
+          cal: 'GRAL',
+          rquery: "ASI_FCHASI=lt='2024-02-01'",
+        })
+        .reply(200, listEnv(fake, 1));
+
+      const result = await client.exportAsientos({
+        empresa: '0001',
+        cal: 'GRAL',
         fechaHasta: '2024-01-31',
       });
       expect(result.items).toEqual(fake);
       expect(scope.isDone()).toBe(true);
     });
 
+    it('rechaza fechaDesde+fechaHasta simultáneos (el API devuelve 0 filas)', async () => {
+      await expect(
+        client.exportAsientos({
+          empresa: '0001',
+          cal: 'GRAL',
+          fechaDesde: '2024-01-01',
+          fechaHasta: '2024-01-31',
+        }),
+      ).rejects.toThrow(/no soporta combinar/);
+    });
+
     it('filtra por diario — FIQL ASI_DIARIO==VEN', async () => {
       const fake = [{ ASI_DIARIO: 'VEN' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/export-asientos')
-        .query({ empresa: '0001', cal: 'GRAL', rquery: 'ASI_DIARIO==VEN' })
+        .query({ empresa: '0001', cal: 'GRAL', rquery: "ASI_DIARIO=='VEN'" })
         .reply(200, listEnv(fake, 1));
 
       const result = await client.exportAsientos({

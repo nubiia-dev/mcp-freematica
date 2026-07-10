@@ -270,16 +270,16 @@ describe('registerPrlTools', () => {
       expect(parsed.page).toBe(1);
     });
 
-    it('sends empresa and delegacion as FIQL rquery', async () => {
+    it('nunca envía rquery: el API lo ignora en este endpoint', async () => {
       const fake = [{ PERVS_EMP: '1', PERVS_DELEG: 'MAD' }];
       nock(BASE_URL)
         .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: 'PERVS_EMP==1;PERVS_DELEG==MAD' })
+        .query((q) => q['rquery'] === undefined && q['page'] === '1')
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_VS_TOOL);
-      const result = (await handler({ page: 1, items: 20, empresa: '1', delegacion: 'MAD' })) as {
+      const result = (await handler({ page: 1, items: 20 })) as {
         content: { text: string }[];
         isError?: boolean;
       };
@@ -324,38 +324,6 @@ describe('registerPrlTools', () => {
       expect(parsed.error).toBe('server_error');
     });
 
-    it('pasa filtro fechaCitaDesde/Hasta al client y lo traduce a FIQL ge+le', async () => {
-      const fake = [{ PERVS_FCH_CITA: '2025-06-15', idReg: 'xyz' }];
-      nock(BASE_URL)
-        .get('/pprl/v1/vigilancia-salud')
-        .query({
-          items: '20',
-          page: '1',
-          rquery: 'PERVS_FCH_CITA=ge=2025-01-01;PERVS_FCH_CITA=le=2025-12-31',
-        })
-        .reply(200, listEnv(fake, 1));
-
-      const server = buildServer();
-      const handler = getHandler(server, LIST_VS_TOOL);
-      const result = (await handler({
-        page: 1,
-        items: 20,
-        fechaCitaDesde: '2025-01-01',
-        fechaCitaHasta: '2025-12-31',
-      })) as { content: { text: string }[]; isError?: boolean };
-
-      expect(result.isError).toBeUndefined();
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.items).toEqual(fake);
-      expect(parsed.total).toBe(1);
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // freematica_get_vigilancia_salud
-  // -------------------------------------------------------------------------
-
-  describe('freematica_get_vigilancia_salud', () => {
     it('returns the VS record for a valid idReg', async () => {
       const fake = { PERVS_PERSO: 'P001', PERVS_RESULTADO: 'APTO', idReg: 'abc123' };
       nock(BASE_URL).get('/pprl/v1/vigilancia-salud/abc123').reply(200, detailEnv(fake));

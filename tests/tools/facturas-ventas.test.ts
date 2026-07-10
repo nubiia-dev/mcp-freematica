@@ -115,8 +115,8 @@ describe('registerFacturasVentasTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('FVC_CODAUX==0001000') &&
-          rq.includes('FVC_SERFAC==A')
+          rq.includes("FVC_CODCLI=='0001000'") &&
+          rq.includes("FVC_SERIEFRA=='A'")
         );
       })
       .reply(200, listEnv(fake, 1));
@@ -135,20 +135,43 @@ describe('registerFacturasVentasTools', () => {
     expect(parsed.items).toEqual(fake);
   });
 
-  it('list_facturas_cabecera applies fecha range FIQL filters', async () => {
-    const fake = [{ FVC_NUMFAC: '00001', FVC_FECFAC: '2026-03-01' }];
+  it('list_facturas_cabecera fechaFacturaDesde usa =ge=', async () => {
+    const fake = [{ FVC_NUMFRA: '00001', FVC_FCHFAC: '2026-03-01' }];
     nock(BASE_URL)
       .get('/pven/v1/facturas-cabecera')
-      .query((q) => {
-        const rq = q['rquery'] as string | undefined;
-        return (
-          typeof rq === 'string' &&
-          rq.includes('FVC_FECFAC=ge=2026-01-01') &&
-          rq.includes('FVC_FECFAC=le=2026-06-30')
-        );
-      })
+      .query((q) => String(q['rquery'] ?? '').includes("FVC_FCHFAC=ge='2026-01-01'"))
       .reply(200, listEnv(fake, 1));
 
+    const server = buildServer();
+    const handler = getHandler(server, LIST_CABECERA_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaFacturaDesde: '2026-01-01',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+  });
+
+  it('list_facturas_cabecera fechaFacturaHasta usa =lt= del día siguiente (=le= responde 500)', async () => {
+    const fake = [{ FVC_NUMFRA: '00001', FVC_FCHFAC: '2026-03-01' }];
+    nock(BASE_URL)
+      .get('/pven/v1/facturas-cabecera')
+      .query((q) => String(q['rquery'] ?? '').includes("FVC_FCHFAC=lt='2026-07-01'"))
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, LIST_CABECERA_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaFacturaHasta: '2026-06-30',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+  });
+
+  it('list_facturas_cabecera rechaza desde+hasta simultáneos (el API devuelve 0 filas)', async () => {
     const server = buildServer();
     const handler = getHandler(server, LIST_CABECERA_TOOL);
     const result = (await handler({
@@ -158,9 +181,8 @@ describe('registerFacturasVentasTools', () => {
       fechaFacturaHasta: '2026-06-30',
     })) as { content: { type: string; text: string }[]; isError?: boolean };
 
-    expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.items).toEqual(fake);
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('no soporta combinar');
   });
 
   it('list_facturas_cabecera applies traspasadoContabilidad=true FIQL filter', async () => {
@@ -169,7 +191,7 @@ describe('registerFacturasVentasTools', () => {
       .get('/pven/v1/facturas-cabecera')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVC_TRSCONT==S');
+        return typeof rq === 'string' && rq.includes("FVC_TRASP_CONTAB=='1'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -192,7 +214,7 @@ describe('registerFacturasVentasTools', () => {
       .get('/pven/v1/facturas-cabecera')
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVC_TRSCONT==N');
+        return typeof rq === 'string' && rq.includes("FVC_TRASP_CONTAB=='0'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -342,7 +364,7 @@ describe('registerFacturasVentasTools', () => {
       .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/lineas`)
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVL_CODART==ART001');
+        return typeof rq === 'string' && rq.includes("FVL_CODARTIC=='ART001'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -431,7 +453,7 @@ describe('registerFacturasVentasTools', () => {
       .get(`/pven/v1/facturas-cabecera/${IDREG_ENC}/iva`)
       .query((q) => {
         const rq = q['rquery'] as string | undefined;
-        return typeof rq === 'string' && rq.includes('FVI_TIPIVA==21');
+        return typeof rq === 'string' && rq.includes("FVI_TIPO_IVA=='21'");
       })
       .reply(200, listEnv(fake, 1));
 
@@ -522,9 +544,9 @@ describe('registerFacturasVentasTools', () => {
         const rq = q['rquery'] as string | undefined;
         return (
           typeof rq === 'string' &&
-          rq.includes('FVV_CODMPAG==TRF') &&
-          rq.includes('FVV_FECVCTO=ge=2026-07-01') &&
-          rq.includes('FVV_FECVCTO=le=2026-12-31')
+          rq.includes("FVV_MODOPAGO=='TRF'") &&
+          rq.includes("FVV_FCH_VTO=ge='2026-07-01'") &&
+          rq.includes("FVV_FCH_VTO=le='2026-12-31'")
         );
       })
       .reply(200, listEnv(fake, 1));

@@ -39,10 +39,10 @@ const LIST_VS_DESCRIPTION = [
   '',
   'Endpoint: GET /pprl/v1/vigilancia-salud',
   '',
-  'Permite filtrar por persona (idRegPersona nativo), empresa (PERVS_EMP),',
-  'delegación (PERVS_DELEG), código de persona (PERVS_PERSO), tipo de revisión',
-  '(PERVS_TIPO_REVISION), resultado (PERVS_RESULTADO) y rango de fecha de cita',
-  '(PERVS_FCH_CITA). Los filtros FIQL se combinan con AND.',
+  'ÚNICO filtro soportado: `idRegPersona` (el campo `idReg` de la persona en',
+  'freematica_list_personal). El API ignora cualquier otro filtro en este',
+  'endpoint, así que para acotar por empresa, tipo de revisión o fechas hay',
+  'que filtrar sobre los resultados.',
   '',
   'Campos principales: PERVS_EMP, PERVS_DELEG, PERVS_PERSO, PERVS_TIPO_REVISION,',
   'PERVS_RESULTADO, PERVS_FCH_CITA, idReg.',
@@ -122,7 +122,14 @@ export const FichaPrevClienteRefinedSchema = z
     },
   );
 
-/** Schema para freematica_list_vigilancia_salud. */
+/**
+ * Schema para freematica_list_vigilancia_salud.
+ *
+ * Solo paginación + idRegPersona: el API ignora silenciosamente el parámetro
+ * `rquery` en este endpoint (verificado contra producción: cualquier FIQL,
+ * incluso con campos inexistentes, devuelve 200 con el dataset completo), así
+ * que exponer filtros FIQL aquí sería engañoso.
+ */
 const ListVigilanciaSaludShape = {
   ...PaginationSchema,
   idRegPersona: z
@@ -130,49 +137,9 @@ const ListVigilanciaSaludShape = {
     .min(1)
     .optional()
     .describe(
-      'idReg opaco de la persona (query param nativo del API, no FIQL). Filtra registros de una persona concreta.',
+      'idReg opaco de la persona (campo "idReg" en los items de freematica_list_personal). ' +
+        'Único filtro que soporta el API en este endpoint.',
     ),
-  empresa: z
-    .string()
-    .min(1)
-    .optional()
-    .describe('Código de empresa (campo PERVS_EMP en Freemática).'),
-  delegacion: z
-    .string()
-    .min(1)
-    .optional()
-    .describe('Código de delegación (campo PERVS_DELEG en Freemática).'),
-  codPersona: z
-    .string()
-    .min(1)
-    .optional()
-    .describe('Código natural de la persona (campo PERVS_PERSO en Freemática).'),
-  tipoRevision: z
-    .string()
-    .min(1)
-    .optional()
-    .describe('Tipo de revisión médica (campo PERVS_TIPO_REVISION en Freemática).'),
-  resultado: z
-    .string()
-    .min(1)
-    .optional()
-    .describe('Resultado de la revisión (campo PERVS_RESULTADO en Freemática).'),
-  fechaCitaDesde: z
-    .string()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/,
-      'Debe ser una fecha ISO 8601 (YYYY-MM-DD)',
-    )
-    .optional()
-    .describe('Fecha inicio del rango de cita (campo PERVS_FCH_CITA, ISO 8601, inclusive).'),
-  fechaCitaHasta: z
-    .string()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/,
-      'Debe ser una fecha ISO 8601 (YYYY-MM-DD)',
-    )
-    .optional()
-    .describe('Fecha fin del rango de cita (campo PERVS_FCH_CITA, ISO 8601, inclusive).'),
 };
 
 // ---------------------------------------------------------------------------
@@ -236,30 +203,12 @@ export function registerPrlTools(server: McpServer, client: FreematicaClient): v
     LIST_VS_DESCRIPTION,
     ListVigilanciaSaludShape,
     { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
-    async ({
-      page,
-      items,
-      idRegPersona,
-      empresa,
-      delegacion,
-      codPersona,
-      tipoRevision,
-      resultado,
-      fechaCitaDesde,
-      fechaCitaHasta,
-    }): Promise<CallToolResult> => {
+    async ({ page, items, idRegPersona }): Promise<CallToolResult> => {
       try {
         const result = await client.listVigilanciaSalud({
           page,
           items,
           idRegPersona,
-          empresa,
-          delegacion,
-          codPersona,
-          tipoRevision,
-          resultado,
-          fechaCitaDesde,
-          fechaCitaHasta,
         });
         return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
       } catch (err) {

@@ -96,7 +96,7 @@ describe('registerLocalizacionesTools', () => {
       const fake = [{ COD_CLI: 'C001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-cobro-clientes')
-        .query({ items: '20', page: '1', rquery: 'COD_CLI==C001' })
+        .query({ items: '20', page: '1', rquery: "COD_CLI=='C001'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -117,7 +117,7 @@ describe('registerLocalizacionesTools', () => {
         .get('/pgrl/v2/localizaciones-cobro-clientes')
         .query(q => {
           const rquery = String(q.rquery ?? '');
-          return rquery.includes('GRUPO_CLI==G01') && rquery.includes('COD_FORMA_COBRO==TRANS');
+          return rquery.includes("GRUPO_CLI=='G01'") && rquery.includes("COD_FORMA_COBRO=='TRANS'");
         })
         .reply(200, listEnv(fake, 1));
 
@@ -206,7 +206,7 @@ describe('registerLocalizacionesTools', () => {
       const fake = [{ COD_PRO: 'P001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-pago-proveedores')
-        .query({ items: '20', page: '1', rquery: 'COD_PRO==P001' })
+        .query({ items: '20', page: '1', rquery: "COD_PRO=='P001'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -227,7 +227,7 @@ describe('registerLocalizacionesTools', () => {
         .get('/pgrl/v2/localizaciones-pago-proveedores')
         .query(q => {
           const rquery = String(q.rquery ?? '');
-          return rquery.includes('COD_GRUPO_PRO==G01') && rquery.includes('COD_FORMA_PAGO==REM');
+          return rquery.includes("COD_GRUPO_PRO=='G01'") && rquery.includes("COD_FORMA_PAGO=='REM'");
         })
         .reply(200, listEnv(fake, 1));
 
@@ -316,7 +316,7 @@ describe('registerLocalizacionesTools', () => {
       const fake = [{ COD_CLI: 'C001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-servicio-clientes')
-        .query({ items: '20', page: '1', rquery: 'COD_CLI==C001' })
+        .query({ items: '20', page: '1', rquery: "COD_CLI=='C001'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -337,7 +337,7 @@ describe('registerLocalizacionesTools', () => {
         .get('/pgrl/v2/localizaciones-servicio-clientes')
         .query(q => {
           const rquery = String(q.rquery ?? '');
-          return rquery.includes('COD_PAIS==ES') && rquery.includes('COD_PROVINCIA==28');
+          return rquery.includes("COD_PAIS=='ES'") && rquery.includes("COD_PROVINCIA=='28'");
         })
         .reply(200, listEnv(fake, 1));
 
@@ -357,7 +357,7 @@ describe('registerLocalizacionesTools', () => {
       const fake = [{ COD_REPRES: 'R01' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-servicio-clientes')
-        .query(q => String(q.rquery ?? '').includes('COD_REPRES==R01'))
+        .query(q => String(q.rquery ?? '').includes("COD_REPRES=='R01'"))
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
@@ -370,33 +370,16 @@ describe('registerLocalizacionesTools', () => {
       expect(result.isError).toBeUndefined();
     });
 
-    it('passes FECHA_BAJA==null for activo=true (localizaciones activas)', async () => {
-      const fake = [{ COD_CLI: 'C001', FECHA_BAJA: null }];
+    it('no expone filtro activo: la vista no tiene columna FECHA_BAJA (400 en el API real)', async () => {
+      const fake = [{ COD_CLI: 'C001' }];
       nock(BASE_URL)
         .get('/pgrl/v2/localizaciones-servicio-clientes')
-        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA==null'))
-        .reply(200, listEnv(fake, 5));
+        .query(q => !String(q.rquery ?? '').includes('FECHA_BAJA'))
+        .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
       const handler = getHandler(server, SERVICIO_TOOL);
-      const result = (await handler({ page: 1, items: 20, activo: true })) as {
-        content: { type: string; text: string }[];
-        isError?: boolean;
-      };
-
-      expect(result.isError).toBeUndefined();
-    });
-
-    it('passes FECHA_BAJA!=null for activo=false (localizaciones de baja)', async () => {
-      const fake = [{ COD_CLI: 'C001', FECHA_BAJA: '2023-06-01' }];
-      nock(BASE_URL)
-        .get('/pgrl/v2/localizaciones-servicio-clientes')
-        .query(q => String(q.rquery ?? '').includes('FECHA_BAJA!=null'))
-        .reply(200, listEnv(fake, 2));
-
-      const server = buildServer();
-      const handler = getHandler(server, SERVICIO_TOOL);
-      const result = (await handler({ page: 1, items: 20, activo: false })) as {
+      const result = (await handler({ page: 1, items: 20 })) as {
         content: { type: string; text: string }[];
         isError?: boolean;
       };

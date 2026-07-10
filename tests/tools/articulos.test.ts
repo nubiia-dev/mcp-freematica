@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import nock from 'nock';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { FreematicaClient } from '../../src/clients/freematica-client.js';
-import { registerPersonalTools } from '../../src/tools/personal.js';
+import { registerArticulosTools } from '../../src/tools/articulos.js';
 
 const BASE_URL = 'https://api.example.com/restsat/api';
 const AUTH_HEADERS = {
@@ -13,8 +13,9 @@ const AUTH_HEADERS = {
   'x-auth-session': 'ses',
 };
 
-const LIST_TOOL = 'freematica_list_personal';
-const GET_TOOL = 'freematica_get_persona';
+const LIST_TOOL = 'freematica_list_articulos';
+const GET_TOOL = 'freematica_get_articulo';
+const PRECIO_TOOL = 'freematica_get_precio_articulo';
 
 interface ToolEntry {
   handler?: (args: Record<string, unknown>) => Promise<unknown>;
@@ -24,7 +25,7 @@ interface ToolEntry {
 function buildServer() {
   const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
   const server = new McpServer({ name: 'test', version: '0.0.0' });
-  registerPersonalTools(server, client);
+  registerArticulosTools(server, client);
   return server;
 }
 
@@ -45,29 +46,34 @@ function listEnv<T>(items: T[], total: number) {
   };
 }
 
-describe('registerPersonalTools', () => {
+function detailEnv<T>(item: T) {
+  return { errorCode: '200', errorMessage: '', data: item };
+}
+
+describe('registerArticulosTools', () => {
   afterEach(() => {
     nock.cleanAll();
   });
 
-  it('registers both personal tools', () => {
+  it('registers the three articulos tools', () => {
     const server = buildServer();
     const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
     expect(tools).toHaveProperty(LIST_TOOL);
     expect(tools).toHaveProperty(GET_TOOL);
+    expect(tools).toHaveProperty(PRECIO_TOOL);
   });
 
   // -------------------------------------------------------------------------
-  // freematica_list_personal
+  // freematica_list_articulos
   // -------------------------------------------------------------------------
 
-  describe('freematica_list_personal', () => {
+  describe('freematica_list_articulos', () => {
     it('returns paginated results with no filters', async () => {
-      const fake = [{ VSSPER_COD: 'P001', VSSPER_NOM: 'Juan' }];
+      const fake = [{ COD_ARTICULO: ' QQ10615', DESC_ART: 'LIMPIADOR DE ACERO SUMA INOX 0,75L' }];
       nock(BASE_URL)
-        .get('/pers/v1/personal')
+        .get('/part/v1/articulos')
         .query({ items: '20', page: '1' })
-        .reply(200, listEnv(fake, 200));
+        .reply(200, listEnv(fake, 6304));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_TOOL);
@@ -79,21 +85,20 @@ describe('registerPersonalTools', () => {
       expect(result.isError).toBeUndefined();
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.items).toEqual(fake);
-      expect(parsed.total).toBe(200);
+      expect(parsed.total).toBe(6304);
       expect(parsed.page).toBe(1);
-      expect(parsed.items_per_page).toBe(20);
     });
 
-    it('sends empresa and delegacion as FIQL rquery', async () => {
-      const fake = [{ VSSPER_EMP: '1', VSSPER_DELEG: 'MAD' }];
+    it('sends familia and subfamilia as quoted FIQL rquery', async () => {
+      const fake = [{ COD_ARTICULO: 'A1', COD_FAMILIA: '04', COD_SUBFAM: '02' }];
       nock(BASE_URL)
-        .get('/pers/v1/personal')
-        .query({ items: '20', page: '1', rquery: "VSSPER_EMP=='1';VSSPER_DELEG=='MAD'" })
-        .reply(200, listEnv(fake, 1));
+        .get('/part/v1/articulos')
+        .query({ items: '20', page: '1', rquery: "COD_FAMILIA=='04';COD_SUBFAM=='02'" })
+        .reply(200, listEnv(fake, 657));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20, empresa: '1', delegacion: 'MAD' })) as {
+      const result = (await handler({ page: 1, items: 20, familia: '04', subfamilia: '02' })) as {
         content: { text: string }[];
         isError?: boolean;
       };
@@ -103,16 +108,16 @@ describe('registerPersonalTools', () => {
       expect(parsed.items).toEqual(fake);
     });
 
-    it('sends codPersona and situacion as quoted FIQL fields', async () => {
-      const fake = [{ VSSPER_COD: '2589', VSSPER_SIT: 'C' }];
+    it('preserves leading spaces in codArticulo (exact match)', async () => {
+      const fake = [{ COD_ARTICULO: ' QQ10615' }];
       nock(BASE_URL)
-        .get('/pers/v1/personal')
-        .query({ items: '20', page: '1', rquery: "VSSPER_COD=='2589';VSSPER_SIT=='C'" })
+        .get('/part/v1/articulos')
+        .query({ items: '20', page: '1', rquery: "COD_ARTICULO==' QQ10615'" })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20, codPersona: '2589', situacion: 'C' })) as {
+      const result = (await handler({ page: 1, items: 20, codArticulo: ' QQ10615' })) as {
         content: { text: string }[];
         isError?: boolean;
       };
@@ -122,52 +127,57 @@ describe('registerPersonalTools', () => {
       expect(parsed.items).toEqual(fake);
     });
 
-    it('quotes values with spaces without percent-encoding them', async () => {
-      const fake = [{ VSSPER_NOM: 'ELIZABETH SUSANA' }];
+    it('sends proveedor, linea and descripcion filters', async () => {
+      const fake = [{ COD_ARTICULO: '01077810', DESC_ART: 'RUEDA BOQUILLA ASPIRADOR' }];
       nock(BASE_URL)
-        .get('/pers/v1/personal')
-        .query({ items: '20', page: '1', rquery: "VSSPER_NOM=='ELIZABETH SUSANA'" })
+        .get('/part/v1/articulos')
+        .query({
+          items: '20',
+          page: '1',
+          rquery: "COD_PROVEEDOR=='1401';COD_LIN_ART=='03';DESC_ART=='RUEDA BOQUILLA ASPIRADOR'",
+        })
         .reply(200, listEnv(fake, 1));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20, nombre: 'ELIZABETH SUSANA' })) as {
+      const result = (await handler({
+        page: 1,
+        items: 20,
+        codProveedor: '1401',
+        linea: '03',
+        descripcion: 'RUEDA BOQUILLA ASPIRADOR',
+      })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+    });
+
+    it('translates activo=true to MOTIVO_BAJA==vacío', async () => {
+      const fake = [{ COD_ARTICULO: 'A1', MOTIVO_BAJA: '' }];
+      nock(BASE_URL)
+        .get('/part/v1/articulos')
+        .query({ items: '20', page: '1', rquery: "MOTIVO_BAJA==''" })
+        .reply(200, listEnv(fake, 6122));
+
+      const server = buildServer();
+      const handler = getHandler(server, LIST_TOOL);
+      const result = (await handler({ page: 1, items: 20, activo: true })) as {
         content: { text: string }[];
         isError?: boolean;
       };
 
       expect(result.isError).toBeUndefined();
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.items).toEqual(fake);
     });
 
-    it('sends nombre and apellido as FIQL fields', async () => {
-      const fake = [{ VSSPER_NOM: 'Juan', VSSPER_APELL1: 'Garcia' }];
+    it('translates activo=false to MOTIVO_BAJA!=vacío', async () => {
+      const fake = [{ COD_ARTICULO: ' QQ10615', MOTIVO_BAJA: '52' }];
       nock(BASE_URL)
-        .get('/pers/v1/personal')
-        .query({ items: '20', page: '1', rquery: "VSSPER_NOM=='Juan';VSSPER_APELL1=='Garcia'" })
-        .reply(200, listEnv(fake, 1));
+        .get('/part/v1/articulos')
+        .query({ items: '20', page: '1', rquery: "MOTIVO_BAJA!=''" })
+        .reply(200, listEnv(fake, 146));
 
       const server = buildServer();
       const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20, nombre: 'Juan', apellido: 'Garcia' })) as {
-        content: { text: string }[];
-        isError?: boolean;
-      };
-
-      expect(result.isError).toBeUndefined();
-    });
-
-    it('sends nif as FIQL field', async () => {
-      const fake = [{ VSSPER_NIF: '12345678A' }];
-      nock(BASE_URL)
-        .get('/pers/v1/personal')
-        .query({ items: '20', page: '1', rquery: "VSSPER_NIF=='12345678A'" })
-        .reply(200, listEnv(fake, 1));
-
-      const server = buildServer();
-      const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20, nif: '12345678A' })) as {
+      const result = (await handler({ page: 1, items: 20, activo: false })) as {
         content: { text: string }[];
         isError?: boolean;
       };
@@ -177,7 +187,7 @@ describe('registerPersonalTools', () => {
 
     it('returns error server_error on 500', async () => {
       nock(BASE_URL)
-        .get('/pers/v1/personal')
+        .get('/part/v1/articulos')
         .query({ items: '20', page: '1' })
         .reply(200, { errorCode: '500', errorMessage: 'Boom', data: null });
 
@@ -192,38 +202,24 @@ describe('registerPersonalTools', () => {
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.error).toBe('server_error');
     });
-
-    it('returns error invalid_token on 401', async () => {
-      nock(BASE_URL)
-        .get('/pers/v1/personal')
-        .query({ items: '20', page: '1' })
-        .reply(200, { errorCode: '401', errorMessage: 'Unauthorized', data: null });
-
-      const server = buildServer();
-      const handler = getHandler(server, LIST_TOOL);
-      const result = (await handler({ page: 1, items: 20 })) as {
-        content: { text: string }[];
-        isError?: boolean;
-      };
-
-      expect(result.isError).toBe(true);
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.error).toBe('invalid_token');
-    });
   });
 
   // -------------------------------------------------------------------------
-  // freematica_get_persona
+  // freematica_get_articulo
   // -------------------------------------------------------------------------
 
-  describe('freematica_get_persona', () => {
-    it('returns the persona for a valid idReg', async () => {
-      const fake = { VSSPER_COD: 'P001', VSSPER_NOM: 'Ana', VSSPER_APELL1: 'Lopez' };
-      nock(BASE_URL).get('/pers/v1/personal/PERS001%3D%3D').reply(200, listEnv([fake], 1));
+  describe('freematica_get_articulo', () => {
+    it('unwraps the single-item list envelope returned by the API', async () => {
+      // GET /part/v1/articulos/{idreg} devuelve un envelope de LISTA con un
+      // único item (verificado contra el API real), no un objeto detalle.
+      const fake = { COD_ARTICULO: ' QQ10615', DESC_ART: 'LIMPIADOR DE ACERO SUMA INOX 0,75L' };
+      nock(BASE_URL)
+        .get('/part/v1/articulos/MV9fIFFRMTA2MTU%3D')
+        .reply(200, listEnv([fake], 1));
 
       const server = buildServer();
       const handler = getHandler(server, GET_TOOL);
-      const result = (await handler({ id: 'PERS001==' })) as {
+      const result = (await handler({ id: 'MV9fIFFRMTA2MTU=' })) as {
         content: { text: string }[];
         isError?: boolean;
       };
@@ -235,7 +231,7 @@ describe('registerPersonalTools', () => {
 
     it('returns error not_found when idReg does not exist', async () => {
       nock(BASE_URL)
-        .get('/pers/v1/personal/BADID')
+        .get('/part/v1/articulos/BADID')
         .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
 
       const server = buildServer();
@@ -249,14 +245,38 @@ describe('registerPersonalTools', () => {
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.error).toBe('not_found');
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_get_precio_articulo
+  // -------------------------------------------------------------------------
+
+  describe('freematica_get_precio_articulo', () => {
+    it('returns the price object for a valid idReg', async () => {
+      const fake = { PRECIO_VENTA: 12.5, DESCUENTO: 0, FACTURABLE: '1' };
+      nock(BASE_URL)
+        .get('/pgrl/v1/precio-articulo/MV9fIFFRMTA2MTU%3D')
+        .reply(200, detailEnv(fake));
+
+      const server = buildServer();
+      const handler = getHandler(server, PRECIO_TOOL);
+      const result = (await handler({ id: 'MV9fIFFRMTA2MTU=' })) as {
+        content: { text: string }[];
+        isError?: boolean;
+      };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed).toEqual(fake);
+    });
 
     it('returns error server_error on 500', async () => {
       nock(BASE_URL)
-        .get('/pers/v1/personal/ERR')
+        .get('/pgrl/v1/precio-articulo/ERR')
         .reply(200, { errorCode: '500', errorMessage: 'Server error', data: null });
 
       const server = buildServer();
-      const handler = getHandler(server, GET_TOOL);
+      const handler = getHandler(server, PRECIO_TOOL);
       const result = (await handler({ id: 'ERR' })) as {
         content: { text: string }[];
         isError?: boolean;
