@@ -73,6 +73,107 @@ export class FreematicaClient extends BaseClient {
     return { items: data.items, total: Number(data.total) };
   }
 
+  // ---------------------------------------------------------------------------
+  // Artículos — catálogo de inventario (v0.9.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de artículos del catálogo de inventario.
+   *
+   * Endpoint: GET /part/v1/articulos
+   *
+   * Todos los filtros son de coincidencia EXACTA (el endpoint no soporta
+   * búsqueda parcial: =lk= responde 400 y los wildcards % devuelven 0
+   * resultados — verificado contra el API real). OJO: COD_ARTICULO puede
+   * llevar espacios iniciales en Freemática (ej. " QQ10615") que forman
+   * parte del código.
+   *
+   * El filtro `activo` mapea a MOTIVO_BAJA (columna de texto — las columnas
+   * de fecha no permiten comparar con vacío):
+   * - `true`  → MOTIVO_BAJA=='' (sin motivo de baja).
+   * - `false` → MOTIVO_BAJA!='' (con motivo de baja).
+   * Los artículos con MOTIVO_BAJA nulo (≈36 de 6304 en producción) no
+   * matchean ninguno de los dos valores.
+   *
+   * @param opts - Paginación y filtros opcionales.
+   * @returns Lista paginada de artículos (cada item incluye `idReg`).
+   */
+  async listArticulos(opts: {
+    page?: number;
+    items?: number;
+    codArticulo?: string;
+    tipoCodigo?: string;
+    codProveedor?: string;
+    linea?: string;
+    familia?: string;
+    subfamilia?: string;
+    descripcion?: string;
+    codigoBarras?: string;
+    activo?: boolean;
+  }): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('placeholder://x/part/v1/articulos');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+
+    const fiqlGroup: Record<string, unknown> = {};
+    if (opts.codArticulo !== undefined) fiqlGroup['COD_ARTICULO'] = opts.codArticulo;
+    if (opts.tipoCodigo !== undefined) fiqlGroup['TIPO_CODIGO'] = opts.tipoCodigo;
+    if (opts.codProveedor !== undefined) fiqlGroup['COD_PROVEEDOR'] = opts.codProveedor;
+    if (opts.linea !== undefined) fiqlGroup['COD_LIN_ART'] = opts.linea;
+    if (opts.familia !== undefined) fiqlGroup['COD_FAMILIA'] = opts.familia;
+    if (opts.subfamilia !== undefined) fiqlGroup['COD_SUBFAM'] = opts.subfamilia;
+    if (opts.descripcion !== undefined) fiqlGroup['DESC_ART'] = opts.descripcion;
+    if (opts.codigoBarras !== undefined) fiqlGroup['CODIGO_BARRAS'] = opts.codigoBarras;
+    if (opts.activo === true) fiqlGroup['MOTIVO_BAJA'] = '';
+    if (opts.activo === false) fiqlGroup['MOTIVO_BAJA'] = { op: 'ne', value: '' };
+
+    appendRquery(url, buildFiql(fiqlGroup as Parameters<typeof buildFiql>[0]));
+
+    const qs = url.searchParams.toString();
+    const path = qs ? `/part/v1/articulos?${qs}` : '/part/v1/articulos';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de un artículo por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v1/articulos/{idreg}
+   *
+   * El API devuelve un envelope de LISTA con un único item (verificado contra
+   * el API real), no un objeto detalle; este método lo desenvuelve.
+   *
+   * @param idReg - Identificador opaco (base64) del artículo.
+   * @returns Objeto con todos los campos del artículo.
+   */
+  async getArticulo(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/part/v1/articulos/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Artículo no encontrado: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Precios de venta de un artículo por `idReg` opaco.
+   *
+   * Endpoint: GET /pgrl/v1/precio-articulo/{idreg}
+   *
+   * Devuelve un objeto con PRECIO_VENTA, DESCUENTO y FACTURABLE.
+   *
+   * @param idReg - Identificador opaco (base64) del artículo (el mismo que
+   *                devuelve freematica_list_articulos).
+   * @returns Objeto de precios del artículo.
+   */
+  async getPrecioArticulo(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pgrl/v1/precio-articulo/${encodeURIComponent(idReg)}`,
+    );
+  }
+
   /**
    * Obtener un catálogo de datos maestros.
    */

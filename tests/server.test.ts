@@ -22,6 +22,9 @@ const READ_ONLY_TOOLS = [
   'freematica_export_asientos',
   'freematica_get_albaran_factura',
   'freematica_get_albaran_venta',
+  'freematica_get_articulo',
+  'freematica_get_precio_articulo',
+  'freematica_list_articulos',
   'freematica_get_cartera_cliente',
   'freematica_get_cliente',
   'freematica_get_contrato',
@@ -94,7 +97,7 @@ const WRITE_TOOLS = [
 ].sort();
 
 describe('createFreematicaServer', () => {
-  it('registers all 53 expected read-only tools by default', () => {
+  it('registers all 56 expected read-only tools by default', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT });
     const names = registeredToolNames(server);
     expect(names).toEqual(READ_ONLY_TOOLS);

@@ -20,6 +20,9 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 
 | Tool                                                 | Endpoint Freemática                                          | Descripción                                                                                        |
 | ---------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `freematica_list_articulos`                          | `GET /part/v1/articulos`                                     | Catálogo de artículos/materiales/consumibles (referencias, familias, proveedores)                  |
+| `freematica_get_articulo`                            | `GET /part/v1/articulos/{idreg}`                             | Detalle de un artículo                                                                             |
+| `freematica_get_precio_articulo`                     | `GET /pgrl/v1/precio-articulo/{idreg}`                       | Precios de venta de un artículo (PRECIO_VENTA, DESCUENTO, FACTURABLE)                              |
 | `freematica_list_materiales_asignados_servicios`     | `GET /pvss/v2/contratos-servicios-material`                  | Lista de material asignado a servicios                                                             |
 | `freematica_get_master_data`                         | (24 endpoints según `catalog`)                               | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario, financiero) |
 | `freematica_list_clientes`                           | `GET /pgrl/v2/clientes`                                      | Lista paginada de clientes                                                                         |
@@ -31,7 +34,7 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_get_ficha_prev_cliente`                  | `GET /pprl/v2/ficha-prev-cliente`                            | Ficha PRL de un cliente                                                                            |
 | `freematica_list_vigilancia_salud`                   | `GET /pprl/v1/vigilancia-salud`                              | Lista paginada de registros de Vigilancia de la Salud                                              |
 | `freematica_get_vigilancia_salud`                    | `GET /pprl/v1/vigilancia-salud/{idreg}`                      | Detalle de un registro de Vigilancia de la Salud                                                   |
-| `freematica_list_personal`                           | `GET /pers/v2/personal`                                      | Lista paginada de personas (RRHH)                                                                  |
+| `freematica_list_personal`                           | `GET /pers/v1/personal`                                      | Lista paginada de personas (RRHH)                                                                  |
 | `freematica_get_persona`                             | `GET /pers/v2/personal/{idreg}`                              | Detalle de una persona                                                                             |
 | `freematica_list_calendarios`                        | `GET /pgrl/v1/calendarios`                                   | Lista paginada de calendarios laborales                                                            |
 | `freematica_list_calendario_periodos`                | `GET /pgrl/v1/calendarios/{idreg}/periodos`                  | Periodos de un calendario laboral                                                                  |

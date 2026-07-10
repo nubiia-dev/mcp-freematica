@@ -3,6 +3,7 @@ import type { FreematicaClient } from './clients/freematica-client.js';
 import { FREEMATICA_MCP_INSTRUCTIONS } from './server-instructions.js';
 import { VERSION } from './version.js';
 import { registerAlbaranesTools } from './tools/albaranes.js';
+import { registerArticulosTools } from './tools/articulos.js';
 import { registerCalendariosTools } from './tools/calendarios.js';
 import { registerCarteraTools } from './tools/cartera.js';
 import { registerClientesTools } from './tools/clientes.js';
@@ -53,6 +54,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerCalendariosTools(server, opts.client);
   registerFacturasElectronicasTools(server, opts.client);
   registerAlbaranesTools(server, opts.client);
+  registerArticulosTools(server, opts.client);
 
   return server;
 }
