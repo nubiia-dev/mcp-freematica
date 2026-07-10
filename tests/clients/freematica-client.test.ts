@@ -245,88 +245,27 @@ describe('FreematicaClient', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('sends FIQL filters for empresa and delegacion', async () => {
+    it('no envía rquery nunca (el API lo ignora en este endpoint)', async () => {
       const fake = [{ PERVS_EMP: '1' }];
       const scope = nock(BASE_URL)
         .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: "PERVS_EMP=='1';PERVS_DELEG=='MAD'" })
+        .query((q) => q['rquery'] === undefined)
         .reply(200, listEnv(fake, 1));
-      const result = await client.listVigilanciaSalud({
-        items: 20,
-        page: 1,
-        empresa: '1',
-        delegacion: 'MAD',
-      });
+      const result = await client.listVigilanciaSalud({ items: 20, page: 1 });
       expect(result).toEqual({ items: fake, total: 1 });
       expect(scope.isDone()).toBe(true);
     });
 
-    it('sends idRegPersona as native query param', async () => {
-      const fake = [{ PERVS_PERSO: 'P001' }];
+    it('envía idRegPersona como query param nativo', async () => {
+      const fake = [{ PERVS_PERSO: '3772' }];
       const scope = nock(BASE_URL)
         .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', idRegPersona: 'ABCDEF==' })
-        .reply(200, listEnv(fake, 1));
-      const result = await client.listVigilanciaSalud({ items: 20, page: 1, idRegPersona: 'ABCDEF==' });
-      expect(result).toEqual({ items: fake, total: 1 });
-      expect(scope.isDone()).toBe(true);
-    });
-
-    it('propagates server_error on 500 envelope', async () => {
-      nock(BASE_URL)
-        .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1' })
-        .reply(200, { errorCode: '500', errorMessage: 'Boom', data: null });
-      await expect(client.listVigilanciaSalud({ items: 20, page: 1 })).rejects.toMatchObject({
-        code: 'server_error',
-      });
-    });
-
-    it('emite PERVS_FCH_CITA=ge=... en rquery cuando solo fechaCitaDesde', async () => {
-      const fake = [{ PERVS_FCH_CITA: '2025-01-15' }];
-      const scope = nock(BASE_URL)
-        .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: "PERVS_FCH_CITA=ge='2025-01-01'" })
+        .query({ items: '20', page: '1', idRegPersona: 'MDFfXzk5OTlfXzM3NzI=' })
         .reply(200, listEnv(fake, 1));
       const result = await client.listVigilanciaSalud({
         items: 20,
         page: 1,
-        fechaCitaDesde: '2025-01-01',
-      });
-      expect(result).toEqual({ items: fake, total: 1 });
-      expect(scope.isDone()).toBe(true);
-    });
-
-    it('emite PERVS_FCH_CITA=le=... en rquery cuando solo fechaCitaHasta', async () => {
-      const fake = [{ PERVS_FCH_CITA: '2025-11-30' }];
-      const scope = nock(BASE_URL)
-        .get('/pprl/v1/vigilancia-salud')
-        .query({ items: '20', page: '1', rquery: "PERVS_FCH_CITA=le='2025-12-31'" })
-        .reply(200, listEnv(fake, 1));
-      const result = await client.listVigilanciaSalud({
-        items: 20,
-        page: 1,
-        fechaCitaHasta: '2025-12-31',
-      });
-      expect(result).toEqual({ items: fake, total: 1 });
-      expect(scope.isDone()).toBe(true);
-    });
-
-    it('emite ambas expresiones ge+le unidas con ";" cuando rango completo', async () => {
-      const fake = [{ PERVS_FCH_CITA: '2025-06-15' }];
-      const scope = nock(BASE_URL)
-        .get('/pprl/v1/vigilancia-salud')
-        .query({
-          items: '20',
-          page: '1',
-          rquery: "PERVS_FCH_CITA=ge='2025-01-01';PERVS_FCH_CITA=le='2025-12-31'",
-        })
-        .reply(200, listEnv(fake, 1));
-      const result = await client.listVigilanciaSalud({
-        items: 20,
-        page: 1,
-        fechaCitaDesde: '2025-01-01',
-        fechaCitaHasta: '2025-12-31',
+        idRegPersona: 'MDFfXzk5OTlfXzM3NzI=',
       });
       expect(result).toEqual({ items: fake, total: 1 });
       expect(scope.isDone()).toBe(true);
@@ -358,7 +297,7 @@ describe('FreematicaClient', () => {
   // ---------------------------------------------------------------------------
 
   describe('listPersonal', () => {
-    it('calls /pers/v2/personal with pagination and no filters', async () => {
+    it('calls /pers/v1/personal with pagination and no filters', async () => {
       const fake = [{ VSSPER_COD: 'P001' }];
       const scope = nock(BASE_URL)
         .get('/pers/v1/personal')

@@ -24,12 +24,17 @@ Origen: dos issues reportados por usuarios finales — `freematica_list_personal
 - **`freematica_list_cartera_clientes`**: `soloImpagados` usaba `CARCL_FECIMPAG!=null` (0 resultados) — pasa a `CARCL_FECIMPAG=ge='1900-01-01'` (382 impagados reales de 72.054 documentos).
 - **`freematica_list_localizaciones_servicio_clientes`**: se elimina el filtro `activo` — la vista no tiene columna `FECHA_BAJA` y filtrar por ella responde 400.
 
+- **`freematica_list_vigilancia_salud`: todos sus filtros FIQL eran placebo** — el endpoint ignora el parámetro `rquery` por completo (cualquier FIQL, incluso con campos inexistentes, responde 200 con el dataset íntegro sin filtrar). Se eliminan los 7 filtros FIQL (empresa, delegación, codPersona, tipoRevision, resultado, fechaCita desde/hasta) y queda `idRegPersona` (query param nativo, verificado: filtra correctamente por persona).
+- **`freematica_list_localizaciones_factura_clientes` devolvía 404 SIEMPRE** (desde v0.8.0): la lista solo existe en `/pgrl/v1/...` — el v2 de ese recurso es solo POST/PUT. Se cambia el endpoint a v1 (291 localizaciones en producción; filtro por COD_CLI verificado).
+- **Fecha-hasta rota en facturas-cabecera, cartera y export-asientos**: el operador `=le=` responde 400/500 en esos endpoints (en compras, vencimientos y artículos funciona). Se emula con `=lt=` del día siguiente (verificado). Además, **combinar fecha-desde y fecha-hasta sobre el mismo campo devuelve 0 filas** (bug del API, probado con paréntesis, orden inverso y rquery duplicado): esas tools ahora rechazan la combinación con un error claro en vez de devolver un resultado vacío engañoso.
+- **`fechaVencimientoHasta` de cartera eliminado**: el API ignora `=le=`/`=lt=` sobre CARCL_FECVCTO devolviendo el dataset completo (`=ge=` sí funciona y se mantiene como fechaVencimientoDesde).
+
 #### Changed
 
 - `server-instructions.ts`: nuevas secciones Artículos y Personal; aviso de que `freematica_list_materiales_asignados_servicios` es material ya asignado (para el catálogo usar `freematica_list_articulos`); documentado que la composición OR (`,`) de FIQL responde 400 (usar `=in=`).
 
 **Total tools registradas: 56 read-only (72 con escrituras)** (vs 53/69 en v0.8.0).
-**Tests: 815** (vs 807 en v0.8.0).
+**Tests: 818** (vs 807 en v0.8.0).
 
 ## [0.8.0] — 2026-07-03
 

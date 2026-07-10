@@ -78,7 +78,7 @@ describe('localizaciones tools (nuevas list + write)', () => {
 
   it('list_localizaciones_factura_clientes lista paginada', async () => {
     nock(BASE_URL)
-      .get('/pgrl/v2/localizaciones-factura-clientes')
+      .get('/pgrl/v1/localizaciones-factura-clientes')
       .query(true)
       .reply(200, {
         errorCode: '200',

@@ -449,14 +449,27 @@ describe('freematica_export_asientos', () => {
     expect(result.isError).toBeUndefined();
   });
 
-  it('filtra por rango de fechas — rquery ge + le sobre ASI_FCHASI', async () => {
+  it('rechaza fechaDesde+fechaHasta simultáneos (limitación del API)', async () => {
+    const server = buildServer();
+    const result = await callTool(server, EXPORT_ASIENTOS_TOOL, {
+      empresa: '0001',
+      cal: 'GRAL',
+      fechaDesde: '2024-01-01',
+      fechaHasta: '2024-01-31',
+    });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('no soporta combinar');
+  });
+
+  it('filtra por fechaHasta con =lt= del día siguiente (=le= responde 400 en el API)', async () => {
     const fake = [{ ASI_NUMERO: '2' }];
     nock(BASE_URL)
       .get('/pcon/v2/export-asientos')
       .query({
         empresa: '0001',
         cal: 'GRAL',
-        rquery: "ASI_FCHASI=ge='2024-01-01';ASI_FCHASI=le='2024-01-31'",
+        rquery: "ASI_FCHASI=lt='2024-02-01'",
       })
       .reply(200, listEnv(fake, 1));
 
@@ -464,7 +477,6 @@ describe('freematica_export_asientos', () => {
     const result = await callTool(server, EXPORT_ASIENTOS_TOOL, {
       empresa: '0001',
       cal: 'GRAL',
-      fechaDesde: '2024-01-01',
       fechaHasta: '2024-01-31',
     });
 

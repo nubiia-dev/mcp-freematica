@@ -44,6 +44,28 @@ export interface ListOptions {
 }
 
 /**
+ * Día siguiente a una fecha ISO (YYYY-MM-DD), en formato ISO.
+ *
+ * Se usa para emular "hasta X inclusive" como `=lt='X+1'` en los endpoints
+ * donde el operador `=le=` responde 400/500 (facturas-cabecera, cartera,
+ * export-asientos — verificado contra el API real).
+ */
+function nextDayIso(isoDate: string): string {
+  const d = new Date(`${isoDate}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Mensaje de error para los endpoints donde el API de Freemática devuelve
+ * 0 filas si se combinan dos condiciones de rango sobre el MISMO campo
+ * (verificado con ge+lt, ge+le, orden inverso y paréntesis).
+ */
+const RANGO_NO_SOPORTADO =
+  'El API de Freemática no soporta combinar fecha-desde y fecha-hasta a la vez ' +
+  'en este endpoint (devuelve 0 resultados). Usa solo uno de los dos límites por consulta.';
+
+/**
  * Typed client for the Freemática REST API.
  *
  * One method per exposed endpoint (or per family of endpoints). The wrapper
@@ -328,47 +350,23 @@ export class FreematicaClient extends BaseClient {
    *
    * Endpoint: GET /pprl/v1/vigilancia-salud
    *
-   * `idRegPersona` se envía como query param nativo. El resto de filtros se
-   * codifican en FIQL y se envían como `rquery`.
-   *
-   * @param opts - Opciones de paginación y filtrado.
+   * @param opts - Paginación y filtro opcional idRegPersona.
    * @returns Lista paginada de registros VS.
    */
   async listVigilanciaSalud(opts: {
     page?: number;
     items?: number;
     idRegPersona?: string;
-    empresa?: string;
-    delegacion?: string;
-    codPersona?: string;
-    tipoRevision?: string;
-    resultado?: string;
-    fechaCitaDesde?: string;
-    fechaCitaHasta?: string;
   }): Promise<ListResult<Record<string, unknown>>> {
+    // El endpoint IGNORA el parámetro `rquery` por completo: cualquier FIQL
+    // (incluso con campos inexistentes) responde 200 con el dataset completo
+    // sin filtrar (verificado contra el API real). El único filtro operativo
+    // es el query param nativo `idRegPersona` (el idReg de la persona en
+    // freematica_list_personal), que sí filtra correctamente.
     const url = new URL('placeholder://x/pprl/v1/vigilancia-salud');
     if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
     if (opts.idRegPersona !== undefined) url.searchParams.set('idRegPersona', opts.idRegPersona);
-
-    // Filtros FIQL
-    const fiqlParts: Record<string, unknown> = {};
-    if (opts.empresa !== undefined) fiqlParts['PERVS_EMP'] = opts.empresa;
-    if (opts.delegacion !== undefined) fiqlParts['PERVS_DELEG'] = opts.delegacion;
-    if (opts.codPersona !== undefined) fiqlParts['PERVS_PERSO'] = opts.codPersona;
-    if (opts.tipoRevision !== undefined) fiqlParts['PERVS_TIPO_REVISION'] = opts.tipoRevision;
-    if (opts.resultado !== undefined) fiqlParts['PERVS_RESULTADO'] = opts.resultado;
-    if (opts.fechaCitaDesde !== undefined)
-      fiqlParts['PERVS_FCH_CITA'] = { op: 'ge' as const, value: opts.fechaCitaDesde };
-    // If both desde and hasta, we need to combine with AND
-    const fiqlParts2: Record<string, unknown> = {};
-    if (opts.fechaCitaHasta !== undefined)
-      fiqlParts2['PERVS_FCH_CITA'] = { op: 'le' as const, value: opts.fechaCitaHasta };
-
-    const fiql1 = buildFiql(fiqlParts as Parameters<typeof buildFiql>[0]);
-    const fiql2 = buildFiql(fiqlParts2 as Parameters<typeof buildFiql>[0]);
-    const combinedFiql = [fiql1, fiql2].filter(Boolean).join(';');
-    appendRquery(url, combinedFiql);
 
     const qs = url.searchParams.toString();
     const path = qs ? `/pprl/v1/vigilancia-salud?${qs}` : '/pprl/v1/vigilancia-salud';
@@ -569,13 +567,19 @@ export class FreematicaClient extends BaseClient {
     url.searchParams.set('cal', opts.cal);
     if (opts.periodo !== undefined) url.searchParams.set('periodo', opts.periodo);
 
-    // Construir FIQL para filtros adicionales
+    // Construir FIQL para filtros adicionales.
+    // ASI_FCHASI: `=ge=` funciona; `=le=` responde 400 (se emula con `=lt=`
+    // del día siguiente); combinar ambos límites devuelve 0 filas (bug del
+    // API verificado en producción) → se rechaza.
+    if (opts.fechaDesde !== undefined && opts.fechaHasta !== undefined) {
+      throw new Error(RANGO_NO_SOPORTADO);
+    }
     const andGroups: FiqlGroup[] = [];
     if (opts.fechaDesde !== undefined) {
       andGroups.push({ ASI_FCHASI: { op: 'ge', value: opts.fechaDesde } });
     }
     if (opts.fechaHasta !== undefined) {
-      andGroups.push({ ASI_FCHASI: { op: 'le', value: opts.fechaHasta } });
+      andGroups.push({ ASI_FCHASI: { op: 'lt', value: nextDayIso(opts.fechaHasta) } });
     }
     if (opts.diario !== undefined) {
       andGroups.push({ ASI_DIARIO: opts.diario });
@@ -760,11 +764,18 @@ export class FreematicaClient extends BaseClient {
     const eqFiql = buildFiql(eqGroup);
     if (eqFiql) parts.push(eqFiql);
 
-    // Range filters: each gets its own buildFiql call to preserve both endpoints
+    // Range filters. CARCL_FECDOC: `=ge=` funciona; `=le=` responde 500
+    // (hasta se emula con `=lt=` del día siguiente); combinar desde+hasta
+    // devuelve 0 filas (bug del API verificado en producción) → se rechaza.
+    // CARCL_FECVCTO: solo `=ge=` funciona (le/lt se ignoran silenciosamente
+    // devolviendo el dataset completo), así que fechaVencimientoHasta no
+    // existe como filtro.
+    if (opts.fechaDocDesde !== undefined && opts.fechaDocHasta !== undefined) {
+      throw new Error(RANGO_NO_SOPORTADO);
+    }
     if (opts.fechaDocDesde !== undefined) parts.push(buildFiql({ CARCL_FECDOC: { op: 'ge', value: opts.fechaDocDesde } }));
-    if (opts.fechaDocHasta !== undefined) parts.push(buildFiql({ CARCL_FECDOC: { op: 'le', value: opts.fechaDocHasta } }));
+    if (opts.fechaDocHasta !== undefined) parts.push(buildFiql({ CARCL_FECDOC: { op: 'lt', value: nextDayIso(opts.fechaDocHasta) } }));
     if (opts.fechaVencimientoDesde !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));
-    if (opts.fechaVencimientoHasta !== undefined) parts.push(buildFiql({ CARCL_FECVCTO: { op: 'le', value: opts.fechaVencimientoHasta } }));
 
     // soloImpagados: el FIQL de Freemática no soporta IS NOT NULL (`!=null`
     // devuelve 0 resultados y `!='null'` responde 500 — verificado contra el
@@ -1022,9 +1033,14 @@ export class FreematicaClient extends BaseClient {
     const eqFiql = buildFiql(eqGroup);
     if (eqFiql) fiqlParts.push(eqFiql);
 
-    // Date range filters
+    // Date range filters. FVC_FCHFAC: `=ge=` funciona; `=le=`/`=gt=` responden
+    // 500 (hasta se emula con `=lt=` del día siguiente); combinar desde+hasta
+    // devuelve 0 filas (bug del API verificado en producción) → se rechaza.
+    if (opts.fechaFacturaDesde !== undefined && opts.fechaFacturaHasta !== undefined) {
+      throw new Error(RANGO_NO_SOPORTADO);
+    }
     if (opts.fechaFacturaDesde !== undefined) fiqlParts.push(buildFiql({ FVC_FCHFAC: { op: 'ge', value: opts.fechaFacturaDesde } }));
-    if (opts.fechaFacturaHasta !== undefined) fiqlParts.push(buildFiql({ FVC_FCHFAC: { op: 'le', value: opts.fechaFacturaHasta } }));
+    if (opts.fechaFacturaHasta !== undefined) fiqlParts.push(buildFiql({ FVC_FCHFAC: { op: 'lt', value: nextDayIso(opts.fechaFacturaHasta) } }));
 
     // Boolean: traspasadoContabilidad — la columna real usa '1'/'0'
     if (opts.traspasadoContabilidad !== undefined) {
@@ -2073,12 +2089,15 @@ export class FreematicaClient extends BaseClient {
   /**
    * Lista paginada de localizaciones de factura de clientes.
    *
-   * Endpoint: GET /pgrl/v2/localizaciones-factura-clientes
+   * Endpoint: GET /pgrl/v1/localizaciones-factura-clientes
+   * (la lista solo existe en v1; el v2 de este recurso es solo POST/PUT).
    */
   async listLocalizacionesFacturaClientes(
     opts: ListOptions & { codCliente?: string; grupoCliente?: string } = {},
   ): Promise<ListResult<Record<string, unknown>>> {
-    return this.listResourceWithFiql('/pgrl/v2/localizaciones-factura-clientes', opts, {
+    // v1, no v2: la LISTA solo existe en /pgrl/v1 (v2 responde 404 — solo
+    // tiene POST/PUT). Verificado contra el API real y el Postman.
+    return this.listResourceWithFiql('/pgrl/v1/localizaciones-factura-clientes', opts, {
       COD_CLI: opts.codCliente,
       COD_GRUPO_CLI: opts.grupoCliente,
     });

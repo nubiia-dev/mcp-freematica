@@ -36,11 +36,15 @@ export const ESTADO_CARTERA_FIQL_MAP: Record<EstadoCartera, string> = {
  * | formaPago               | CARCL_CODFPAG   |
  * | modoPago                | CARCL_CODMPAG   |
  * | fechaDocDesde           | CARCL_FECDOC =ge= |
- * | fechaDocHasta           | CARCL_FECDOC =le= |
+ * | fechaDocHasta           | CARCL_FECDOC =lt= (día siguiente; =le= responde 500) |
  * | fechaVencimientoDesde   | CARCL_FECVCTO =ge= |
- * | fechaVencimientoHasta   | CARCL_FECVCTO =le= |
  * | estado                  | CARCL_SITCAR==N |
- * | soloImpagados           | CARCL_FECIMPAG!=null |
+ * | soloImpagados           | CARCL_FECIMPAG=ge='1900-01-01' |
+ *
+ * fechaDocDesde y fechaDocHasta son EXCLUYENTES entre sí: el API devuelve
+ * 0 filas si se combinan dos condiciones de rango sobre el mismo campo.
+ * No existe fechaVencimientoHasta: el API ignora =le=/=lt= sobre
+ * CARCL_FECVCTO devolviendo el dataset completo (verificado en producción).
  * | referencia              | CARCL_REFCAR    |
  */
 export const ListCarteraFiltersSchema = {
@@ -90,7 +94,11 @@ export const ListCarteraFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha fin del documento (CARCL_FECDOC). Formato YYYY-MM-DD. Inclusive.'),
+    .describe(
+      'Fecha fin del documento (CARCL_FECDOC). Formato YYYY-MM-DD. Inclusive. ' +
+        'EXCLUYENTE con fechaDocDesde: usa solo uno de los dos por consulta ' +
+        '(limitación del API de Freemática).',
+    ),
   fechaVencimientoDesde: z
     .string()
     .regex(
@@ -98,15 +106,10 @@ export const ListCarteraFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha inicio de vencimiento (CARCL_FECVCTO). Formato YYYY-MM-DD. Inclusive.'),
-  fechaVencimientoHasta: z
-    .string()
-    .regex(
-      /^\d{4}-\d{2}-\d{2}$/,
-      'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
-    )
-    .optional()
-    .describe('Fecha fin de vencimiento (CARCL_FECVCTO). Formato YYYY-MM-DD. Inclusive.'),
+    .describe(
+      'Fecha inicio de vencimiento (CARCL_FECVCTO). Formato YYYY-MM-DD. Inclusive. ' +
+        'No existe filtro de fecha fin de vencimiento (el API lo ignora).',
+    ),
   estado: EstadoCarteraEnum.optional().describe(
     'Estado del documento de cartera: "pendiente" (CARCL_SITCAR=1), "cancelado" (CARCL_SITCAR=2), "derivado" (CARCL_SITCAR=3).',
   ),
@@ -114,7 +117,7 @@ export const ListCarteraFiltersSchema = {
     .boolean()
     .optional()
     .describe(
-      'Si true, filtra sólo los documentos con impago (CARCL_FECIMPAG no nulo). Si false o no se pasa, devuelve todos.',
+      'Si true, filtra sólo los documentos con impago (CARCL_FECIMPAG con valor). Si false o no se pasa, devuelve todos.',
     ),
   referencia: z
     .string()
@@ -135,7 +138,6 @@ export type ListCarteraFilters = {
   fechaDocDesde?: string;
   fechaDocHasta?: string;
   fechaVencimientoDesde?: string;
-  fechaVencimientoHasta?: string;
   estado?: EstadoCartera;
   soloImpagados?: boolean;
   referencia?: string;

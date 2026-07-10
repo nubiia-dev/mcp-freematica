@@ -281,14 +281,14 @@ describe('FreematicaClient — contabilidad', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('filtra por rango de fechas — FIQL ge + le sobre ASI_FCHASI', async () => {
+    it('filtra por fechaDesde — FIQL =ge= sobre ASI_FCHASI', async () => {
       const fake = [{ ASI_NUMERO: '3' }];
       const scope = nock(BASE_URL)
         .get('/pcon/v2/export-asientos')
         .query({
           empresa: '0001',
           cal: 'GRAL',
-          rquery: "ASI_FCHASI=ge='2024-01-01';ASI_FCHASI=le='2024-01-31'",
+          rquery: "ASI_FCHASI=ge='2024-01-01'",
         })
         .reply(200, listEnv(fake, 1));
 
@@ -296,10 +296,40 @@ describe('FreematicaClient — contabilidad', () => {
         empresa: '0001',
         cal: 'GRAL',
         fechaDesde: '2024-01-01',
+      });
+      expect(result.items).toEqual(fake);
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('filtra por fechaHasta — =lt= del día siguiente (=le= responde 400 en el API)', async () => {
+      const fake = [{ ASI_NUMERO: '3' }];
+      const scope = nock(BASE_URL)
+        .get('/pcon/v2/export-asientos')
+        .query({
+          empresa: '0001',
+          cal: 'GRAL',
+          rquery: "ASI_FCHASI=lt='2024-02-01'",
+        })
+        .reply(200, listEnv(fake, 1));
+
+      const result = await client.exportAsientos({
+        empresa: '0001',
+        cal: 'GRAL',
         fechaHasta: '2024-01-31',
       });
       expect(result.items).toEqual(fake);
       expect(scope.isDone()).toBe(true);
+    });
+
+    it('rechaza fechaDesde+fechaHasta simultáneos (el API devuelve 0 filas)', async () => {
+      await expect(
+        client.exportAsientos({
+          empresa: '0001',
+          cal: 'GRAL',
+          fechaDesde: '2024-01-01',
+          fechaHasta: '2024-01-31',
+        }),
+      ).rejects.toThrow(/no soporta combinar/);
     });
 
     it('filtra por diario — FIQL ASI_DIARIO==VEN', async () => {

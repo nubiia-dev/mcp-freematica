@@ -135,20 +135,43 @@ describe('registerFacturasVentasTools', () => {
     expect(parsed.items).toEqual(fake);
   });
 
-  it('list_facturas_cabecera applies fecha range FIQL filters', async () => {
-    const fake = [{ FVC_NUMFAC: '00001', FVC_FECFAC: '2026-03-01' }];
+  it('list_facturas_cabecera fechaFacturaDesde usa =ge=', async () => {
+    const fake = [{ FVC_NUMFRA: '00001', FVC_FCHFAC: '2026-03-01' }];
     nock(BASE_URL)
       .get('/pven/v1/facturas-cabecera')
-      .query((q) => {
-        const rq = q['rquery'] as string | undefined;
-        return (
-          typeof rq === 'string' &&
-          rq.includes("FVC_FCHFAC=ge='2026-01-01'") &&
-          rq.includes("FVC_FCHFAC=le='2026-06-30'")
-        );
-      })
+      .query((q) => String(q['rquery'] ?? '').includes("FVC_FCHFAC=ge='2026-01-01'"))
       .reply(200, listEnv(fake, 1));
 
+    const server = buildServer();
+    const handler = getHandler(server, LIST_CABECERA_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaFacturaDesde: '2026-01-01',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+  });
+
+  it('list_facturas_cabecera fechaFacturaHasta usa =lt= del día siguiente (=le= responde 500)', async () => {
+    const fake = [{ FVC_NUMFRA: '00001', FVC_FCHFAC: '2026-03-01' }];
+    nock(BASE_URL)
+      .get('/pven/v1/facturas-cabecera')
+      .query((q) => String(q['rquery'] ?? '').includes("FVC_FCHFAC=lt='2026-07-01'"))
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, LIST_CABECERA_TOOL);
+    const result = (await handler({
+      page: 1,
+      items: 20,
+      fechaFacturaHasta: '2026-06-30',
+    })) as { content: { type: string; text: string }[]; isError?: boolean };
+
+    expect(result.isError).toBeUndefined();
+  });
+
+  it('list_facturas_cabecera rechaza desde+hasta simultáneos (el API devuelve 0 filas)', async () => {
     const server = buildServer();
     const handler = getHandler(server, LIST_CABECERA_TOOL);
     const result = (await handler({
@@ -158,9 +181,8 @@ describe('registerFacturasVentasTools', () => {
       fechaFacturaHasta: '2026-06-30',
     })) as { content: { type: string; text: string }[]; isError?: boolean };
 
-    expect(result.isError).toBeUndefined();
-    const parsed = JSON.parse(result.content[0].text);
-    expect(parsed.items).toEqual(fake);
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('no soporta combinar');
   });
 
   it('list_facturas_cabecera applies traspasadoContabilidad=true FIQL filter', async () => {

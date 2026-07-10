@@ -133,47 +133,41 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('applies fechaDoc range generating two separate FIQL expressions', async () => {
+    it('fechaDocDesde emite =ge=; fechaDocHasta emite =lt= del día siguiente', async () => {
       const fake = [{ CARCL_FECDOC: '2026-03-01' }];
-      const scope = nock(BASE_URL)
+      const s1 = nock(BASE_URL)
         .get('/pcar/v1/cartera-clientes')
-        .query((q) => {
-          const rq = q['rquery'] as string | undefined;
-          return (
-            typeof rq === 'string' &&
-            rq.includes("CARCL_FECDOC=ge='2026-01-01'") &&
-            rq.includes("CARCL_FECDOC=le='2026-06-30'")
-          );
-        })
+        .query((q) => String(q['rquery'] ?? '') === "CARCL_FECDOC=ge='2026-01-01'")
         .reply(200, listEnv(fake, 1));
-      await client.listCarteraClientes({
-        items: 10,
-        page: 1,
-        fechaDocDesde: '2026-01-01',
-        fechaDocHasta: '2026-06-30',
-      });
-      expect(scope.isDone()).toBe(true);
+      await client.listCarteraClientes({ items: 10, page: 1, fechaDocDesde: '2026-01-01' });
+      expect(s1.isDone()).toBe(true);
+
+      const s2 = nock(BASE_URL)
+        .get('/pcar/v1/cartera-clientes')
+        .query((q) => String(q['rquery'] ?? '') === "CARCL_FECDOC=lt='2026-07-01'")
+        .reply(200, listEnv(fake, 1));
+      await client.listCarteraClientes({ items: 10, page: 1, fechaDocHasta: '2026-06-30' });
+      expect(s2.isDone()).toBe(true);
     });
 
-    it('applies fechaVencimiento range generating two separate FIQL expressions', async () => {
+    it('rechaza fechaDocDesde+fechaDocHasta simultáneos (el API devuelve 0 filas)', async () => {
+      await expect(
+        client.listCarteraClientes({
+          items: 10,
+          page: 1,
+          fechaDocDesde: '2026-01-01',
+          fechaDocHasta: '2026-06-30',
+        }),
+      ).rejects.toThrow(/no soporta combinar/);
+    });
+
+    it('fechaVencimientoDesde emite =ge= (no existe fecha fin: el API la ignora)', async () => {
       const fake = [{ CARCL_FECVCTO: '2026-07-01' }];
       const scope = nock(BASE_URL)
         .get('/pcar/v1/cartera-clientes')
-        .query((q) => {
-          const rq = q['rquery'] as string | undefined;
-          return (
-            typeof rq === 'string' &&
-            rq.includes("CARCL_FECVCTO=ge='2026-06-01'") &&
-            rq.includes("CARCL_FECVCTO=le='2026-12-31'")
-          );
-        })
+        .query((q) => String(q['rquery'] ?? '') === "CARCL_FECVCTO=ge='2026-06-01'")
         .reply(200, listEnv(fake, 1));
-      await client.listCarteraClientes({
-        items: 10,
-        page: 1,
-        fechaVencimientoDesde: '2026-06-01',
-        fechaVencimientoHasta: '2026-12-31',
-      });
+      await client.listCarteraClientes({ items: 10, page: 1, fechaVencimientoDesde: '2026-06-01' });
       expect(scope.isDone()).toBe(true);
     });
 
@@ -247,26 +241,30 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
       expect(scope.isDone()).toBe(true);
     });
 
-    it('applies fechaFactura range filters', async () => {
-      const fake = [{ FVC_NUMFRA: '00001' }];
-      const scope = nock(BASE_URL)
+    it('fechaFacturaDesde=ge, fechaFacturaHasta=lt día siguiente, ambos a la vez se rechaza', async () => {
+      const fake = [{ FVC_FCHFAC: '2026-03-01' }];
+      const s1 = nock(BASE_URL)
         .get('/pven/v1/facturas-cabecera')
-        .query((q) => {
-          const rq = q['rquery'] as string | undefined;
-          return (
-            typeof rq === 'string' &&
-            rq.includes("FVC_FCHFAC=ge='2026-01-01'") &&
-            rq.includes("FVC_FCHFAC=le='2026-06-30'")
-          );
-        })
+        .query((q) => String(q['rquery'] ?? '') === "FVC_FCHFAC=ge='2026-01-01'")
         .reply(200, listEnv(fake, 1));
-      await client.listFacturasCabecera({
-        items: 10,
-        page: 1,
-        fechaFacturaDesde: '2026-01-01',
-        fechaFacturaHasta: '2026-06-30',
-      });
-      expect(scope.isDone()).toBe(true);
+      await client.listFacturasCabecera({ items: 10, page: 1, fechaFacturaDesde: '2026-01-01' });
+      expect(s1.isDone()).toBe(true);
+
+      const s2 = nock(BASE_URL)
+        .get('/pven/v1/facturas-cabecera')
+        .query((q) => String(q['rquery'] ?? '') === "FVC_FCHFAC=lt='2026-07-01'")
+        .reply(200, listEnv(fake, 1));
+      await client.listFacturasCabecera({ items: 10, page: 1, fechaFacturaHasta: '2026-06-30' });
+      expect(s2.isDone()).toBe(true);
+
+      await expect(
+        client.listFacturasCabecera({
+          items: 10,
+          page: 1,
+          fechaFacturaDesde: '2026-01-01',
+          fechaFacturaHasta: '2026-06-30',
+        }),
+      ).rejects.toThrow(/no soporta combinar/);
     });
 
     it("applies traspasadoContabilidad=true as FVC_TRASP_CONTAB==1", async () => {

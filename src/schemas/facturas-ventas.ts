@@ -14,7 +14,11 @@ import { PaginationSchema } from './pagination.js';
  * | codCliente                 | FVC_CODCLI       |
  * | representante              | FVC_CODREPRES       |
  * | fechaFacturaDesde          | FVC_FCHFAC =ge=  |
- * | fechaFacturaHasta          | FVC_FCHFAC =le=  |
+ * | fechaFacturaHasta          | FVC_FCHFAC =lt= (día siguiente; =le= responde 500) |
+ *
+ * fechaFacturaDesde y fechaFacturaHasta son EXCLUYENTES entre sí: el API
+ * devuelve 0 filas si se combinan dos condiciones de rango sobre el mismo
+ * campo (verificado en producción).
  * | serie                      | FVC_SERIEFRA       |
  * | numFactura                 | FVC_NUMFRA       |
  * | formaPago                  | FVC_FPAGO      |
@@ -45,7 +49,7 @@ export const ListFacturasCabeceraFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha inicio de la factura (FVC_FCHFAC). Formato YYYY-MM-DD. Inclusive.'),
+    .describe('Fecha inicio de la factura (FVC_FCHFAC). Formato YYYY-MM-DD. Inclusive. EXCLUYENTE con fechaFacturaHasta: usa solo uno de los dos por consulta (limitación del API).'),
   fechaFacturaHasta: z
     .string()
     .regex(
@@ -53,7 +57,7 @@ export const ListFacturasCabeceraFiltersSchema = {
       'Debe ser una fecha en formato ISO 8601 YYYY-MM-DD',
     )
     .optional()
-    .describe('Fecha fin de la factura (FVC_FCHFAC). Formato YYYY-MM-DD. Inclusive.'),
+    .describe('Fecha fin de la factura (FVC_FCHFAC). Formato YYYY-MM-DD. Inclusive. EXCLUYENTE con fechaFacturaDesde: usa solo uno de los dos por consulta (limitación del API).'),
   serie: z
     .string()
     .min(1)

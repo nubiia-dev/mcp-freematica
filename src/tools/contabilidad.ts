@@ -55,18 +55,18 @@ const EXPORT_ASIENTOS_DESCRIPTION = [
   'Endpoint: GET /pcon/v2/export-asientos.',
   '',
   '⚠️ AVISO: Este endpoint puede devolver volúmenes MUY GRANDES de datos.',
-  'RECOMENDAR siempre un rango de fechas (fechaDesde + fechaHasta) para acotar',
-  'la respuesta. Sin rango de fechas, puede devolver TODO el histórico contable.',
+  'Acota siempre con `periodo` o con UNA fecha (fechaDesde O fechaHasta —',
+  'son excluyentes: el API devuelve 0 filas si se combinan ambas).',
   '',
   'Parámetros obligatorios:',
   '  - empresa: código de empresa de 4 caracteres exactos (ej. "0001").',
-  '  - cal: código de calendario de 4 caracteres exactos (ej. "GRAL").',
+  '  - cal: código de calendario/ejercicio contable de hasta 4 caracteres (ej. "2025").',
   '',
   'Parámetros opcionales nativos (query param directo, no FIQL):',
   '  - periodo: número de periodo contable (1-12, puede tener ceros, ej. "01").',
   '',
   'Filtros FIQL adicionales (opcionales):',
-  '  - fechaDesde / fechaHasta: rango de fechas sobre ASI_FCHASI en formato YYYY-MM-DD.',
+  '  - fechaDesde O fechaHasta (excluyentes): límite de fecha sobre ASI_FCHASI, YYYY-MM-DD.',
   '  - diario: código del diario contable (ASI_DIARIO).',
   '  - borrador: si true, incluye solo asientos borrador (ASI_BORR no nulo).',
   '',
@@ -165,7 +165,7 @@ const ExportAsientosSchema = {
     .string()
     .length(4)
     .describe(
-      'Código de calendario contable (4 caracteres exactos, ej. "GRAL"). OBLIGATORIO. Se envía como query param nativo.',
+      'Código de calendario/ejercicio contable (hasta 4 caracteres, ej. "2025" — ver freematica_list_calendarios). OBLIGATORIO. Se envía como query param nativo.',
     ),
   periodo: z
     .string()
@@ -182,7 +182,7 @@ const ExportAsientosSchema = {
     )
     .optional()
     .describe(
-      'Fecha inicio del rango de asientos en formato YYYY-MM-DD (sobre ASI_FCHASI). Recomendado siempre para acotar el volumen.',
+      'Fecha inicio (inclusive) sobre ASI_FCHASI, YYYY-MM-DD. EXCLUYENTE con fechaHasta: usa solo uno de los dos (limitación del API).',
     ),
   fechaHasta: z
     .string()
@@ -192,7 +192,7 @@ const ExportAsientosSchema = {
     )
     .optional()
     .describe(
-      'Fecha fin del rango de asientos en formato YYYY-MM-DD (sobre ASI_FCHASI). Recomendado siempre para acotar el volumen.',
+      'Fecha fin (inclusive) sobre ASI_FCHASI, YYYY-MM-DD. EXCLUYENTE con fechaDesde: usa solo uno de los dos (limitación del API).',
     ),
   diario: z
     .string()
