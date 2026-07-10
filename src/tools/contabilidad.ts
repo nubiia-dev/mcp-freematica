@@ -60,7 +60,7 @@ const EXPORT_ASIENTOS_DESCRIPTION = [
   '',
   'Parámetros obligatorios:',
   '  - empresa: código de empresa de 4 caracteres exactos (ej. "0001").',
-  '  - cal: código de calendario/ejercicio contable de hasta 4 caracteres (ej. "2025").',
+  '  - cal: código de calendario/ejercicio contable de 4 caracteres exactos (ej. "2025").',
   '',
   'Parámetros opcionales nativos (query param directo, no FIQL):',
   '  - periodo: número de periodo contable (1-12, puede tener ceros, ej. "01").',
@@ -165,7 +165,7 @@ const ExportAsientosSchema = {
     .string()
     .length(4)
     .describe(
-      'Código de calendario/ejercicio contable (hasta 4 caracteres, ej. "2025" — ver freematica_list_calendarios). OBLIGATORIO. Se envía como query param nativo.',
+      'Código de calendario/ejercicio contable (4 caracteres exactos, ej. "2025" — ver freematica_list_calendarios, campo COD_CALEN_EJER). OBLIGATORIO. Se envía como query param nativo.',
     ),
   periodo: z
     .string()

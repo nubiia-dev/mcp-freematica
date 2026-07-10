@@ -45,10 +45,6 @@ function listEnv<T>(items: T[], total: number) {
   };
 }
 
-function detailEnv<T>(item: T) {
-  return { errorCode: '200', errorMessage: '', data: item };
-}
-
 describe('registerPersonalTools', () => {
   afterEach(() => {
     nock.cleanAll();
@@ -223,7 +219,7 @@ describe('registerPersonalTools', () => {
   describe('freematica_get_persona', () => {
     it('returns the persona for a valid idReg', async () => {
       const fake = { VSSPER_COD: 'P001', VSSPER_NOM: 'Ana', VSSPER_APELL1: 'Lopez' };
-      nock(BASE_URL).get('/pers/v2/personal/PERS001%3D%3D').reply(200, detailEnv(fake));
+      nock(BASE_URL).get('/pers/v1/personal/PERS001%3D%3D').reply(200, listEnv([fake], 1));
 
       const server = buildServer();
       const handler = getHandler(server, GET_TOOL);
@@ -239,7 +235,7 @@ describe('registerPersonalTools', () => {
 
     it('returns error not_found when idReg does not exist', async () => {
       nock(BASE_URL)
-        .get('/pers/v2/personal/BADID')
+        .get('/pers/v1/personal/BADID')
         .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
 
       const server = buildServer();
@@ -256,7 +252,7 @@ describe('registerPersonalTools', () => {
 
     it('returns error server_error on 500', async () => {
       nock(BASE_URL)
-        .get('/pers/v2/personal/ERR')
+        .get('/pers/v1/personal/ERR')
         .reply(200, { errorCode: '500', errorMessage: 'Server error', data: null });
 
       const server = buildServer();

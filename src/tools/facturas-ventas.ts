@@ -26,7 +26,7 @@ const LIST_CABECERA_DESCRIPTION = [
   '',
   'Filtros disponibles:',
   '- empresa, codCliente, representante',
-  '- fechaFacturaDesde/Hasta (rango de fecha factura)',
+  '- fechaFacturaDesde O fechaFacturaHasta (EXCLUYENTES: el API devuelve 0 filas si se combinan; usa solo uno por consulta)',
   '- serie, numFactura (número exacto)',
   '- formaPago, delegacion',
   '- traspasadoContabilidad: true → solo facturas ya traspasadas a contabilidad',

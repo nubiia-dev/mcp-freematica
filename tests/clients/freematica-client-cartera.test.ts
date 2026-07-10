@@ -267,6 +267,12 @@ describe('FreematicaClient — Cartera & Facturas Ventas (TD-118)', () => {
       ).rejects.toThrow(/no soporta combinar/);
     });
 
+    it('rechaza fechaFacturaHasta no válida de calendario (ej. 30 de febrero) con mensaje claro', async () => {
+      await expect(
+        client.listFacturasCabecera({ items: 10, page: 1, fechaFacturaHasta: '2026-02-30' }),
+      ).rejects.toThrow(/Fecha inválida/);
+    });
+
     it("applies traspasadoContabilidad=true as FVC_TRASP_CONTAB==1", async () => {
       const fake = [{ FVC_TRSCONT: 'S' }];
       const scope = nock(BASE_URL)

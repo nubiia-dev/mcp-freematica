@@ -507,14 +507,14 @@ describe('FreematicaClient', () => {
   describe('getPersona', () => {
     it('returns the persona for idReg', async () => {
       const fake = { VSSPER_COD: 'P001', VSSPER_NOM: 'Ana' };
-      nock(BASE_URL).get('/pers/v2/personal/PERS001%3D%3D').reply(200, detailEnv(fake));
+      nock(BASE_URL).get('/pers/v1/personal/PERS001%3D%3D').reply(200, listEnv([fake], 1));
       const result = await client.getPersona('PERS001==');
       expect(result).toEqual(fake);
     });
 
     it('propagates not_found on 404 envelope', async () => {
       nock(BASE_URL)
-        .get('/pers/v2/personal/BADID')
+        .get('/pers/v1/personal/BADID')
         .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
       await expect(client.getPersona('BADID')).rejects.toMatchObject({ code: 'not_found' });
     });

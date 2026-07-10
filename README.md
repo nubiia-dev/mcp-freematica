@@ -108,8 +108,8 @@ freematica_list_cartera_clientes({
   estado: 'pendiente',
 });
 
-// El MCP construye internamente:
-// rquery=CARCL_EMP==0001;CARCL_FECDOC=ge=2026-01-01;CARCL_SITCAR==1
+// El MCP construye internamente (valores siempre entre comillas simples):
+// rquery=CARCL_EMP=='0001';CARCL_FECDOC=ge='2026-01-01';CARCL_SITCAR=='1'
 ```
 
 ### Ventajas del patrón
@@ -127,14 +127,16 @@ freematica_list_facturas_cabecera({
   empresa: '0001',
   traspasadoContabilidad: false,
 });
-// → rquery=FAC_CODEMP==0001;FAC_TRASP_CONTAB==0
+// → rquery=FVC_CODEMP=='0001';FVC_TRASP_CONTAB=='0'
 
-// Proveedores activos que contienen "GARCIA" en el nombre:
+// Proveedor por nombre EXACTO (el API no soporta búsqueda parcial: =lk=
+// responde 400 y los wildcards % devuelven 0 resultados). El filtro activo
+// de proveedores post-filtra las bajas en cliente (FIQL no tiene IS NULL):
 freematica_list_proveedores({
-  nombre: 'GARCIA',
+  nombre: 'LEJIAS PONS S.A.',
   activo: true,
 });
-// → rquery=NOMBRE_PRO=lk=GARCIA;FECHA_BAJA==null
+// → rquery=NOMBRE_PRO=='LEJIAS PONS S.A.'
 ```
 
 ## Modos de transporte

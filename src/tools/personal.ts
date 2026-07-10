@@ -37,7 +37,7 @@ const LIST_DESCRIPTION = [
 const GET_DESCRIPTION = [
   'Devuelve el detalle completo de una persona.',
   '',
-  'Endpoint: GET /pers/v2/personal/{idreg}',
+  'Endpoint: GET /pers/v1/personal/{idreg}',
   '',
   'El parámetro `id` DEBE ser el campo `idReg` (string opaco base64) que aparece',
   'en los items de freematica_list_personal.',

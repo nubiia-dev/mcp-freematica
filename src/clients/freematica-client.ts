@@ -51,9 +51,22 @@ export interface ListOptions {
  * export-asientos — verificado contra el API real).
  */
 function nextDayIso(isoDate: string): string {
+  const fmt = (d: Date): string => {
+    // Formateo manual: toISOString() cambia de formato con años de 5+ dígitos
+    // (p.ej. 9999-12-31 + 1 día → '+010000-01-01…').
+    const y = String(d.getUTCFullYear()).padStart(4, '0');
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
   const d = new Date(`${isoDate}T00:00:00Z`);
+  // Round-trip: V8 "arrastra" días fuera de rango (2026-02-30 → 2026-03-02)
+  // en vez de fallar; solo el round-trip detecta ambos casos (NaN y arrastre).
+  if (Number.isNaN(d.getTime()) || fmt(d) !== isoDate) {
+    throw new Error(`Fecha inválida: ${isoDate}. Usa una fecha de calendario real en formato YYYY-MM-DD.`);
+  }
   d.setUTCDate(d.getUTCDate() + 1);
-  return d.toISOString().slice(0, 10);
+  return fmt(d);
 }
 
 /**
@@ -489,17 +502,27 @@ export class FreematicaClient extends BaseClient {
   }
 
   /**
-   * Detalle de una persona por `idReg` opaco.
+   * Detalle de una persona por su `idReg` opaco.
    *
-   * Endpoint: GET /pers/v2/personal/{idreg}
+   * Endpoint: GET /pers/v1/personal/{idreg}
    *
-   * @param idReg - Identificador opaco de la persona.
+   * v1, igual que el listado: garantiza que todo idReg devuelto por
+   * freematica_list_personal funciona aquí (la vista v2 es un subconjunto
+   * de sincronización incremental). El API devuelve un envelope de LISTA
+   * con un único item (verificado contra el API real); se desenvuelve.
+   *
+   * @param idReg - Identificador opaco (base64) de la persona.
    * @returns Objeto con todos los campos de la persona.
    */
   async getPersona(idReg: string): Promise<Record<string, unknown>> {
-    return this.get<Record<string, unknown>>(
-      `/pers/v2/personal/${encodeURIComponent(idReg)}`,
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/personal/${encodeURIComponent(idReg)}`,
     );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Persona no encontrada: ${idReg}`);
+    }
+    return item;
   }
 
   // ---------------------------------------------------------------------------
@@ -1230,7 +1253,10 @@ export class FreematicaClient extends BaseClient {
     if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
 
     // Columnas reales: FVV_MODOPAGO y FVV_FCH_VTO (verificado contra el API;
-    // FVV_CODMPAG y FVV_FECVCTO no existen).
+    // FVV_CODMPAG y FVV_FECVCTO no existen). A diferencia de FVC_FCHFAC en la
+    // cabecera, en este sub-recurso `=le=` responde 200 y ge+le combinados
+    // devuelven el registro esperado (verificado en producción con una factura
+    // de 1 vencimiento), así que se mantienen el =le= y el rango.
     const fiqlParts: string[] = [];
     if (opts.modoPago !== undefined) fiqlParts.push(buildFiql({ FVV_MODOPAGO: opts.modoPago }));
     if (opts.fechaVencimientoDesde !== undefined) fiqlParts.push(buildFiql({ FVV_FCH_VTO: { op: 'ge', value: opts.fechaVencimientoDesde } }));

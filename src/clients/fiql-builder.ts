@@ -31,6 +31,13 @@
  *   El espacio NO se escapea: dentro de comillas simples el API lo acepta
  *   tal cual, y percent-encodearlo rompe el match (doble encoding al pasar
  *   la FIQL por URLSearchParams).
+ *
+ * LIMITACIÓN CONOCIDA: los valores que contienen caracteres reservados
+ * (comas, apóstrofes, paréntesis…) viajan percent-encoded dentro del quoting
+ * y el servidor los compara literalmente, así que un filtro por un valor con
+ * esos caracteres puede devolver 0 resultados (verificado con comas en
+ * DESC_ART; sin datos con apóstrofes para verificar alternativas). El escape
+ * se mantiene porque no escaparlos rompería la gramática FIQL (inyección).
  */
 
 /**
