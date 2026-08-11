@@ -2,6 +2,48 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.10.0] — 2026-08-11
+
+### Vínculos persona↔servicio, habilitaciones CAE, cuadrantes y módulos PVSS de solo lectura
+
+Soporte completo de los módulos de seguridad CAE (Coordinación de Actividades Empresariales): vínculos persona↔servicio y feeds incrementales de habilitaciones (alta/baja de servicios-personal y de licencias del personal). Añadidos también cuadrantes, cómputos de persona, cierres de cuadrante y los módulos PVSS auxiliares (clases de servicio, inspectores, claves de facturación, incidencias, codes de incidencia). 33 tools de solo lectura nuevas.
+
+#### Added
+
+- **`freematica_list_vinculos_personas_servicios`** — `GET /pvss/v2/vinculos-personas-servicios`. Lista paginada de vínculos persona↔servicio. Permite resolver la relación centro/servicio → trabajador, clave para la integración CAE.
+- **`freematica_get_vinculo_persona_servicio`** — `GET /pvss/v2/vinculos-personas-servicios/{idreg}`. Detalle de un vínculo persona-servicio.
+- **`freematica_list_habilitaciones_servicios_alta`** — `GET /peqv/v2/habilitaciones/servicios/alta`. Feed incremental de altas de servicios-personal en el módulo de habilitaciones CAE. Soporta param `desde` (YYYY-MM-DD) para sincronización incremental.
+- **`freematica_list_habilitaciones_servicios_baja`** — `GET /peqv/v2/habilitaciones/servicios/baja`. Feed incremental de bajas de servicios-personal.
+- **`freematica_list_habilitaciones_personal_alta`** — `GET /peqv/v2/habilitaciones/personal/alta`. Feed incremental de altas de licencias del personal.
+- **`freematica_list_habilitaciones_personal_baja`** — `GET /peqv/v2/habilitaciones/personal/baja`. Feed incremental de bajas de licencias del personal.
+- **`freematica_list_cuadrantes`** — `GET /pvss/v1/cuadrantes`. Lista paginada de cuadrantes.
+- **`freematica_list_cuadrantes_detalles`** — `GET /pvss/v1/cuadrantes-detalles`. Detalles de cuadrantes.
+- **`freematica_list_cuadrantes_observaciones`** — `GET /pvss/v1/cuadrantes-observaciones`. Observaciones de cuadrantes.
+- **`freematica_list_cuadrantes_auditoria`** — `GET /pvss/v1/cuadrantes-auditoria`. Feed de auditoría de cuadrantes (nuevos/modificados/eliminados). Soporta param `desde` para sincronización incremental.
+- **`freematica_list_cuadrantes_tareas`** — `GET /pvss/v2/cuadrantes-tareas`. Tareas de cuadrantes.
+- **`freematica_list_computos_pers`** — `GET /pvss/v2/computos-pers`. Lista paginada de cómputos de personas; enlazan persona↔contrato↔servicio (campos `CONFCP_*`).
+- **`freematica_get_computos_pers`** — `GET /pvss/v2/computos-pers/{idReg}`. Detalle de un cómputo de persona.
+- **`freematica_get_computos_pers_h`** — `GET /pvss/v2/computos-pers-h/{idReg}`. Detalle de cómputo con histórico (campos `CONFCPH_PERS`, `CONFCPH_H_CTRT`, `CONFCPH_H_SERV`).
+- **`freematica_list_cuadrantes_cierre_personas`** — `GET /pvss/v1/cuadrantes-cierre-personas`. Lista de cierres de cuadrante por persona.
+- **`freematica_get_cuadrante_cierre_persona`** — `GET /pvss/v1/cuadrantes-cierre-personas/{idreg}`. Detalle.
+- **`freematica_list_cuadrantes_cierre_personas_complementos`** — `GET /pvss/v1/cuadrantes-cierre-personas-complementos`. Lista de complementos de cierre.
+- **`freematica_get_cuadrante_cierre_persona_complemento`** — `GET /pvss/v1/cuadrantes-cierre-personas-complementos/{idreg}`. Detalle.
+- **`freematica_list_cuadrantes_cierre_personas_especiales`** — `GET /pvss/v1/cuadrantes-cierre-personas-especiales`. Lista de especiales de cierre.
+- **`freematica_get_cuadrante_cierre_persona_especial`** — `GET /pvss/v1/cuadrantes-cierre-personas-especiales/{idreg}`. Detalle.
+- **`freematica_list_cuadrantes_cierre_personas_incidencias`** — `GET /pvss/v1/cuadrantes-cierre-personas-incidencias`. Lista de incidencias de cierre.
+- **`freematica_get_cuadrante_cierre_persona_incidencia`** — `GET /pvss/v1/cuadrantes-cierre-personas-incidencias/{idreg}`. Detalle.
+- **`freematica_list_contratos_servicios_global`** — `GET /pvss/v1/contratos-servicios`. Lista global de servicios de todos los contratos (sin filtro por contrato; diferente de `freematica_list_servicios_contrato` que requiere un `idContrato` específico).
+- **`freematica_list_contratos_turnos`** — `GET /pvss/v1/contratos-turnos`. Turnos de contratos.
+- **`freematica_list_contratos_horarios_operativa`** — `GET /pvss/v1/contratos-horarios-operativa`. Horarios de operativa.
+- **`freematica_list_clases_servicios`** — `GET /pvss/v1/clases-servicios`. Catálogo de clases de servicio.
+- **`freematica_list_inspectores`** — `GET /pvss/v1/inspectores`. Lista de inspectores.
+- **`freematica_get_inspector_empresa`** — `GET /pvss/v1/inspector-empresa`. Inspector de empresa.
+- **`freematica_list_claves_facturacion`** — `GET /pvss/v2/claves-facturacion`. Claves de facturación.
+- **`freematica_list_incidencias_servicios`** — `GET /pvss/v2/incidencias-servicios`. Lista paginada de incidencias en servicios.
+- **`freematica_get_incidencia_servicio`** — `GET /pvss/v2/incidencias-servicios/{idReg}`. Detalle de una incidencia.
+- **`freematica_list_incidencecode`** — `GET /pvss/v2/incidencecode`. Catálogo de códigos de incidencia (v2; v1 también disponible en el API pero se usa v2 como canónico).
+- **`freematica_get_contratos_servicios_material`** — `GET /pvss/v2/contratos-servicios-material/{idreg}`. Detalle de material asignado a un servicio de contrato por idReg (la lista global ya existía como `freematica_list_materiales_asignados_servicios`).
+
 ## [0.9.0] — 2026-07-10
 
 ### Catálogo de artículos + reparación integral de los filtros FIQL de lectura

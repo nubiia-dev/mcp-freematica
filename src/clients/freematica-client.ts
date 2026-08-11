@@ -2197,6 +2197,123 @@ export class FreematicaClient extends BaseClient {
     const data = await this.get<FreematicaListData<T>>(fullPath);
     return { items: data.items, total: Number(data.total) };
   }
+
+  // ---------------------------------------------------------------------------
+  // Vínculos persona↔servicio (v0.10.0)
+  // ---------------------------------------------------------------------------
+
+  /** Lista paginada de vínculos entre personas y servicios. */
+  async listVinculosPersonasServicios(opts: {
+    page?: number;
+    items?: number;
+    order?: string;
+  }): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder/pvss/v2/vinculos-personas-servicios');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /** Detalle de un vínculo persona-servicio por `idReg` opaco. */
+  async getVinculoPersonaServicio(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pvss/v2/vinculos-personas-servicios/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Habilitaciones CAE (v0.10.0)
+  // ---------------------------------------------------------------------------
+
+  /** Lista paginada de habilitaciones (altas/bajas de servicios/personal). */
+  async listHabilitaciones(
+    path: string,
+    opts: { page?: number; items?: number; desde?: string },
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder' + path);
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.desde !== undefined) url.searchParams.set('desde', opts.desde);
+    const fullPath = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(fullPath);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cuadrantes (v0.10.0)
+  // ---------------------------------------------------------------------------
+
+  /** Lista paginada genérica para endpoints de cuadrantes. */
+  async listCuadrantes(
+    endpoint: string,
+    opts: { page?: number; items?: number; order?: string; desde?: string },
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder' + endpoint);
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+    if (opts.desde !== undefined) url.searchParams.set('desde', opts.desde);
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /** Detalle genérico para endpoints de cuadrantes (cierre-personas, etc.). */
+  async getCuadrante(endpoint: string, idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`${endpoint}/${encodeURIComponent(idReg)}`);
+  }
+
+  /** Lista paginada de cómputos de personas. */
+  async listComputosPersonas(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pvss/v2/computos-pers', opts);
+  }
+
+  /** Detalle de cómputos de una persona por `idReg` opaco. */
+  async getComputosPersonas(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pvss/v2/computos-pers/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /** Detalle de cómputos históricos de una persona por `idReg` opaco. */
+  async getComputosPersonasH(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pvss/v2/computos-pers-h/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Servicios PVSS extras (v0.10.0)
+  // ---------------------------------------------------------------------------
+
+  /** Lista paginada genérica para endpoints de servicios PVSS. */
+  async listServiciosPvss(
+    endpoint: string,
+    opts: { page?: number; items?: number; order?: string },
+  ): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('https://placeholder' + endpoint);
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.order !== undefined) url.searchParams.set('order', opts.order);
+    const path = url.pathname + (url.search ? url.search : '');
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /** Recurso único de un endpoint PVSS (inspector-empresa, etc.). */
+  async getServicioPvss(endpoint: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(endpoint);
+  }
+
+  /** Detalle de material de contrato-servicio por `idReg` opaco. */
+  async getContratoServicioMaterial(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pvss/v2/contratos-servicios-material/${encodeURIComponent(idReg)}`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

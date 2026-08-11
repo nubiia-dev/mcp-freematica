@@ -20,6 +20,10 @@ import { registerPedidosComprasTools } from './tools/pedidos-compras.js';
 import { registerPersonalTools } from './tools/personal.js';
 import { registerPrlTools } from './tools/prl.js';
 import { registerProveedoresTools } from './tools/proveedores.js';
+import { registerVinculosPersonasServiciosTools } from './tools/vinculos-personas-servicios.js';
+import { registerHabilitacionesTools } from './tools/habilitaciones.js';
+import { registerCuadrantesTools } from './tools/cuadrantes.js';
+import { registerServiciosPvssTools } from './tools/servicios-pvss.js';
 
 export interface CreateFreematicaServerOptions {
   client: FreematicaClient;
@@ -55,6 +59,10 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerFacturasElectronicasTools(server, opts.client);
   registerAlbaranesTools(server, opts.client);
   registerArticulosTools(server, opts.client);
+  registerVinculosPersonasServiciosTools(server, opts.client);
+  registerHabilitacionesTools(server, opts.client);
+  registerCuadrantesTools(server, opts.client);
+  registerServiciosPvssTools(server, opts.client);
 
   return server;
 }
