@@ -75,6 +75,43 @@ const READ_ONLY_TOOLS = [
   'freematica_list_servicios_contrato',
   'freematica_list_resultados_facturacion',
   'freematica_list_vigilancia_salud',
+  // v0.10.0 — vínculos personas↔servicios
+  'freematica_list_vinculos_personas_servicios',
+  'freematica_get_vinculo_persona_servicio',
+  // v0.10.0 — habilitaciones CAE
+  'freematica_list_habilitaciones_servicios_alta',
+  'freematica_list_habilitaciones_servicios_baja',
+  'freematica_list_habilitaciones_personal_alta',
+  'freematica_list_habilitaciones_personal_baja',
+  // v0.10.0 — cuadrantes
+  'freematica_list_cuadrantes',
+  'freematica_list_cuadrantes_detalles',
+  'freematica_list_cuadrantes_observaciones',
+  'freematica_list_cuadrantes_auditoria',
+  'freematica_list_cuadrantes_tareas',
+  'freematica_list_computos_pers',
+  'freematica_get_computos_pers',
+  'freematica_get_computos_pers_h',
+  'freematica_list_cuadrantes_cierre_personas',
+  'freematica_get_cuadrante_cierre_persona',
+  'freematica_list_cuadrantes_cierre_personas_complementos',
+  'freematica_get_cuadrante_cierre_persona_complemento',
+  'freematica_list_cuadrantes_cierre_personas_especiales',
+  'freematica_get_cuadrante_cierre_persona_especial',
+  'freematica_list_cuadrantes_cierre_personas_incidencias',
+  'freematica_get_cuadrante_cierre_persona_incidencia',
+  // v0.10.0 — servicios PVSS extras
+  'freematica_list_contratos_servicios_global',
+  'freematica_list_contratos_turnos',
+  'freematica_list_contratos_horarios_operativa',
+  'freematica_list_clases_servicios',
+  'freematica_list_inspectores',
+  'freematica_get_inspector_empresa',
+  'freematica_list_claves_facturacion',
+  'freematica_list_incidencias_servicios',
+  'freematica_get_incidencia_servicio',
+  'freematica_list_incidencecode',
+  'freematica_get_contratos_servicios_material',
 ].sort();
 
 const WRITE_TOOLS = [
@@ -97,7 +134,7 @@ const WRITE_TOOLS = [
 ].sort();
 
 describe('createFreematicaServer', () => {
-  it('registers all 56 expected read-only tools by default', () => {
+  it('registers all expected read-only tools by default', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT });
     const names = registeredToolNames(server);
     expect(names).toEqual(READ_ONLY_TOOLS);
