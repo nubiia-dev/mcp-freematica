@@ -333,7 +333,7 @@ export const UpdateOportunidadDatosAmpladosShape = {
   COVR_AGRUP: z.string().optional().describe('Código de agrupación (COVR_AGRUP).'),
   COVR_ID_VAL: z.number().optional().describe('ID del valor (COVR_ID_VAL).'),
   COVR_TIPO_LOC: z.string().optional().describe('Tipo de localización de servicio (COVR_TIPO_LOC).'),
-  COVR_TIPO_RESP: z.number().optional().describe('Tipo respuesta: 0=lista valores, 1=Sí/No, 2=Texto, 3=PDF Base64, 4=Numérico, 5=Fecha (COVR_TIPO_RESP).'),
+  COVR_TIPO_RESP: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]).optional().describe('Tipo respuesta: 0=lista valores, 1=Sí/No, 2=Texto, 3=PDF Base64, 4=Numérico, 5=Fecha (COVR_TIPO_RESP).'),
   COVR_VALORES_RESPUESTA: z.string().optional().describe('Respuesta texto (si COVR_TIPO_RESP es 0, 1 ó 2) (COVR_VALORES_RESPUESTA).'),
   COVR_FICHERO_B64: z.string().optional().describe('Fichero PDF en formato Base64 (si COVR_TIPO_RESP es 3) (COVR_FICHERO_B64).'),
   COVR_VALOR_NUM: z.number().optional().describe('Valor numérico (si COVR_TIPO_RESP es 4) (COVR_VALOR_NUM).'),
@@ -347,7 +347,7 @@ export type UpdateOportunidadDatosAmpladosFields = {
   COVR_AGRUP?: string;
   COVR_ID_VAL?: number;
   COVR_TIPO_LOC?: string;
-  COVR_TIPO_RESP?: number;
+  COVR_TIPO_RESP?: 0 | 1 | 2 | 3 | 4 | 5;
   COVR_VALORES_RESPUESTA?: string;
   COVR_FICHERO_B64?: string;
   COVR_VALOR_NUM?: number;

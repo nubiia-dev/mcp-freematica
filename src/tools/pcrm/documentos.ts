@@ -177,9 +177,12 @@ export function registerPcrmDocumentosTools(
       idUsuario: idUsuarioField,
       idDocumento: idDocumentoField,
       camposNativos: z
-        .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+        .record(
+          z.string().regex(/^[A-Z][A-Z0-9_]*$/, 'Las claves deben ser columnas Freemática (MAYUSCULAS_CON_GUION_BAJO)'),
+          z.union([z.string(), z.number(), z.boolean(), z.null()]),
+        )
         .optional()
-        .describe('Campos nativos del documento a actualizar (el API acepta un objeto JSON libre).'),
+        .describe('Campos nativos del documento a actualizar. Las claves deben ser columnas Freemática en MAYUSCULAS_CON_GUION_BAJO (ej: TEXTO, FECHA_INICIO).'),
     },
     { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ idUsuario, idDocumento, camposNativos }): Promise<CallToolResult> => {
@@ -212,9 +215,12 @@ export function registerPcrmDocumentosTools(
       idUsuario: idUsuarioField,
       idDocumento: idDocumentoField,
       camposNativos: z
-        .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+        .record(
+          z.string().regex(/^[A-Z][A-Z0-9_]*$/, 'Las claves deben ser columnas Freemática (MAYUSCULAS_CON_GUION_BAJO)'),
+          z.union([z.string(), z.number(), z.boolean(), z.null()]),
+        )
         .optional()
-        .describe('Campos nativos del documento a actualizar (el API acepta un objeto JSON libre).'),
+        .describe('Campos nativos del documento a actualizar. Las claves deben ser columnas Freemática en MAYUSCULAS_CON_GUION_BAJO (ej: TEXTO, FECHA_INICIO).'),
     },
     { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ idUsuario, idDocumento, camposNativos }): Promise<CallToolResult> => {

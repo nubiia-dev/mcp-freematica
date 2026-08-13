@@ -185,12 +185,13 @@ export function registerPcrmOportunidadesExtTools(
   server.tool(
     'freematica_update_oportunidad_negocio_v1',
     [
-      'Actualiza una oportunidad de negocio existente (v1).',
+      'Actualiza una oportunidad de negocio existente (v1, actualización parcial).',
       '',
-      'Endpoint: PUT /pcrm/v1/oportunidades-negocio/{idReg} — body VoOportunidadNegocio.',
+      'Endpoint: GET /pcrm/v1/oportunidades-negocio/{idReg} + PUT /pcrm/v1/oportunidades-negocio/{idReg} — body VoOportunidadNegocio.',
       '',
       'El parámetro `idReg` es el identificador opaco de freematica_list_oportunidades_negocio.',
-      'Solo se envían los campos que se quieren modificar; los demás se ignoran.',
+      'La tool recupera primero el registro actual (v1), aplica encima los campos informados',
+      'y envía el objeto completo (el API exige los campos obligatorios en cada PUT).',
       'Devuelve el registro actualizado.',
     ].join('\n'),
     UpdateOportunidadShape,
@@ -198,7 +199,9 @@ export function registerPcrmOportunidadesExtTools(
     async (args): Promise<CallToolResult> => {
       try {
         const { idReg, ...rest } = args as { idReg: string } & OportunidadFields;
-        const body = buildOportunidadBody(rest);
+        const changes = buildOportunidadBody(rest);
+        const current = await client.getOportunidadNegocioV1(idReg);
+        const body = { ...(current as Record<string, unknown>), ...changes };
         const result = await client.updateOportunidadNegocioV1(idReg, body);
         return ok(result) as CallToolResult;
       } catch (err) {
@@ -214,12 +217,13 @@ export function registerPcrmOportunidadesExtTools(
   server.tool(
     'freematica_update_oportunidad_negocio',
     [
-      'Actualiza una oportunidad de negocio existente (v2).',
+      'Actualiza una oportunidad de negocio existente (v2, actualización parcial).',
       '',
-      'Endpoint: PUT /pcrm/v2/oportunidades-negocio/{idReg} — body VoOportunidadNegocio.',
+      'Endpoint: GET /pcrm/v2/oportunidades-negocio/{idReg} + PUT /pcrm/v2/oportunidades-negocio/{idReg} — body VoOportunidadNegocio.',
       '',
       'El parámetro `idReg` es el identificador opaco de freematica_list_oportunidades_negocio.',
-      'Solo se envían los campos que se quieren modificar; los demás se ignoran.',
+      'La tool recupera primero el registro actual (v2), aplica encima los campos informados',
+      'y envía el objeto completo (el API exige los campos obligatorios en cada PUT).',
       'Devuelve el registro actualizado.',
     ].join('\n'),
     UpdateOportunidadShape,
@@ -227,7 +231,9 @@ export function registerPcrmOportunidadesExtTools(
     async (args): Promise<CallToolResult> => {
       try {
         const { idReg, ...rest } = args as { idReg: string } & OportunidadFields;
-        const body = buildOportunidadBody(rest);
+        const changes = buildOportunidadBody(rest);
+        const current = await client.getOportunidadNegocio(idReg);
+        const body = { ...(current as Record<string, unknown>), ...changes };
         const result = await client.updateOportunidadNegocio(idReg, body);
         return ok(result) as CallToolResult;
       } catch (err) {

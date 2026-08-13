@@ -122,12 +122,13 @@ export function registerPcrmActividadesTools(
   server.tool(
     'freematica_update_pcrm_actividad',
     [
-      'Actualiza una actividad CRM existente.',
+      'Actualiza una actividad CRM existente (actualización parcial).',
       '',
-      'Endpoint: PUT /pcrm/v2/actividades/{idReg} — body VoActividadCrm.',
+      'Endpoint: GET /pcrm/v2/actividades/{idReg} + PUT /pcrm/v2/actividades/{idReg} — body VoActividadCrm.',
       '',
       'El parámetro `idReg` es el identificador opaco de freematica_list_pcrm_actividades.',
-      'Solo se envían los campos que se quieren modificar; los demás se ignoran.',
+      'La tool recupera primero el registro actual, aplica encima los campos informados',
+      'y envía el objeto completo (el API exige los campos obligatorios en cada PUT).',
       'Devuelve el registro actualizado.',
     ].join('\n'),
     UpdateActividadShape,
@@ -135,7 +136,9 @@ export function registerPcrmActividadesTools(
     async (args): Promise<CallToolResult> => {
       try {
         const { idReg, ...rest } = args as { idReg: string } & ActividadFields;
-        const body = buildActividadBody(rest);
+        const changes = buildActividadBody(rest);
+        const current = await client.getPcrmActividad(idReg);
+        const body = { ...(current as Record<string, unknown>), ...changes };
         const result = await client.updatePcrmActividad(idReg, body);
         return ok(result) as CallToolResult;
       } catch (err) {

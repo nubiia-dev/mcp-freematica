@@ -232,12 +232,13 @@ export function registerPcrmCasosTools(
   server.tool(
     'freematica_update_pcrm_caso',
     [
-      'Actualiza un caso CRM existente.',
+      'Actualiza un caso CRM existente (actualización parcial).',
       '',
-      'Endpoint: PUT /pcrm/v2/casos/{idReg} — body VoCasoCrm.',
+      'Endpoint: GET /pcrm/v2/casos/{idReg} + PUT /pcrm/v2/casos/{idReg} — body VoCasoCrm.',
       '',
       'El parámetro `idReg` es el identificador opaco de freematica_list_pcrm_casos.',
-      'Solo se envían los campos que se quieren modificar; los demás se ignoran.',
+      'La tool recupera primero el registro actual, aplica encima los campos informados',
+      'y envía el objeto completo (el API exige los campos obligatorios en cada PUT).',
       'Devuelve el registro actualizado.',
     ].join('\n'),
     UpdateCasoShape,
@@ -245,7 +246,9 @@ export function registerPcrmCasosTools(
     async (args): Promise<CallToolResult> => {
       try {
         const { idReg, ...rest } = args as { idReg: string } & CasoFields;
-        const body = buildCasoBody(rest);
+        const changes = buildCasoBody(rest);
+        const current = await client.getPcrmCaso(idReg);
+        const body = { ...(current as Record<string, unknown>), ...changes };
         const result = await client.updatePcrmCaso(idReg, body);
         return ok(result) as CallToolResult;
       } catch (err) {

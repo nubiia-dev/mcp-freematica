@@ -100,9 +100,12 @@ export function registerPcrmNotasTools(
     ].join('\n'),
     {
       camposNativos: z
-        .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+        .record(
+          z.string().regex(/^[A-Z][A-Z0-9_]*$/, 'Las claves deben ser columnas Freemática (MAYUSCULAS_CON_GUION_BAJO)'),
+          z.union([z.string(), z.number(), z.boolean(), z.null()]),
+        )
         .optional()
-        .describe('Campos nativos de la nota a crear (el API acepta un objeto JSON libre).'),
+        .describe('Campos nativos de la nota a crear. Las claves deben ser columnas Freemática en MAYUSCULAS_CON_GUION_BAJO (ej: NOTA, FECHA_NOTA).'),
     },
     { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     async ({ camposNativos }): Promise<CallToolResult> => {

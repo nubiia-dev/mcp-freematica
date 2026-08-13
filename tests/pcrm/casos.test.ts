@@ -358,10 +358,16 @@ describe('pcrm casos tools', () => {
   });
 
   describe('freematica_update_pcrm_caso', () => {
-    it('actualiza un caso y devuelve el registro', async () => {
+    it('actualiza un caso y devuelve el registro (fetch+merge)', async () => {
       const updated = { ...CASO, COD_ESTADO: 'F', RESOLUCION: 'Problema resuelto' };
-      const scope = nock(BASE_URL)
-        .put('/pcrm/v2/casos/crmc-caso-01', (body: Record<string, unknown>) => body['COD_ESTADO'] === 'F')
+      // fetch+merge: GET current → PUT merged body
+      const scopeGet = nock(BASE_URL)
+        .get('/pcrm/v2/casos/crmc-caso-01')
+        .reply(200, okEnvelope(CASO));
+      const scopePut = nock(BASE_URL)
+        .put('/pcrm/v2/casos/crmc-caso-01', (body: Record<string, unknown>) =>
+          body['COD_ESTADO'] === 'F' && body['ASUNTO'] === 'Fallo en sistema de alarma',
+        )
         .reply(200, okEnvelope(updated));
 
       const { server } = buildServer({ enableWrites: true });
@@ -371,12 +377,13 @@ describe('pcrm casos tools', () => {
       expect(result.isError).toBeUndefined();
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.COD_ESTADO).toBe('F');
-      scope.done();
+      scopeGet.done();
+      scopePut.done();
     });
 
-    it('devuelve error() si el caso no existe (404)', async () => {
+    it('devuelve error() si el caso no existe en el GET previo (404)', async () => {
       nock(BASE_URL)
-        .put('/pcrm/v2/casos/no-existe')
+        .get('/pcrm/v2/casos/no-existe')
         .reply(200, { errorCode: '404', errorMessage: 'Not found', data: null });
 
       const { server } = buildServer({ enableWrites: true });
@@ -387,8 +394,8 @@ describe('pcrm casos tools', () => {
       expect(JSON.parse(result.content[0].text).error).toBe('not_found');
     });
 
-    it('devuelve error() ante un error de red (no FreematicaError)', async () => {
-      nock(BASE_URL).put('/pcrm/v2/casos/net-err').replyWithError('ECONNRESET');
+    it('devuelve error() ante un error de red en el GET previo (no FreematicaError)', async () => {
+      nock(BASE_URL).get('/pcrm/v2/casos/net-err').replyWithError('ECONNRESET');
 
       const { server } = buildServer({ enableWrites: true });
       const handler = getHandler(server, 'freematica_update_pcrm_caso');

@@ -237,10 +237,16 @@ describe('pcrm oportunidades extendido tools', () => {
   });
 
   describe('freematica_update_oportunidad_negocio_v1', () => {
-    it('actualiza una oportunidad v1 y devuelve el registro', async () => {
+    it('actualiza una oportunidad v1 y devuelve el registro (fetch+merge)', async () => {
       const updated = { ...OPORTUNIDAD, COD_ESTADO_OPOR: 'G' };
-      const scope = nock(BASE_URL)
-        .put('/pcrm/v1/oportunidades-negocio/opor-ext-01', (body: Record<string, unknown>) => body['COD_ESTADO_OPOR'] === 'G')
+      // fetch+merge: GET current (v1) → PUT merged body
+      const scopeGet = nock(BASE_URL)
+        .get('/pcrm/v1/oportunidades-negocio/opor-ext-01')
+        .reply(200, okEnvelope(OPORTUNIDAD));
+      const scopePut = nock(BASE_URL)
+        .put('/pcrm/v1/oportunidades-negocio/opor-ext-01', (body: Record<string, unknown>) =>
+          body['COD_ESTADO_OPOR'] === 'G' && body['NOMBRE'] === 'Contrato anual de vigilancia',
+        )
         .reply(200, okEnvelope(updated));
 
       const { server } = buildServer({ enableWrites: true });
@@ -250,12 +256,13 @@ describe('pcrm oportunidades extendido tools', () => {
       expect(result.isError).toBeUndefined();
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.COD_ESTADO_OPOR).toBe('G');
-      scope.done();
+      scopeGet.done();
+      scopePut.done();
     });
 
-    it('devuelve error() si la oportunidad no existe (404)', async () => {
+    it('devuelve error() si la oportunidad no existe en el GET previo (404)', async () => {
       nock(BASE_URL)
-        .put('/pcrm/v1/oportunidades-negocio/no-existe')
+        .get('/pcrm/v1/oportunidades-negocio/no-existe')
         .reply(200, { errorCode: '404', errorMessage: 'Not found', data: null });
 
       const { server } = buildServer({ enableWrites: true });
@@ -266,8 +273,8 @@ describe('pcrm oportunidades extendido tools', () => {
       expect(JSON.parse(result.content[0].text).error).toBe('not_found');
     });
 
-    it('devuelve error() ante un error de red (no FreematicaError)', async () => {
-      nock(BASE_URL).put('/pcrm/v1/oportunidades-negocio/net-err').replyWithError('ECONNRESET');
+    it('devuelve error() ante un error de red en el GET previo (no FreematicaError)', async () => {
+      nock(BASE_URL).get('/pcrm/v1/oportunidades-negocio/net-err').replyWithError('ECONNRESET');
 
       const { server } = buildServer({ enableWrites: true });
       const handler = getHandler(server, 'freematica_update_oportunidad_negocio_v1');
@@ -278,10 +285,16 @@ describe('pcrm oportunidades extendido tools', () => {
   });
 
   describe('freematica_update_oportunidad_negocio', () => {
-    it('actualiza una oportunidad v2 y devuelve el registro', async () => {
+    it('actualiza una oportunidad v2 y devuelve el registro (fetch+merge)', async () => {
       const updated = { ...OPORTUNIDAD, PROBABILIDAD: 80 };
-      const scope = nock(BASE_URL)
-        .put('/pcrm/v2/oportunidades-negocio/opor-ext-01', (body: Record<string, unknown>) => body['PROBABILIDAD'] === 80)
+      // fetch+merge: GET current (v2) → PUT merged body
+      const scopeGet = nock(BASE_URL)
+        .get('/pcrm/v2/oportunidades-negocio/opor-ext-01')
+        .reply(200, okEnvelope(OPORTUNIDAD));
+      const scopePut = nock(BASE_URL)
+        .put('/pcrm/v2/oportunidades-negocio/opor-ext-01', (body: Record<string, unknown>) =>
+          body['PROBABILIDAD'] === 80 && body['NOMBRE'] === 'Contrato anual de vigilancia',
+        )
         .reply(200, okEnvelope(updated));
 
       const { server } = buildServer({ enableWrites: true });
@@ -291,12 +304,13 @@ describe('pcrm oportunidades extendido tools', () => {
       expect(result.isError).toBeUndefined();
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.PROBABILIDAD).toBe(80);
-      scope.done();
+      scopeGet.done();
+      scopePut.done();
     });
 
-    it('devuelve error() si la oportunidad no existe (404)', async () => {
+    it('devuelve error() si la oportunidad no existe en el GET previo (404)', async () => {
       nock(BASE_URL)
-        .put('/pcrm/v2/oportunidades-negocio/no-existe')
+        .get('/pcrm/v2/oportunidades-negocio/no-existe')
         .reply(200, { errorCode: '404', errorMessage: 'Not found', data: null });
 
       const { server } = buildServer({ enableWrites: true });
@@ -306,8 +320,8 @@ describe('pcrm oportunidades extendido tools', () => {
       expect(result.isError).toBe(true);
     });
 
-    it('devuelve error() ante un error de red (no FreematicaError)', async () => {
-      nock(BASE_URL).put('/pcrm/v2/oportunidades-negocio/net-err').replyWithError('ECONNRESET');
+    it('devuelve error() ante un error de red en el GET previo (no FreematicaError)', async () => {
+      nock(BASE_URL).get('/pcrm/v2/oportunidades-negocio/net-err').replyWithError('ECONNRESET');
 
       const { server } = buildServer({ enableWrites: true });
       const handler = getHandler(server, 'freematica_update_oportunidad_negocio');

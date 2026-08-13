@@ -183,10 +183,16 @@ describe('pcrm actividades tools', () => {
   });
 
   describe('freematica_update_pcrm_actividad', () => {
-    it('actualiza una actividad y devuelve el registro', async () => {
+    it('actualiza una actividad y devuelve el registro (fetch+merge)', async () => {
       const updated = { ...ACTIVIDAD, COD_ESTADO: 'F' };
-      const scope = nock(BASE_URL)
-        .put('/pcrm/v2/actividades/crma-act-01', (body: Record<string, unknown>) => body['COD_ESTADO'] === 'F')
+      // fetch+merge: GET current → PUT merged body
+      const scopeGet = nock(BASE_URL)
+        .get('/pcrm/v2/actividades/crma-act-01')
+        .reply(200, okEnvelope(ACTIVIDAD));
+      const scopePut = nock(BASE_URL)
+        .put('/pcrm/v2/actividades/crma-act-01', (body: Record<string, unknown>) =>
+          body['COD_ESTADO'] === 'F' && body['ASUNTO'] === 'Reunión de seguimiento',
+        )
         .reply(200, okEnvelope(updated));
 
       const { server } = buildServer({ enableWrites: true });
@@ -196,12 +202,13 @@ describe('pcrm actividades tools', () => {
       expect(result.isError).toBeUndefined();
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.COD_ESTADO).toBe('F');
-      scope.done();
+      scopeGet.done();
+      scopePut.done();
     });
 
-    it('devuelve error() si el registro no existe (404)', async () => {
+    it('devuelve error() si el registro no existe en el GET previo (404)', async () => {
       nock(BASE_URL)
-        .put('/pcrm/v2/actividades/no-existe')
+        .get('/pcrm/v2/actividades/no-existe')
         .reply(200, { errorCode: '404', errorMessage: 'Not found', data: null });
 
       const { server } = buildServer({ enableWrites: true });
@@ -212,8 +219,8 @@ describe('pcrm actividades tools', () => {
       expect(JSON.parse(result.content[0].text).error).toBe('not_found');
     });
 
-    it('devuelve error() ante un error de red (no FreematicaError)', async () => {
-      nock(BASE_URL).put('/pcrm/v2/actividades/net-err').replyWithError('ECONNRESET');
+    it('devuelve error() ante un error de red en el GET previo (no FreematicaError)', async () => {
+      nock(BASE_URL).get('/pcrm/v2/actividades/net-err').replyWithError('ECONNRESET');
 
       const { server } = buildServer({ enableWrites: true });
       const handler = getHandler(server, 'freematica_update_pcrm_actividad');
