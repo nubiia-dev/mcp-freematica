@@ -173,6 +173,35 @@ const READ_ONLY_TOOLS = [
   'freematica_list_ppre_marcajes_v2',
   'freematica_list_ppre_incidencias_anomalias',
   'freematica_list_ppre_tipo_instalacion',
+  // pemf — e-Movifree / Operativa de Campo
+  'freematica_list_pemf_marcajes',
+  'freematica_get_pemf_marcaje',
+  'freematica_list_pemf_tracking',
+  'freematica_list_pemf_calls',
+  'freematica_list_pemf_geoposition',
+  'freematica_list_pemf_geoposition_v2',
+  'freematica_list_pemf_cna',
+  'freematica_list_pemf_devices',
+  'freematica_get_pemf_device',
+  'freematica_list_pemf_rondas',
+  'freematica_list_pemf_rondas_v2',
+  'freematica_list_pemf_ronda_points',
+  'freematica_list_pemf_ronda_points_v2',
+  'freematica_list_pemf_services',
+  'freematica_get_pemf_service',
+  'freematica_list_pemf_service_alarms',
+  'freematica_list_pemf_service_issues',
+  'freematica_list_pemf_service_rounds',
+  'freematica_list_pemf_service_jobs',
+  'freematica_list_pemf_identificadores_servicio',
+  'freematica_list_pemf_rutas',
+  'freematica_list_pemf_materiales_consumibles',
+  'freematica_list_pemf_materiales_imputados',
+  'freematica_get_pemf_config_global',
+  'freematica_get_pemf_config',
+  'freematica_list_pemf_usuarios_notificaciones',
+  'freematica_get_pemf_operario',
+  'freematica_list_pemf_descubiertos',
 ].sort();
 
 const WRITE_TOOLS = [
@@ -232,6 +261,15 @@ const WRITE_TOOLS = [
   'freematica_create_ppre_marcaje',
   'freematica_update_ppre_marcaje_v1',
   'freematica_update_ppre_marcaje_v2',
+  // pemf write tools
+  'freematica_create_pemf_marcaje',
+  'freematica_create_pemf_marcaje_fecha_persona',
+  'freematica_create_pemf_device',
+  'freematica_update_pemf_device',
+  'freematica_create_pemf_ronda',
+  'freematica_save_pemf_config',
+  'freematica_update_pemf_config',
+  'freematica_update_pemf_ruta',
 ].sort();
 
 describe('createFreematicaServer', () => {

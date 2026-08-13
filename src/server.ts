@@ -26,6 +26,7 @@ import { registerHabilitacionesTools } from './tools/habilitaciones.js';
 import { registerCuadrantesTools } from './tools/cuadrantes.js';
 import { registerServiciosPvssTools } from './tools/servicios-pvss.js';
 import { registerPpreTools } from './tools/ppre/index.js';
+import { registerPemfTools } from './tools/pemf/index.js';
 
 export interface CreateFreematicaServerOptions {
   client: FreematicaClient;
@@ -67,6 +68,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerCuadrantesTools(server, opts.client);
   registerServiciosPvssTools(server, opts.client);
   registerPpreTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPemfTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
 
   return server;
 }

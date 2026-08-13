@@ -162,6 +162,34 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_list_ppre_marcajes_v2`                        | `GET /ppre/v2/marcajes`                                        | Marcajes IKAROS (v2)                                                                               |
 | `freematica_list_ppre_incidencias_anomalias`              | `GET /ppre/v1/incidencias-anomalias`                           | Catálogo de incidencias y anomalías (ppre)                                                         |
 | `freematica_list_ppre_tipo_instalacion`                   | `GET /ppre/v1/tipo-instalacion`                                | Catálogo de tipos de instalación                                                                   |
+| `freematica_list_pemf_marcajes`                           | `GET /pemf/v2/marcajes`                                        | Marcajes e-Movifree (v2, paginado)                                                                 |
+| `freematica_get_pemf_marcaje`                             | `GET /pemf/v2/marcajes/{idReg}`                                | Detalle de un marcaje e-Movifree                                                                   |
+| `freematica_list_pemf_tracking`                           | `GET /pemf/v1/tracking`                                        | Tracking de posiciones GPS de operarios (v1)                                                       |
+| `freematica_list_pemf_calls`                              | `GET /pemf/v1/calls`                                           | Registro de llamadas de servicio (v1)                                                              |
+| `freematica_list_pemf_geoposition`                        | `GET /pemf/v1/geoposition`                                     | Última geolocalización de operarios (v1)                                                           |
+| `freematica_list_pemf_geoposition_v2`                     | `GET /pemf/v2/geoposition`                                     | Última geolocalización de operarios (v2)                                                           |
+| `freematica_list_pemf_cna`                                | `GET /pemf/v2/cna`                                             | CNA — estado de operarios de campo (v2)                                                            |
+| `freematica_list_pemf_devices`                            | `GET /pemf/v1/devices`                                         | Lista de dispositivos e-Movifree (paginado)                                                        |
+| `freematica_get_pemf_device`                              | `GET /pemf/v1/devices/{idDevice}`                              | Detalle de un dispositivo e-Movifree                                                               |
+| `freematica_list_pemf_rondas`                             | `GET /pemf/v1/rounds`                                          | Rondas de vigilancia (v1, paginado)                                                                |
+| `freematica_list_pemf_rondas_v2`                          | `GET /pemf/v2/rounds`                                          | Rondas de vigilancia (v2, paginado)                                                                |
+| `freematica_list_pemf_ronda_points`                       | `GET /pemf/v1/rounds/{idRonda}/points`                         | Puntos de una ronda (v1)                                                                           |
+| `freematica_list_pemf_ronda_points_v2`                    | `GET /pemf/v2/rounds/{idRonda}/points`                         | Puntos de una ronda (v2)                                                                           |
+| `freematica_list_pemf_services`                           | `GET /pemf/v1/services`                                        | Servicios de campo activos (paginado)                                                              |
+| `freematica_get_pemf_service`                             | `GET /pemf/v1/services/{idService}`                            | Detalle de un servicio de campo                                                                    |
+| `freematica_list_pemf_service_alarms`                     | `GET /pemf/v1/services/{idService}/alarms`                     | Alarmas de un servicio de campo                                                                    |
+| `freematica_list_pemf_service_issues`                     | `GET /pemf/v1/services/{idService}/issues`                     | Incidencias de un servicio de campo                                                                |
+| `freematica_list_pemf_service_rounds`                     | `GET /pemf/v1/services/{idService}/rounds`                     | Rondas de un servicio de campo                                                                     |
+| `freematica_list_pemf_service_jobs`                       | `GET /pemf/v1/services/{idService}/jobs`                       | Trabajos (jobs) de un servicio de campo                                                            |
+| `freematica_list_pemf_identificadores_servicio`           | `GET /pemf/v2/identificadores-servicio`                        | Identificadores (QR/NFC/BLE) de servicio (paginado)                                                |
+| `freematica_list_pemf_rutas`                              | `GET /pemf/v2/routes`                                          | Rutas de operarios asignadas (paginado)                                                            |
+| `freematica_list_pemf_materiales_consumibles`             | `GET /pemf/v2/services/{idReg}/materiales-consumibles`         | Materiales consumibles de un servicio                                                              |
+| `freematica_list_pemf_materiales_imputados`               | `GET /pemf/v2/services/{idReg}/materiales-imputados`           | Materiales imputados a un servicio                                                                 |
+| `freematica_get_pemf_config_global`                       | `GET /pemf/v1/config`                                          | Configuración global de e-Movifree                                                                 |
+| `freematica_get_pemf_config`                              | `GET /pemf/v{1,2}/config/{idConfig}`                           | Configuración de un módulo (v1/v2 seleccionable)                                                   |
+| `freematica_list_pemf_usuarios_notificaciones`            | `GET /pemf/v1/usuarios-notificaciones`                         | Usuarios configurados para notificaciones e-Movifree                                               |
+| `freematica_get_pemf_operario`                            | `GET /pemf/v1/users`                                           | Datos del operario autenticado                                                                     |
+| `freematica_list_pemf_descubiertos`                       | `GET /pemf/v1/descubiertos`                                    | Servicios descubiertos (sin operario asignado) del día                                             |
 
 ### Tools de escritura (requieren `FREEMATICA_ENABLE_WRITES=true`)
 
@@ -223,6 +251,14 @@ Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=tr
 | `freematica_create_ppre_marcaje`                    | `POST /ppre/v1/guardar`                                         | Grabar marcaje IKAROS (trackType, serviceTag, lat/lng, etc.)     |
 | `freematica_update_ppre_marcaje_v1`                 | `PUT /ppre/v1/actualizar/{idReg}`                               | Actualizar marcaje IKAROS (v1)                                   |
 | `freematica_update_ppre_marcaje_v2`                 | `PUT /ppre/v2/actualizar/{idReg}`                               | Actualizar marcaje IKAROS (v2)                                   |
+| `freematica_create_pemf_marcaje`                    | `POST /pemf/v1/servicio/{idServicio}/crear-marcaje`             | Crear marcaje e-Movifree en un servicio                          |
+| `freematica_create_pemf_marcaje_fecha_persona`      | `POST /pemf/v2/marcaje-fechapersona`                            | Crear marcaje e-Movifree por fecha y persona (v2)                |
+| `freematica_create_pemf_device`                     | `POST /pemf/v1/devices`                                         | Alta de dispositivo e-Movifree                                   |
+| `freematica_update_pemf_device`                     | `PUT /pemf/v1/devices/{idDevice}`                               | Actualización de dispositivo e-Movifree                          |
+| `freematica_create_pemf_ronda`                      | `POST /pemf/v1/rounds`                                          | Alta de ronda de vigilancia                                      |
+| `freematica_save_pemf_config`                       | `POST /pemf/v{1,2}/config/{idConfig}`                           | Guardar configuración de módulo e-Movifree (POST)                |
+| `freematica_update_pemf_config`                     | `PUT /pemf/v{1,2}/config/{idConfig}`                            | Actualizar configuración de módulo e-Movifree (PUT)              |
+| `freematica_update_pemf_ruta`                       | `PUT /pemf/v2/routes/{idReg}`                                   | Actualizar ruta de operario (asignación, horario, frecuencia)    |
 
 ## Filtros tipados (FIQL interno)
 
