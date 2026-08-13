@@ -250,7 +250,7 @@ describe('FreematicaClient — Personal extended methods (pers/*)', () => {
 
   describe('getPersonalContrato', () => {
     it('unwraps list envelope', async () => {
-      const fake = { PERCTRAB_TIPO: 'I', PERCTRAB_FCH_INICIO: '2024-01-01' };
+      const fake = { PERCTRAB_TIPO: 'I', PERCTRAB_FEC_INI: '2024-01-01' };
       const scope = nock(BASE_URL)
         .get('/pers/v1/personal_contratos/CTRAB001%3D%3D')
         .reply(200, listEnv([fake], 1));
@@ -1013,7 +1013,7 @@ describe('FreematicaClient — Personal extended methods (pers/*)', () => {
 
     it('PUTs to /pers/v1/personal_contratos/{idReg}', async () => {
       const idReg = 'CTRAB001==';
-      const body = { PERCTRAB_FCH_FIN: '2026-12-31' };
+      const body = { PERCTRAB_FEC_FIN: '2026-12-31' };
       const scope = nock(BASE_URL)
         .put(`/pers/v1/personal_contratos/${encodeURIComponent(idReg)}`, body)
         .reply(200, okEnv({ updated: true }));

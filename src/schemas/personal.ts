@@ -208,8 +208,8 @@ const personaTramoFieldsShape = {
   empresa: z.string().optional().describe('Código de empresa (PERHH_EMP).'),
   delegacion: z.string().optional().describe('Código de delegación (PERHH_DELEG).'),
   idPersona: z.string().optional().describe('idReg de la persona (PERHH_PERSO).'),
-  fechaInicio: z.string().optional().describe('Fecha de inicio del tramo YYYY-MM-DD (PERHH_FCH_INICIO).'),
-  fechaFin: z.string().optional().describe('Fecha de fin del tramo YYYY-MM-DD (PERHH_FCH_FIN).'),
+  fechaInicio: z.string().optional().describe('Fecha de inicio del tramo YYYY-MM-DD (PERHH_FEC_INI).'),
+  fechaFin: z.string().optional().describe('Fecha de fin del tramo YYYY-MM-DD (PERHH_FEC_FIN).'),
   codHorario: z.string().optional().describe('Código de horario (PERHH_COD_HH).'),
   tipoContrato: z.string().optional().describe('Tipo de contrato (PERHH_TIPO_CTR).'),
   jornada: z.number().optional().describe('Porcentaje de jornada (PERHH_JORNADA).'),
@@ -244,8 +244,8 @@ export function buildPersonaTramoBody(args: PersonaTramoFields): Record<string, 
   setIf(body, 'PERHH_EMP', args.empresa);
   setIf(body, 'PERHH_DELEG', args.delegacion);
   setIf(body, 'PERHH_PERSO', args.idPersona);
-  setIf(body, 'PERHH_FCH_INICIO', args.fechaInicio);
-  setIf(body, 'PERHH_FCH_FIN', args.fechaFin);
+  setIf(body, 'PERHH_FEC_INI', args.fechaInicio);
+  setIf(body, 'PERHH_FEC_FIN', args.fechaFin);
   setIf(body, 'PERHH_COD_HH', args.codHorario);
   setIf(body, 'PERHH_TIPO_CTR', args.tipoContrato);
   setIf(body, 'PERHH_JORNADA', args.jornada);
@@ -263,8 +263,8 @@ const personaContratoFieldsShape = {
   empresa: z.string().optional().describe('Código de empresa (PERCTRAB_EMP).'),
   delegacion: z.string().optional().describe('Código de delegación (PERCTRAB_DELEG).'),
   idPersona: z.string().optional().describe('idReg de la persona (PERCTRAB_PERSO).'),
-  fechaInicio: z.string().optional().describe('Fecha de inicio del contrato YYYY-MM-DD (PERCTRAB_FCH_INICIO).'),
-  fechaFin: z.string().optional().describe('Fecha de fin del contrato YYYY-MM-DD (PERCTRAB_FCH_FIN).'),
+  fechaInicio: z.string().optional().describe('Fecha de inicio del contrato YYYY-MM-DD (PERCTRAB_FEC_INI).'),
+  fechaFin: z.string().optional().describe('Fecha de fin del contrato YYYY-MM-DD (PERCTRAB_FEC_FIN).'),
   tipoContrato: z.string().optional().describe('Tipo de contrato (PERCTRAB_TIPO).'),
   categoria: z.string().optional().describe('Categoría del empleado (PERCTRAB_CATEG).'),
   salarioBruto: z.number().optional().describe('Salario bruto anual (PERCTRAB_SAL_BRUTO).'),
@@ -297,8 +297,8 @@ export function buildPersonaContratoBody(args: PersonaContratoFields): Record<st
   setIf(body, 'PERCTRAB_EMP', args.empresa);
   setIf(body, 'PERCTRAB_DELEG', args.delegacion);
   setIf(body, 'PERCTRAB_PERSO', args.idPersona);
-  setIf(body, 'PERCTRAB_FCH_INICIO', args.fechaInicio);
-  setIf(body, 'PERCTRAB_FCH_FIN', args.fechaFin);
+  setIf(body, 'PERCTRAB_FEC_INI', args.fechaInicio);
+  setIf(body, 'PERCTRAB_FEC_FIN', args.fechaFin);
   setIf(body, 'PERCTRAB_TIPO', args.tipoContrato);
   setIf(body, 'PERCTRAB_CATEG', args.categoria);
   setIf(body, 'PERCTRAB_SAL_BRUTO', args.salarioBruto);

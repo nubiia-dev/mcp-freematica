@@ -336,7 +336,7 @@ describe('registerPersonalExtTools', () => {
 
   describe('freematica_list_personal_contratos', () => {
     it('returns paginated list of contratos', async () => {
-      const fake = [{ PERCTRAB_TIPO: 'I', PERCTRAB_FCH_INICIO: '2024-01-01' }];
+      const fake = [{ PERCTRAB_TIPO: 'I', PERCTRAB_FEC_INI: '2024-01-01' }];
       nock(BASE_URL)
         .get('/pers/v1/personal_contratos')
         .query({ items: '20', page: '1' })
@@ -353,7 +353,7 @@ describe('registerPersonalExtTools', () => {
 
   describe('freematica_get_personal_contrato', () => {
     it('returns contrato detail', async () => {
-      const fake = { PERCTRAB_TIPO: 'I', PERCTRAB_FCH_INICIO: '2024-01-01' };
+      const fake = { PERCTRAB_TIPO: 'I', PERCTRAB_FEC_INI: '2024-01-01' };
       nock(BASE_URL)
         .get('/pers/v1/personal_contratos/CTRAB001%3D%3D')
         .reply(200, listEnv([fake], 1));
@@ -658,10 +658,10 @@ describe('registerPersonalExtTools', () => {
 
   describe('freematica_create_personal_tramo (enableWrites=true)', () => {
     it('posts PERHH_* body correctly', async () => {
-      const created = { PERHH_COD_HH: 'H01', PERHH_FCH_INICIO: '2026-01-01' };
+      const created = { PERHH_COD_HH: 'H01', PERHH_FEC_INI: '2026-01-01' };
       nock(BASE_URL)
         .post('/pers/v1/personal_tramos', (body) => {
-          return body.PERHH_COD_HH === 'H01' && body.PERHH_FCH_INICIO === '2026-01-01';
+          return body.PERHH_COD_HH === 'H01' && body.PERHH_FEC_INI === '2026-01-01';
         })
         .reply(200, okEnv(created));
 
@@ -800,7 +800,7 @@ describe('registerPersonalExtTools', () => {
     it('maps PERCTRAB_* fields correctly', async () => {
       nock(BASE_URL)
         .post('/pers/v1/personal_contratos', (body) => {
-          return body.PERCTRAB_TIPO === 'I' && body.PERCTRAB_FCH_INICIO === '2026-01-01';
+          return body.PERCTRAB_TIPO === 'I' && body.PERCTRAB_FEC_INI === '2026-01-01';
         })
         .reply(200, okEnv({ created: true }));
 
@@ -1036,7 +1036,7 @@ describe('registerPersonalExtTools', () => {
 
   describe('freematica_get_personal_tramo', () => {
     it('returns tramo detail', async () => {
-      const fake = { PERHH_COD_HH: 'H02', PERHH_FCH_INICIO: '2025-01-01' };
+      const fake = { PERHH_COD_HH: 'H02', PERHH_FEC_INI: '2025-01-01' };
       nock(BASE_URL)
         .get('/pers/v1/personal_tramos/TRAM001%3D%3D')
         .reply(200, listEnv([fake], 1));
@@ -1086,7 +1086,7 @@ describe('registerPersonalExtTools', () => {
 
   describe('freematica_get_personal_tramo_v2', () => {
     it('returns tramo v2 detail', async () => {
-      const fake = { PERHH_COD_HH: 'H03', PERHH_FCH_INICIO: '2026-01-01' };
+      const fake = { PERHH_COD_HH: 'H03', PERHH_FEC_INI: '2026-01-01' };
       nock(BASE_URL)
         .get('/pers/v2/personal/tramos/TRAMV2%3D%3D')
         .reply(200, listEnv([fake], 1));
@@ -1870,7 +1870,7 @@ describe('registerPersonalExtTools', () => {
 
   describe('freematica_update_personal_contrato (enableWrites=true)', () => {
     it('fetches current contrato then PUTs merged', async () => {
-      const current = { PERCTRAB_TIPO: 'I', PERCTRAB_FCH_INICIO: '2024-01-01' };
+      const current = { PERCTRAB_TIPO: 'I', PERCTRAB_FEC_INI: '2024-01-01' };
       const idReg = 'CTRAB001==';
 
       nock(BASE_URL)
@@ -1879,9 +1879,9 @@ describe('registerPersonalExtTools', () => {
 
       nock(BASE_URL)
         .put(`/pers/v1/personal_contratos/${encodeURIComponent(idReg)}`, (body) => {
-          return body.PERCTRAB_TIPO === 'I' && body.PERCTRAB_FCH_FIN === '2026-12-31';
+          return body.PERCTRAB_TIPO === 'I' && body.PERCTRAB_FEC_FIN === '2026-12-31';
         })
-        .reply(200, okEnv({ ...current, PERCTRAB_FCH_FIN: '2026-12-31' }));
+        .reply(200, okEnv({ ...current, PERCTRAB_FEC_FIN: '2026-12-31' }));
 
       const handler = getHandler(buildServer(true), 'freematica_update_personal_contrato');
       const result = (await handler({ idReg, fechaFin: '2026-12-31' })) as {

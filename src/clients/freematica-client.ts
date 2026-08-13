@@ -1103,6 +1103,9 @@ export class FreematicaClient extends BaseClient {
   /**
    * Actualización de formación de personal.
    *
+   * NOTA: el GET de lectura es v1 (/pers/v1/personal-formaciones/{idReg}) pero
+   * el endpoint de escritura es v2. Esta asimetría está en la colección Postman
+   * — no unificar la versión.
    * Endpoint: PUT /pers/v2/personal-formaciones/{idReg}
    */
   async updatePersonalFormacion(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
