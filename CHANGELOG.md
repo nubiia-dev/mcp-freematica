@@ -2,6 +2,65 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — módulo pemf (e-Movifree / Operativa de Campo) completo: lectura y escritura
+
+### Módulo `pemf` (e-Movifree / Operativa de Campo)
+
+Implementación completa del módulo `/pemf/` de la API de Freemática. Se añaden **28 tools de solo lectura** y **8 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`). Cubre marcajes de campo, dispositivos NFC/QR/BLE, rondas de vigilancia, servicios de campo (con alarmas, incidencias, trabajos), materiales, configuración de módulos, datos del operario y descubiertos.
+
+#### Added (lectura — 28 tools nuevas)
+
+- **`freematica_list_pemf_marcajes`** — `GET /pemf/v2/marcajes`. Lista paginada de marcajes e-Movifree (v2).
+- **`freematica_get_pemf_marcaje`** — `GET /pemf/v2/marcajes/{idReg}`. Detalle de un marcaje.
+- **`freematica_list_pemf_tracking`** — `GET /pemf/v1/tracking`. Tracking de posiciones GPS de operarios.
+- **`freematica_list_pemf_calls`** — `GET /pemf/v1/calls`. Registro de llamadas de servicio.
+- **`freematica_list_pemf_geoposition`** — `GET /pemf/v1/geoposition`. Última geolocalización de operarios (v1).
+- **`freematica_list_pemf_geoposition_v2`** — `GET /pemf/v2/geoposition`. Última geolocalización de operarios (v2).
+- **`freematica_list_pemf_cna`** — `GET /pemf/v2/cna`. Estado de operarios de campo (CNA).
+- **`freematica_list_pemf_devices`** — `GET /pemf/v1/devices`. Lista paginada de dispositivos e-Movifree.
+- **`freematica_get_pemf_device`** — `GET /pemf/v1/devices/{idDevice}`. Detalle de un dispositivo.
+- **`freematica_list_pemf_rondas`** — `GET /pemf/v1/rounds`. Rondas de vigilancia (v1, paginado).
+- **`freematica_list_pemf_rondas_v2`** — `GET /pemf/v2/rounds`. Rondas de vigilancia (v2, paginado).
+- **`freematica_list_pemf_ronda_points`** — `GET /pemf/v1/rounds/{idRonda}/points`. Puntos de una ronda (v1).
+- **`freematica_list_pemf_ronda_points_v2`** — `GET /pemf/v2/rounds/{idRonda}/points`. Puntos de una ronda (v2).
+- **`freematica_list_pemf_services`** — `GET /pemf/v1/services`. Servicios de campo activos (paginado).
+- **`freematica_get_pemf_service`** — `GET /pemf/v1/services/{idService}`. Detalle de un servicio.
+- **`freematica_list_pemf_service_alarms`** — `GET /pemf/v1/services/{idService}/alarms`. Alarmas de un servicio.
+- **`freematica_list_pemf_service_issues`** — `GET /pemf/v1/services/{idService}/issues`. Incidencias de un servicio.
+- **`freematica_list_pemf_service_rounds`** — `GET /pemf/v1/services/{idService}/rounds`. Rondas de un servicio.
+- **`freematica_list_pemf_service_jobs`** — `GET /pemf/v1/services/{idService}/jobs`. Trabajos de un servicio.
+- **`freematica_list_pemf_identificadores_servicio`** — `GET /pemf/v2/identificadores-servicio`. Identificadores (QR/NFC/BLE) paginados.
+- **`freematica_list_pemf_rutas`** — `GET /pemf/v2/routes`. Rutas de operarios asignadas (paginado).
+- **`freematica_list_pemf_materiales_consumibles`** — `GET /pemf/v2/services/{idReg}/materiales-consumibles`. Materiales consumibles de un servicio.
+- **`freematica_list_pemf_materiales_imputados`** — `GET /pemf/v2/services/{idReg}/materiales-imputados`. Materiales imputados a un servicio.
+- **`freematica_get_pemf_config_global`** — `GET /pemf/v1/config`. Configuración global de e-Movifree.
+- **`freematica_get_pemf_config`** — `GET /pemf/v{1,2}/config/{idConfig}`. Configuración de un módulo (v1/v2 seleccionable).
+- **`freematica_list_pemf_usuarios_notificaciones`** — `GET /pemf/v1/usuarios-notificaciones`. Usuarios configurados para notificaciones.
+- **`freematica_get_pemf_operario`** — `GET /pemf/v1/users`. Datos del operario autenticado.
+- **`freematica_list_pemf_descubiertos`** — `GET /pemf/v1/descubiertos`. Servicios descubiertos (sin operario) del día.
+
+#### Added (escritura — 8 tools nuevas, solo con `FREEMATICA_ENABLE_WRITES=true`)
+
+- **`freematica_create_pemf_marcaje`** — `POST /pemf/v1/servicio/{idServicio}/crear-marcaje`. Crear marcaje e-Movifree en un servicio.
+- **`freematica_create_pemf_marcaje_fecha_persona`** — `POST /pemf/v2/marcaje-fechapersona`. Crear marcaje por fecha y persona (v2).
+- **`freematica_create_pemf_device`** — `POST /pemf/v1/devices`. Alta de dispositivo e-Movifree.
+- **`freematica_update_pemf_device`** — `PUT /pemf/v1/devices/{idDevice}`. Actualización de dispositivo.
+- **`freematica_create_pemf_ronda`** — `POST /pemf/v1/rounds`. Alta de ronda de vigilancia.
+- **`freematica_save_pemf_config`** — `POST /pemf/v{1,2}/config/{idConfig}`. Guardar configuración de módulo (POST).
+- **`freematica_update_pemf_config`** — `PUT /pemf/v{1,2}/config/{idConfig}`. Actualizar configuración de módulo (PUT).
+- **`freematica_update_pemf_ruta`** — `PUT /pemf/v2/routes/{idReg}`. Actualizar ruta de operario (asignación, horario, frecuencia).
+
+#### Not implemented (by design)
+
+- `DELETE /pemf/v1/config/:idConfig`, `DELETE /pemf/v2/config/:idConfig`, `DELETE /pemf/v1/devices/:idDevice` — borrado de recursos (invariante del repo: sin tools de borrado).
+- `POST/GET /pemf/v1/identificacion-pin`, `POST/GET /pemf/v1/identificacion-tag` — login de operario por PIN/TAG, no es un tool de datos para LLM.
+- `GET /pemf/v1/clients` — endpoint de filtros de UI, no expone datos de negocio.
+- Endpoints IVR/CCR (Twilio/Vonage: `call`, `ccr-*`, `config/ccr`) — flujos de voz telefónica, no consultas de datos.
+- Exports binarios (`GET /pemf/v1/services/{id}/pdf-reporte`, etc.) — binarios PDF, no procesables por LLM.
+- Acciones de control de dispositivo (`/device/close`, `/device/reset`) — sin valor de datos para LLM.
+
+---
+
 ## [Unreleased] — módulo ppre (Preventivos/Mantenimiento/Instalaciones) completo: lectura y escritura
 
 ### Módulo `ppre` (Preventivos / Mantenimiento / Instalaciones)

@@ -3407,6 +3407,393 @@ export class FreematicaClient extends BaseClient {
     const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
     return { items: data.items, total: Number(data.total) };
   }
+
+  // ---------------------------------------------------------------------------
+  // pemf — e-Movifree / Operativa de Campo (v0.12.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de marcajes de campo e-Movifree (v2).
+   *
+   * Endpoint: GET /pemf/v2/marcajes
+   */
+  async listPemfMarcajes(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v2/marcajes', opts);
+  }
+
+  /**
+   * Detalle de un marcaje de campo por idReg (v2).
+   *
+   * Endpoint: GET /pemf/v2/marcajes/{idReg}
+   */
+  async getPemfMarcaje(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pemf/v2/marcajes/${encodeURIComponent(idReg)}`,
+    );
+    // El API puede devolver envelope de lista con un item o un objeto directo
+    if (data && typeof data === 'object' && 'items' in data) {
+      const listData = data as FreematicaListData<Record<string, unknown>>;
+      const item = listData.items?.[0];
+      if (item === undefined) throw new FreematicaError('not_found', `Marcaje pemf no encontrado: ${idReg}`);
+      return item;
+    }
+    return data as unknown as Record<string, unknown>;
+  }
+
+  /**
+   * Lista paginada de marcajes de tracking e-Movifree (v1).
+   *
+   * Endpoint: GET /pemf/v1/tracking
+   */
+  async listPemfTracking(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v1/tracking', opts);
+  }
+
+  /**
+   * Lista paginada de marcajes CCR (llamadas fijas) de e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/calls
+   */
+  async listPemfCalls(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v1/calls', opts);
+  }
+
+  /**
+   * Lista paginada de marcajes de geoposición (v1).
+   *
+   * Endpoint: GET /pemf/v1/geoposition
+   */
+  async listPemfGeoposition(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v1/geoposition', opts);
+  }
+
+  /**
+   * Lista paginada de marcajes de geoposición (v2).
+   *
+   * Endpoint: GET /pemf/v2/geoposition
+   */
+  async listPemfGeopositionV2(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v2/geoposition', opts);
+  }
+
+  /**
+   * Lista paginada de novedades activas (CNA).
+   *
+   * Endpoint: GET /pemf/v2/cna
+   */
+  async listPemfCna(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v2/cna', opts);
+  }
+
+  /**
+   * Graba un marcaje de campo en e-Movifree para un servicio específico.
+   *
+   * Endpoint: POST /pemf/v1/servicio/{idservicio}/crear-marcaje
+   */
+  async createPemfMarcaje(idServicio: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPemfMarcaje', `POST /pemf/v1/servicio/${idServicio}/crear-marcaje`, body);
+    return this.post<Record<string, unknown>>(
+      `/pemf/v1/servicio/${encodeURIComponent(idServicio)}/crear-marcaje`,
+      body,
+    );
+  }
+
+  /**
+   * Graba un marcaje de campo identificando al operario por fecha y tag de persona.
+   *
+   * Endpoint: POST /pemf/v2/marcaje-fechapersona
+   */
+  async createPemfMarcajeFechaPersona(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPemfMarcajeFechaPersona', 'POST /pemf/v2/marcaje-fechapersona', body);
+    return this.post<Record<string, unknown>>('/pemf/v2/marcaje-fechapersona', body);
+  }
+
+  /**
+   * Lista paginada de dispositivos e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/devices
+   */
+  async listPemfDevices(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v1/devices', opts);
+  }
+
+  /**
+   * Detalle de un dispositivo e-Movifree por idDevice.
+   *
+   * Endpoint: GET /pemf/v1/devices/{idDevice}
+   */
+  async getPemfDevice(idDevice: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pemf/v1/devices/${encodeURIComponent(idDevice)}`,
+    );
+  }
+
+  /**
+   * Alta de un dispositivo e-Movifree.
+   *
+   * Endpoint: POST /pemf/v1/devices
+   */
+  async createPemfDevice(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPemfDevice', 'POST /pemf/v1/devices', body);
+    return this.post<Record<string, unknown>>('/pemf/v1/devices', body);
+  }
+
+  /**
+   * Actualización de un dispositivo e-Movifree.
+   *
+   * Endpoint: PUT /pemf/v1/devices/{idDevice}
+   */
+  async updatePemfDevice(idDevice: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePemfDevice', `PUT /pemf/v1/devices/${idDevice}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pemf/v1/devices/${encodeURIComponent(idDevice)}`,
+      body,
+    );
+  }
+
+  /**
+   * Lista paginada de rondas de seguridad (v1).
+   *
+   * Endpoint: GET /pemf/v1/rounds
+   */
+  async listPemfRondas(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v1/rounds', opts);
+  }
+
+  /**
+   * Lista paginada de rondas de seguridad (v2).
+   *
+   * Endpoint: GET /pemf/v2/rounds
+   */
+  async listPemfRondasV2(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v2/rounds', opts);
+  }
+
+  /**
+   * Lista los puntos de control de una ronda (v1).
+   *
+   * Endpoint: GET /pemf/v1/rounds/{idRonda}/points
+   */
+  async listPemfRondaPoints(idRonda: string, opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(
+      `/pemf/v1/rounds/${encodeURIComponent(idRonda)}/points`,
+      opts,
+    );
+  }
+
+  /**
+   * Lista los puntos de control de una ronda (v2).
+   *
+   * Endpoint: GET /pemf/v2/rounds/{idRonda}/points
+   */
+  async listPemfRondaPointsV2(idRonda: string, opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(
+      `/pemf/v2/rounds/${encodeURIComponent(idRonda)}/points`,
+      opts,
+    );
+  }
+
+  /**
+   * Crea una nueva ronda de seguridad.
+   *
+   * Endpoint: POST /pemf/v1/rounds
+   */
+  async createPemfRonda(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPemfRonda', 'POST /pemf/v1/rounds', body);
+    return this.post<Record<string, unknown>>('/pemf/v1/rounds', body);
+  }
+
+  /**
+   * Lista paginada de servicios de campo e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/services
+   */
+  async listPemfServices(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v1/services', opts);
+  }
+
+  /**
+   * Detalle de un servicio de campo e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/services/{idService}
+   */
+  async getPemfService(idService: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pemf/v1/services/${encodeURIComponent(idService)}`,
+    );
+  }
+
+  /**
+   * Lista de alarmas de un servicio de campo.
+   *
+   * Endpoint: GET /pemf/v1/services/{idService}/alarms
+   */
+  async listPemfServiceAlarms(idService: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pemf/v1/services/${encodeURIComponent(idService)}/alarms`,
+    );
+  }
+
+  /**
+   * Lista de incidencias de un servicio de campo.
+   *
+   * Endpoint: GET /pemf/v1/services/{idService}/issues
+   */
+  async listPemfServiceIssues(idService: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pemf/v1/services/${encodeURIComponent(idService)}/issues`,
+    );
+  }
+
+  /**
+   * Lista de rondas de un servicio de campo.
+   *
+   * Endpoint: GET /pemf/v1/services/{idService}/rounds
+   */
+  async listPemfServiceRounds(idService: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pemf/v1/services/${encodeURIComponent(idService)}/rounds`,
+    );
+  }
+
+  /**
+   * Lista de trabajos/tareas de un servicio de campo.
+   *
+   * Endpoint: GET /pemf/v1/services/{idService}/jobs
+   */
+  async listPemfServiceJobs(idService: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pemf/v1/services/${encodeURIComponent(idService)}/jobs`,
+    );
+  }
+
+  /**
+   * Lista paginada de identificadores de servicio e-Movifree.
+   *
+   * Endpoint: GET /pemf/v2/identificadores-servicio
+   */
+  async listPemfIdentificadoresServicio(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v2/identificadores-servicio', opts);
+  }
+
+  /**
+   * Lista paginada de rutas de campo e-Movifree.
+   *
+   * Endpoint: GET /pemf/v2/routes
+   */
+  async listPemfRutas(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pemf/v2/routes', opts);
+  }
+
+  /**
+   * Actualiza una ruta de campo e-Movifree.
+   *
+   * Endpoint: PUT /pemf/v2/routes/{idReg}
+   */
+  async updatePemfRuta(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePemfRuta', `PUT /pemf/v2/routes/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pemf/v2/routes/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Lista de materiales consumibles de un servicio.
+   *
+   * Endpoint: GET /pemf/v2/services/{idReg}/materiales-consumibles
+   */
+  async listPemfMaterialesConsumibles(idReg: string): Promise<ListResult<Record<string, unknown>>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pemf/v2/services/${encodeURIComponent(idReg)}/materiales-consumibles`,
+    );
+    return { items: data.items ?? [], total: Number(data.total ?? 0) };
+  }
+
+  /**
+   * Lista de materiales imputados (FTO) de un servicio.
+   *
+   * Endpoint: GET /pemf/v2/services/{idReg}/materiales-imputados
+   */
+  async listPemfMaterialesImputados(idReg: string): Promise<ListResult<Record<string, unknown>>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pemf/v2/services/${encodeURIComponent(idReg)}/materiales-imputados`,
+    );
+    return { items: data.items ?? [], total: Number(data.total ?? 0) };
+  }
+
+  /**
+   * Configuración global de e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/config
+   */
+  async getPemfConfigGlobal(): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/pemf/v1/config');
+  }
+
+  /**
+   * Configuración de un módulo e-Movifree por idConfig.
+   *
+   * Endpoint: GET /pemf/v1/config/{idConfig} o GET /pemf/v2/config/{idConfig}
+   */
+  async getPemfConfig(idConfig: string, version: 'v1' | 'v2' = 'v1'): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pemf/${version}/config/${encodeURIComponent(idConfig)}`,
+    );
+  }
+
+  /**
+   * Guarda la configuración de un módulo e-Movifree (POST).
+   *
+   * Endpoint: POST /pemf/v1/config/{idConfig} o POST /pemf/v2/config/{idConfig}
+   */
+  async savePemfConfig(idConfig: string, version: 'v1' | 'v2', body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('savePemfConfig', `POST /pemf/${version}/config/${idConfig}`, body);
+    return this.post<Record<string, unknown>>(
+      `/pemf/${version}/config/${encodeURIComponent(idConfig)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualiza la configuración de un módulo e-Movifree (PUT).
+   *
+   * Endpoint: PUT /pemf/v1/config/{idConfig} o PUT /pemf/v2/config/{idConfig}
+   */
+  async updatePemfConfig(idConfig: string, version: 'v1' | 'v2', body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePemfConfig', `PUT /pemf/${version}/config/${idConfig}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pemf/${version}/config/${encodeURIComponent(idConfig)}`,
+      body,
+    );
+  }
+
+  /**
+   * Lista de usuarios de notificaciones de e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/usuarios-notificaciones
+   */
+  async listPemfUsuariosNotificaciones(): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/pemf/v1/usuarios-notificaciones');
+  }
+
+  /**
+   * Datos del operario autenticado en e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/users
+   */
+  async getPemfOperario(): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/pemf/v1/users');
+  }
+
+  /**
+   * Descubiertos del sistema e-Movifree.
+   *
+   * Endpoint: GET /pemf/v1/descubiertos
+   */
+  async listPemfDescubiertos(): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/pemf/v1/descubiertos');
+  }
 }
 
 // ---------------------------------------------------------------------------
