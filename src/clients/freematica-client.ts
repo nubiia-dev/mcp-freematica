@@ -270,6 +270,328 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // PCRM — CRM extendido (actividades, casos, documentos, notas, oportunidades)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de actividades CRM (citas y tareas).
+   *
+   * Endpoint: GET /pcrm/v2/actividades
+   */
+  async listPcrmActividades(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcrm/v2/actividades', opts);
+  }
+
+  /**
+   * Detalle de una actividad CRM por `idReg` opaco.
+   *
+   * Endpoint: GET /pcrm/v2/actividades/{idReg}
+   */
+  async getPcrmActividad(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/actividades/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Alta de una actividad CRM.
+   *
+   * Endpoint: POST /pcrm/v2/actividades — body VoActividadCrm.
+   */
+  async createPcrmActividad(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPcrmActividad', 'POST /pcrm/v2/actividades', body);
+    return this.post<Record<string, unknown>>('/pcrm/v2/actividades', body);
+  }
+
+  /**
+   * Actualización de una actividad CRM.
+   *
+   * Endpoint: PUT /pcrm/v2/actividades/{idReg} — body VoActividadCrm.
+   */
+  async updatePcrmActividad(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePcrmActividad', `PUT /pcrm/v2/actividades/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pcrm/v2/actividades/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Lista paginada de casos CRM.
+   *
+   * Endpoint: GET /pcrm/v2/casos
+   */
+  async listPcrmCasos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcrm/v2/casos', opts);
+  }
+
+  /**
+   * Detalle de un caso CRM por `idReg` opaco.
+   *
+   * Endpoint: GET /pcrm/v2/casos/{idReg}
+   */
+  async getPcrmCaso(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/casos/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de tipos de caso CRM.
+   *
+   * Endpoint: GET /pcrm/v2/tipos-casos
+   */
+  async listPcrmTiposCasos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcrm/v2/tipos-casos', opts);
+  }
+
+  /**
+   * Detalle de un tipo de caso CRM por `idReg` opaco.
+   *
+   * Endpoint: GET /pcrm/v2/tipos-casos/{idReg}
+   */
+  async getPcrmTipoCaso(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/tipos-casos/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de subtipos de caso CRM.
+   *
+   * Endpoint: GET /pcrm/v2/subtipos-casos
+   */
+  async listPcrmSubtiposCasos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcrm/v2/subtipos-casos', opts);
+  }
+
+  /**
+   * Detalle de un subtipo de caso CRM por `idReg` opaco.
+   *
+   * Endpoint: GET /pcrm/v2/subtipos-casos/{idReg}
+   */
+  async getPcrmSubtipoCaso(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/subtipos-casos/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Alta de un caso CRM.
+   *
+   * Endpoint: POST /pcrm/v2/casos — body VoCasoCrm.
+   */
+  async createPcrmCaso(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPcrmCaso', 'POST /pcrm/v2/casos', body);
+    return this.post<Record<string, unknown>>('/pcrm/v2/casos', body);
+  }
+
+  /**
+   * Actualización de un caso CRM.
+   *
+   * Endpoint: PUT /pcrm/v2/casos/{idReg} — body VoCasoCrm.
+   */
+  async updatePcrmCaso(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePcrmCaso', `PUT /pcrm/v2/casos/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pcrm/v2/casos/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Lista paginada de documentos de portal CRM de un usuario (v1).
+   *
+   * Endpoint: GET /pcrm/v1/usuarios/{idUsuario}/documentos
+   */
+  async listPcrmDocumentosUsuarioV1(idUsuario: string, opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(
+      `/pcrm/v1/usuarios/${encodeURIComponent(idUsuario)}/documentos`,
+      opts,
+    );
+  }
+
+  /**
+   * Detalle de un documento de portal CRM de un usuario (v1).
+   *
+   * Endpoint: GET /pcrm/v1/usuarios/{idUsuario}/documentos/{IdDocumento}
+   */
+  async getPcrmDocumentoUsuarioV1(idUsuario: string, idDocumento: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v1/usuarios/${encodeURIComponent(idUsuario)}/documentos/${encodeURIComponent(idDocumento)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de documentos de portal CRM de un usuario (v2).
+   *
+   * Endpoint: GET /pcrm/v2/usuarios/{idUsuario}/documentos
+   */
+  async listPcrmDocumentosUsuarioV2(idUsuario: string, opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(
+      `/pcrm/v2/usuarios/${encodeURIComponent(idUsuario)}/documentos`,
+      opts,
+    );
+  }
+
+  /**
+   * Detalle de un documento de portal CRM de un usuario (v2).
+   *
+   * Endpoint: GET /pcrm/v2/usuarios/{idUsuario}/documentos/{IdDocumento}
+   */
+  async getPcrmDocumentoUsuarioV2(idUsuario: string, idDocumento: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/usuarios/${encodeURIComponent(idUsuario)}/documentos/${encodeURIComponent(idDocumento)}`,
+    );
+  }
+
+  /**
+   * Actualización de un documento de portal CRM de un usuario (v1).
+   *
+   * Endpoint: PUT /pcrm/v1/usuarios/{idUsuario}/documentos/{IdDocumento}
+   */
+  async updatePcrmDocumentoUsuarioV1(idUsuario: string, idDocumento: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePcrmDocumentoUsuarioV1', `PUT /pcrm/v1/usuarios/${idUsuario}/documentos/${idDocumento}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pcrm/v1/usuarios/${encodeURIComponent(idUsuario)}/documentos/${encodeURIComponent(idDocumento)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualización de un documento de portal CRM de un usuario (v2).
+   *
+   * Endpoint: PUT /pcrm/v2/usuarios/{idUsuario}/documentos/{IdDocumento}
+   */
+  async updatePcrmDocumentoUsuarioV2(idUsuario: string, idDocumento: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePcrmDocumentoUsuarioV2', `PUT /pcrm/v2/usuarios/${idUsuario}/documentos/${idDocumento}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pcrm/v2/usuarios/${encodeURIComponent(idUsuario)}/documentos/${encodeURIComponent(idDocumento)}`,
+      body,
+    );
+  }
+
+  /**
+   * Lista paginada de notas CRM.
+   *
+   * Endpoint: GET /pcrm/v2/notas
+   */
+  async listPcrmNotas(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcrm/v2/notas', opts);
+  }
+
+  /**
+   * Detalle de una nota CRM por `idReg` opaco.
+   *
+   * Endpoint: GET /pcrm/v2/notas/{idReg}
+   */
+  async getPcrmNota(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/notas/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Alta de una nota CRM.
+   *
+   * Endpoint: POST /pcrm/v2/notas — body VoNotaCrm.
+   */
+  async createPcrmNota(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPcrmNota', 'POST /pcrm/v2/notas', body);
+    return this.post<Record<string, unknown>>('/pcrm/v2/notas', body);
+  }
+
+  /**
+   * Detalle de una oportunidad de negocio por `idReg` opaco (v1).
+   *
+   * Endpoint: GET /pcrm/v1/oportunidades-negocio/{idReg}
+   */
+  async getOportunidadNegocioV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v1/oportunidades-negocio/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de tipos de oportunidad de negocio CRM.
+   *
+   * Endpoint: GET /pcrm/v2/tipos-oportunidad-negocio
+   */
+  async listTiposOportunidadNegocio(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcrm/v2/tipos-oportunidad-negocio', opts);
+  }
+
+  /**
+   * Detalle de un tipo de oportunidad de negocio CRM por `idReg` opaco.
+   *
+   * Endpoint: GET /pcrm/v2/tipos-oportunidad-negocio/{idReg}
+   */
+  async getTipoOportunidadNegocio(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/pcrm/v2/tipos-oportunidad-negocio/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Alta de una oportunidad de negocio (v1).
+   *
+   * Endpoint: POST /pcrm/v1/oportunidades-negocio — body VoOportunidadNegocio.
+   */
+  async createOportunidadNegocioV1(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createOportunidadNegocioV1', 'POST /pcrm/v1/oportunidades-negocio', body);
+    return this.post<Record<string, unknown>>('/pcrm/v1/oportunidades-negocio', body);
+  }
+
+  /**
+   * Alta de una oportunidad de negocio (v2).
+   *
+   * Endpoint: POST /pcrm/v2/oportunidades-negocio — body VoOportunidadNegocio.
+   */
+  async createOportunidadNegocio(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createOportunidadNegocio', 'POST /pcrm/v2/oportunidades-negocio', body);
+    return this.post<Record<string, unknown>>('/pcrm/v2/oportunidades-negocio', body);
+  }
+
+  /**
+   * Actualización de una oportunidad de negocio (v1).
+   *
+   * Endpoint: PUT /pcrm/v1/oportunidades-negocio/{idReg} — body VoOportunidadNegocio.
+   */
+  async updateOportunidadNegocioV1(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateOportunidadNegocioV1', `PUT /pcrm/v1/oportunidades-negocio/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pcrm/v1/oportunidades-negocio/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualización de una oportunidad de negocio (v2).
+   *
+   * Endpoint: PUT /pcrm/v2/oportunidades-negocio/{idReg} — body VoOportunidadNegocio.
+   */
+  async updateOportunidadNegocio(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateOportunidadNegocio', `PUT /pcrm/v2/oportunidades-negocio/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pcrm/v2/oportunidades-negocio/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualización de los datos ampliados de una oportunidad de negocio.
+   *
+   * Endpoint: PUT /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados — body VoContenidoVariableOpor.
+   */
+  async updateOportunidadNegocioDatosAmpliados(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateOportunidadNegocioDatosAmpliados', `PUT /pcrm/v2/oportunidades-negocio/${idReg}/datos-ampliados`, body);
+    return this.put<Record<string, unknown>>(
+      `/pcrm/v2/oportunidades-negocio/${encodeURIComponent(idReg)}/datos-ampliados`,
+      body,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // PRL — Prevención de Riesgos Laborales (v0.5.0)
   // ---------------------------------------------------------------------------
 
