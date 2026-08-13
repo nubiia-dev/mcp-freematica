@@ -202,6 +202,24 @@ const READ_ONLY_TOOLS = [
   'freematica_list_pemf_usuarios_notificaciones',
   'freematica_get_pemf_operario',
   'freematica_list_pemf_descubiertos',
+  // pcrm — CRM extendido (Fase 4)
+  'freematica_list_pcrm_actividades',
+  'freematica_get_pcrm_actividad',
+  'freematica_list_pcrm_casos',
+  'freematica_get_pcrm_caso',
+  'freematica_list_pcrm_tipos_casos',
+  'freematica_get_pcrm_tipo_caso',
+  'freematica_list_pcrm_subtipos_casos',
+  'freematica_get_pcrm_subtipo_caso',
+  'freematica_list_pcrm_documentos_usuario_v1',
+  'freematica_get_pcrm_documento_usuario_v1',
+  'freematica_list_pcrm_documentos_usuario_v2',
+  'freematica_get_pcrm_documento_usuario_v2',
+  'freematica_list_pcrm_notas',
+  'freematica_get_pcrm_nota',
+  'freematica_get_oportunidad_negocio_v1',
+  'freematica_list_tipos_oportunidad_negocio',
+  'freematica_get_tipo_oportunidad_negocio',
 ].sort();
 
 const WRITE_TOOLS = [
@@ -270,6 +288,19 @@ const WRITE_TOOLS = [
   'freematica_save_pemf_config',
   'freematica_update_pemf_config',
   'freematica_update_pemf_ruta',
+  // pcrm write tools (Fase 4)
+  'freematica_create_pcrm_actividad',
+  'freematica_update_pcrm_actividad',
+  'freematica_create_pcrm_caso',
+  'freematica_update_pcrm_caso',
+  'freematica_update_pcrm_documento_usuario_v1',
+  'freematica_update_pcrm_documento_usuario_v2',
+  'freematica_create_pcrm_nota',
+  'freematica_create_oportunidad_negocio_v1',
+  'freematica_create_oportunidad_negocio',
+  'freematica_update_oportunidad_negocio_v1',
+  'freematica_update_oportunidad_negocio',
+  'freematica_update_oportunidad_negocio_datos_ampliados',
 ].sort();
 
 describe('createFreematicaServer', () => {

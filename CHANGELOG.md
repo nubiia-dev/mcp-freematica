@@ -2,6 +2,54 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — módulo pcrm (CRM extendido) completo: lectura y escritura
+
+### Módulo `pcrm` (CRM extendido)
+
+Implementación completa del módulo `/pcrm/` de la API de Freemática (Fase 4). Se añaden **17 tools de solo lectura** y **13 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`). Cubre actividades CRM (citas y tareas), casos (tickets), catálogos de tipos/subtipos de caso, documentos de portal de usuario (v1/v2), notas CRM y operaciones extendidas sobre oportunidades de negocio (detalle v1, tipos, creates v1/v2, updates v1/v2, datos ampliados).
+
+#### Added (lectura — 17 tools nuevas)
+
+- **`freematica_list_pcrm_actividades`** — `GET /pcrm/v2/actividades`. Lista paginada de actividades CRM (citas y tareas).
+- **`freematica_get_pcrm_actividad`** — `GET /pcrm/v2/actividades/{idReg}`. Detalle de una actividad CRM.
+- **`freematica_list_pcrm_casos`** — `GET /pcrm/v2/casos`. Lista paginada de casos CRM.
+- **`freematica_get_pcrm_caso`** — `GET /pcrm/v2/casos/{idReg}`. Detalle de un caso CRM.
+- **`freematica_list_pcrm_tipos_casos`** — `GET /pcrm/v2/tipos-casos`. Catálogo de tipos de caso CRM.
+- **`freematica_get_pcrm_tipo_caso`** — `GET /pcrm/v2/tipos-casos/{idReg}`. Detalle de un tipo de caso.
+- **`freematica_list_pcrm_subtipos_casos`** — `GET /pcrm/v2/subtipos-casos`. Catálogo de subtipos de caso CRM.
+- **`freematica_get_pcrm_subtipo_caso`** — `GET /pcrm/v2/subtipos-casos/{idReg}`. Detalle de un subtipo de caso.
+- **`freematica_list_pcrm_documentos_usuario_v1`** — `GET /pcrm/v1/usuarios/{idUsuario}/documentos`. Documentos de portal de usuario (v1, paginado).
+- **`freematica_get_pcrm_documento_usuario_v1`** — `GET /pcrm/v1/usuarios/{idUsuario}/documentos/{idDocumento}`. Detalle de documento (v1).
+- **`freematica_list_pcrm_documentos_usuario_v2`** — `GET /pcrm/v2/usuarios/{idUsuario}/documentos`. Documentos de portal de usuario (v2, paginado).
+- **`freematica_get_pcrm_documento_usuario_v2`** — `GET /pcrm/v2/usuarios/{idUsuario}/documentos/{idDocumento}`. Detalle de documento (v2).
+- **`freematica_list_pcrm_notas`** — `GET /pcrm/v2/notas`. Lista paginada de notas CRM.
+- **`freematica_get_pcrm_nota`** — `GET /pcrm/v2/notas/{idReg}`. Detalle de una nota CRM.
+- **`freematica_get_oportunidad_negocio_v1`** — `GET /pcrm/v1/oportunidades-negocio/{idReg}`. Detalle de oportunidad (v1, complementa las ya existentes v2).
+- **`freematica_list_tipos_oportunidad_negocio`** — `GET /pcrm/v2/tipos-oportunidad-negocio`. Catálogo de tipos de oportunidad de negocio.
+- **`freematica_get_tipo_oportunidad_negocio`** — `GET /pcrm/v2/tipos-oportunidad-negocio/{idReg}`. Detalle de un tipo de oportunidad.
+
+#### Added (escritura — 13 tools nuevas, solo con `FREEMATICA_ENABLE_WRITES=true`)
+
+- **`freematica_create_pcrm_actividad`** — `POST /pcrm/v2/actividades`. Alta de actividad CRM (cita o tarea).
+- **`freematica_update_pcrm_actividad`** — `PUT /pcrm/v2/actividades/{idReg}`. Actualización parcial de actividad CRM.
+- **`freematica_create_pcrm_caso`** — `POST /pcrm/v2/casos`. Alta de caso CRM.
+- **`freematica_update_pcrm_caso`** — `PUT /pcrm/v2/casos/{idReg}`. Actualización parcial de caso CRM.
+- **`freematica_update_pcrm_documento_usuario_v1`** — `PUT /pcrm/v1/usuarios/{idUsuario}/documentos/{idDocumento}`. Actualización de documento de portal (v1, body libre por campos nativos).
+- **`freematica_update_pcrm_documento_usuario_v2`** — `PUT /pcrm/v2/usuarios/{idUsuario}/documentos/{idDocumento}`. Actualización de documento de portal (v2, body libre por campos nativos).
+- **`freematica_create_pcrm_nota`** — `POST /pcrm/v2/notas`. Alta de nota CRM (body libre por campos nativos).
+- **`freematica_create_oportunidad_negocio_v1`** — `POST /pcrm/v1/oportunidades-negocio`. Alta de oportunidad de negocio (v1).
+- **`freematica_create_oportunidad_negocio`** — `POST /pcrm/v2/oportunidades-negocio`. Alta de oportunidad de negocio (v2).
+- **`freematica_update_oportunidad_negocio_v1`** — `PUT /pcrm/v1/oportunidades-negocio/{idReg}`. Actualización de oportunidad de negocio (v1).
+- **`freematica_update_oportunidad_negocio`** — `PUT /pcrm/v2/oportunidades-negocio/{idReg}`. Actualización de oportunidad de negocio (v2).
+- **`freematica_update_oportunidad_negocio_datos_ampliados`** — `PUT /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados`. Actualización de datos ampliados de oportunidad (COVR\_\*).
+
+#### Not implemented (by design)
+
+- `DELETE /pcrm/v2/actividades/:idReg`, `DELETE /pcrm/v2/casos/:idReg`, `DELETE /pcrm/v2/oportunidades-negocio/:idReg` — borrado de recursos (invariante del repo: sin tools de borrado).
+- `GET /pcrm/v2/casos/export`, `GET /pcrm/v2/oportunidades-negocio/export` — exports CSV, no aptos para consumo por LLM; usar tools de lista con filtros para obtener subconjuntos.
+
+---
+
 ## [Unreleased] — módulo pemf (e-Movifree / Operativa de Campo) completo: lectura y escritura
 
 ### Módulo `pemf` (e-Movifree / Operativa de Campo)
