@@ -2,6 +2,91 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — módulo pers (RRHH) completo: lectura y escritura
+
+### Módulo `pers` (RRHH / Personal) — Fase 1 completa
+
+Implementación completa del módulo `/pers/` de la API de Freemática, tanto en lectura como en escritura. Se añaden **36 tools de solo lectura** y **29 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`). Cubre todos los sub-módulos: Personal maestro, Notas, Experiencia, Formación, Contratos laborales, Tramos de horario, Datos de pago, Campos adicionales, Anticipos, Calendario personal, CPD (documentos del empleado), IRPF, Sesiones de formación, Incidencias VSS y Preventor.
+
+#### Added (lectura — 36 tools nuevas)
+
+- **`freematica_list_personal_v2`** — `GET /pers/v2/personal`. Sincronización incremental de personas; param `fchmodificacion` (YYYY-MM-DD) opcional.
+- **`freematica_list_personal_identificacion`** — `GET /pers/v2/personal-identificacion`. Datos de identificación del personal.
+- **`freematica_list_personal_notas`** — `GET /pers/v2/personal-notas`. Notas del personal; param `idReg` nativo para filtrar por persona.
+- **`freematica_get_personal_nota`** — `GET /pers/v2/personal-notas/{idReg}`. Detalle de una nota.
+- **`freematica_list_personal_experiencias`** — `GET /pers/v1/personal-experiencias`. Historial de experiencia laboral.
+- **`freematica_get_personal_experiencia`** — `GET /pers/v1/personal-experiencias/{idreg}`. Detalle de una experiencia.
+- **`freematica_list_personal_formaciones`** — `GET /pers/v1/personal-formaciones`. Historial de formaciones.
+- **`freematica_get_personal_formacion`** — `GET /pers/v1/personal-formaciones/{idReg}`. Detalle de una formación.
+- **`freematica_list_personal_contratos`** — `GET /pers/v1/personal_contratos`. Contratos laborales (PERCTRAB\_\*).
+- **`freematica_get_personal_contrato`** — `GET /pers/v1/personal_contratos/{idreg}`. Detalle de un contrato laboral.
+- **`freematica_list_personal_tramos`** — `GET /pers/v1/personal_tramos`. Tramos de horario v1 (PERHH\_\*).
+- **`freematica_get_personal_tramo`** — `GET /pers/v1/personal_tramos/{idreg}`. Detalle de un tramo v1.
+- **`freematica_list_personal_tramos_sync`** — `GET /pers/v2/personal/tramos`. Sincronización incremental de tramos; param `fchmodificacion` opcional.
+- **`freematica_get_personal_tramo_v2`** — `GET /pers/v2/personal/tramos/{idreg}`. Detalle de un tramo v2.
+- **`freematica_list_personal_pago`** — `GET /pers/v1/personal_pago`. Datos bancarios del personal.
+- **`freematica_get_personal_pago`** — `GET /pers/v1/personal_pago/{idreg}`. Detalle de datos bancarios.
+- **`freematica_list_personal_adicionales`** — `GET /pers/v2/personal-adicionales`. Campos adicionales del personal (VSSPERA\_\*).
+- **`freematica_list_personal_prorroga`** — `GET /pers/v1/personal-prorroga`. Prórrogas de contratos.
+- **`freematica_get_personal_prorroga`** — `GET /pers/v1/personal-prorroga/{idreg}`. Detalle de una prórroga.
+- **`freematica_list_incidencias_personal`** — `GET /pers/v2/incidencias`. Incidencias del personal.
+- **`freematica_get_agenda_persona`** — `GET /pers/v1/agenda-persona`. Agenda de citas y eventos.
+- **`freematica_list_equipamiento_ficha_seguridad`** — `GET /pers/v2/equipamiento-ficha-seguridad`. Equipamiento de fichas de seguridad.
+- **`freematica_list_anticipos_personal`** — `GET /pers/v2/personal/anticipos`. Anticipos de nómina.
+- **`freematica_get_anticipo_personal`** — `GET /pers/v2/personal/anticipos/{idReg}`. Detalle de un anticipo.
+- **`freematica_list_calendario_personal`** — `GET /pers/v2/personal-cal`. Calendario personal (vacaciones, permisos, ausencias).
+- **`freematica_get_calendario_personal`** — `GET /pers/v2/personal-cal/{idReg}`. Detalle de una entrada del calendario.
+- **`freematica_list_cpd`** — `GET /pers/v1/cpd`. Documentos del empleado (nóminas, comunicaciones…).
+- **`freematica_get_cpd`** — `GET /pers/v1/cpd/{idreg}`. Detalle de un CPD.
+- **`freematica_list_cpd_movimientos`** — `GET /pers/v1/cpd/{idreg}/movimientos`. Historial de estados de un CPD.
+- **`freematica_list_cpd_firmados_vid`** — `GET /pers/v1/cpd/firmados-vid`. CPDs firmados mediante Viafirma (VID).
+- **`freematica_list_personal_irpf`** — `GET /pers/v2/personal_irpf`. Datos IRPF del personal.
+- **`freematica_get_personal_irpf`** — `GET /pers/v2/personal_irpf/{idreg}`. Detalle de IRPF de una persona.
+- **`freematica_list_sesiones_formacion`** — `GET /pers/v1/sesiones-formacion`. Sesiones de formación.
+- **`freematica_get_sesion_formacion`** — `GET /pers/v1/sesiones-formacion/{idreg}`. Detalle de una sesión de formación.
+- **`freematica_list_vss_incidencias`** — `GET /pers/v2/vss-incidencias`. Incidencias del personal (módulo VSS).
+- **`freematica_get_vss_incidencia`** — `GET /pers/v2/vss-incidencias/{idReg}`. Detalle de una incidencia VSS.
+
+#### Added (escritura — 29 tools nuevas, solo con `FREEMATICA_ENABLE_WRITES=true`)
+
+- **`freematica_create_persona`** — `POST /pers/v1/personal`. Alta de persona con campos VSSPER\_\* + camposAdicionales.
+- **`freematica_update_persona`** — `PUT /pers/v1/personal/{idReg}`. Actualización parcial de persona (fetch+merge).
+- **`freematica_create_personal_identificacion`** — `POST /pers/v1/personal-identificacion/{idreg}`. Alta de datos de identificación.
+- **`freematica_create_personal_nota`** — `POST /pers/v2/personal-notas`. Alta de nota (PERNOT\_\*).
+- **`freematica_update_personal_nota`** — `PUT /pers/v2/personal-notas/{idReg}`. Actualización de nota (fetch+merge).
+- **`freematica_create_personal_experiencia`** — `POST /pers/v2/personal-experiencia`. Alta de experiencia laboral (PEREX\_\*).
+- **`freematica_create_personal_formacion`** — `POST /pers/v2/personal-formaciones`. Alta de formación del personal.
+- **`freematica_update_personal_formacion`** — `PUT /pers/v2/personal-formaciones/{idReg}`. Actualización de formación.
+- **`freematica_create_incidencia_base`** — `POST /pers/v2/incidencias-base`. Alta de incidencia base.
+- **`freematica_update_incidencia_base_fecha_fin`** — `PUT /pers/v2/incidencias-base/{idReg}`. Actualización de fecha fin de incidencia base.
+- **`freematica_create_personal_pago`** — `POST /pers/v1/personal_pago`. Alta de datos bancarios de persona.
+- **`freematica_update_personal_pago`** — `PUT /pers/v1/personal_pago/{idreg}`. Actualización de datos bancarios.
+- **`freematica_create_personal_tramo`** — `POST /pers/v1/personal_tramos`. Alta de tramo de horario (PERHH\_\*).
+- **`freematica_update_personal_tramo`** — `PUT /pers/v1/personal_tramos/{idreg}`. Actualización de tramo de horario.
+- **`freematica_create_personal_contrato`** — `POST /pers/v1/personal_contratos`. Alta de contrato laboral (PERCTRAB\_\*).
+- **`freematica_update_personal_contrato`** — `PUT /pers/v1/personal_contratos/{idreg}`. Actualización de contrato laboral.
+- **`freematica_create_personal_adicional`** — `POST /pers/v2/personal-adicionales`. Alta de campo adicional (VSSPERA\_\*).
+- **`freematica_update_personal_adicional`** — `PUT /pers/v2/personal-adicionales/{idReg}`. Actualización de campo adicional.
+- **`freematica_create_anticipo_personal`** — `POST /pers/v2/personal/anticipos`. Alta de anticipo de nómina.
+- **`freematica_create_calendario_personal`** — `POST /pers/v2/personal-cal`. Alta de entrada en calendario personal.
+- **`freematica_update_calendario_personal`** — `PUT /pers/v2/personal-cal/{idReg}`. Actualización de entrada en calendario.
+- **`freematica_update_cpd_bulk`** — `POST /pers/v1/cpd/actualizar`. Actualización masiva de CPDs.
+- **`freematica_update_cpd_gestion`** — `PUT /pers/v1/cpd/{idreg}/gestion`. Gestión de estado de un CPD (campos: accionCpd, fechaGestion, noComunicar, documentoCPD, usuarioGestion, obsError, obsRechazado, noVerifEstado).
+- **`freematica_create_personal_irpf`** — `POST /pers/v2/personal_irpf`. Alta de datos IRPF.
+- **`freematica_update_personal_irpf`** — `PUT /pers/v2/personal_irpf/{idreg}`. Actualización de datos IRPF.
+- **`freematica_create_personal_irpf_ad`** — `POST /pers/v2/personal_irpf_ad/{idreg}`. Alta de IRPF ascendientes/descendientes.
+- **`freematica_update_personal_irpf_ad`** — `PUT /pers/v2/personal_irpf_ad/{idreg}`. Actualización de IRPF ascendientes/descendientes.
+- **`freematica_update_preventor`** — `PUT /pers/v1/control/preventor`. Actualización de estado en Preventor.
+- **`freematica_update_preventor_estado`** — `POST /pers/v2/preventor/actualizar-estado`. Actualización de estado Preventor (v2).
+
+#### Not implemented (by design)
+
+- `DELETE /pers/v2/personal/{idreg}` — borrado de persona (fuera de alcance, sin tool de borrado)
+- `DELETE /pers/v2/personal-notas/{idReg}` — borrado de nota (fuera de alcance)
+- `DELETE /pers/v2/incidencias-base/{idReg}` — borrado de incidencia base (fuera de alcance)
+- `DELETE /pers/v1/cpd/eliminar-vid` — borrado VID de CPD (fuera de alcance)
+- `GET /pers/v1/cpd/download` — descarga ZIP binaria; no compatible con el protocolo MCP JSON
+
 ## [0.10.0] — 2026-08-11
 
 ### Vínculos persona↔servicio, habilitaciones CAE, cuadrantes y módulos PVSS de solo lectura
