@@ -149,6 +149,30 @@ const READ_ONLY_TOOLS = [
   'freematica_get_sesion_formacion',
   'freematica_list_vss_incidencias',
   'freematica_get_vss_incidencia',
+  // ppre — Preventivos / Mantenimiento / Instalaciones
+  'freematica_list_ppre_contratos',
+  'freematica_list_ppre_contratos_v2',
+  'freematica_get_ppre_contrato_v1',
+  'freematica_get_ppre_contrato_v2',
+  'freematica_list_ppre_contratos_instalacion',
+  'freematica_list_ppre_tipos_contrato',
+  'freematica_list_ppre_ordenes_trabajo',
+  'freematica_get_ppre_orden_trabajo',
+  'freematica_list_ppre_partes',
+  'freematica_get_ppre_parte',
+  'freematica_get_ppre_parte_componentes_ficha_tecnica',
+  'freematica_list_ppre_parte_ultimas_intervenciones',
+  'freematica_list_ppre_partes_orden_trabajo',
+  'freematica_list_ppre_partes_fin_mantenedor',
+  'freematica_list_ppre_cabecera_actas_partes',
+  'freematica_list_ppre_lineas_actas_partes',
+  'freematica_list_ppre_fichas_instalacion',
+  'freematica_get_ppre_ficha_tecnica',
+  'freematica_list_ppre_componentes_ficha_tecnica',
+  'freematica_list_ppre_marcajes',
+  'freematica_list_ppre_marcajes_v2',
+  'freematica_list_ppre_incidencias_anomalias',
+  'freematica_list_ppre_tipo_instalacion',
 ].sort();
 
 const WRITE_TOOLS = [
@@ -198,6 +222,16 @@ const WRITE_TOOLS = [
   'freematica_update_personal_irpf_ad',
   'freematica_update_preventor',
   'freematica_update_preventor_estado',
+  // ppre write tools
+  'freematica_create_ppre_contrato',
+  'freematica_create_ppre_orden_trabajo',
+  'freematica_update_ppre_orden_trabajo',
+  'freematica_update_ppre_lineas_actas_partes',
+  'freematica_create_ppre_ficha_instalacion_material',
+  'freematica_update_ppre_ficha_instalacion',
+  'freematica_create_ppre_marcaje',
+  'freematica_update_ppre_marcaje_v1',
+  'freematica_update_ppre_marcaje_v2',
 ].sort();
 
 describe('createFreematicaServer', () => {

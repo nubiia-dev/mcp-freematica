@@ -2,6 +2,60 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — módulo ppre (Preventivos/Mantenimiento/Instalaciones) completo: lectura y escritura
+
+### Módulo `ppre` (Preventivos / Mantenimiento / Instalaciones)
+
+Implementación completa del módulo `/ppre/` de la API de Freemática. Se añaden **24 tools de solo lectura** y **9 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`). Cubre contratos de instalación/mantenimiento, órdenes de trabajo, partes, actas de partes, fichas de instalación, marcajes IKAROS y catálogos auxiliares.
+
+#### Added (lectura — 24 tools nuevas)
+
+- **`freematica_list_ppre_contratos`** — `GET /ppre/v1/contratos`. Lista paginada de contratos de instalación/mantenimiento (v1).
+- **`freematica_list_ppre_contratos_v2`** — `GET /ppre/v2/contratos`. Lista de contratos vigentes (v2).
+- **`freematica_get_ppre_contrato_v1`** — `GET /ppre/v1/contratos/{idreg}`. Detalle de un contrato (v1).
+- **`freematica_get_ppre_contrato_v2`** — `GET /ppre/v2/contratos/{idReg}`. Detalle de un contrato (v2).
+- **`freematica_list_ppre_contratos_instalacion`** — `GET /ppre/v1/contratosInstalacion`. Contratos por instalación.
+- **`freematica_list_ppre_tipos_contrato`** — `GET /ppre/v2/tipos-contrato`. Catálogo de tipos de contrato.
+- **`freematica_list_ppre_ordenes_trabajo`** — `GET /ppre/v1/ordenes-trabajo`. Lista de órdenes de trabajo.
+- **`freematica_get_ppre_orden_trabajo`** — `GET /ppre/v1/ordenes-trabajo/{idreg}`. Detalle de una OT.
+- **`freematica_list_ppre_partes`** — `GET /ppre/v1/partes`. Lista de partes.
+- **`freematica_get_ppre_parte`** — `GET /ppre/v1/partes/{idreg}`. Detalle de un parte.
+- **`freematica_get_ppre_parte_componentes_ficha_tecnica`** — `GET /ppre/v1/partes/{idreg}/componentes-ficha-tecnica`. Componentes de la ficha técnica del parte.
+- **`freematica_list_ppre_parte_ultimas_intervenciones`** — `GET /ppre/v1/partes/{idreg}/ultimas-intervenciones`. Últimas intervenciones de un parte.
+- **`freematica_list_ppre_partes_orden_trabajo`** — `GET /ppre/v2/partes/partes-orden-trabajo`. Partes cumplimentados por OT.
+- **`freematica_list_ppre_partes_fin_mantenedor`** — `GET /ppre/v2/partes/partes-fin-mantenedor`. Partes finalizados por el mantenedor.
+- **`freematica_list_ppre_cabecera_actas_partes`** — `GET /ppre/v2/partes/cabecera-actas-partes`. Cabecera de actas de partes.
+- **`freematica_list_ppre_lineas_actas_partes`** — `GET /ppre/v2/partes/lineas-actas-partes`. Líneas de actas de partes.
+- **`freematica_list_ppre_fichas_instalacion`** — `GET /ppre/v1/fichas-instalacion/{idReg}`. Lista de fichas de instalación (idReg en path, opcional).
+- **`freematica_get_ppre_ficha_tecnica`** — `GET /ppre/v1/ficha-tecnica/{idReg}`. Ficha técnica de una instalación.
+- **`freematica_list_ppre_componentes_ficha_tecnica`** — `GET /ppre/v1/fichas-tecnicas/{idreg}/componentes`. Componentes de una ficha técnica.
+- **`freematica_list_ppre_marcajes`** — `GET /ppre/v1/marcajes`. Marcajes IKAROS (v1).
+- **`freematica_list_ppre_marcajes_v2`** — `GET /ppre/v2/marcajes`. Marcajes IKAROS (v2).
+- **`freematica_list_ppre_incidencias_anomalias`** — `GET /ppre/v1/incidencias-anomalias`. Catálogo de incidencias y anomalías.
+- **`freematica_list_ppre_tipo_instalacion`** — `GET /ppre/v1/tipo-instalacion`. Catálogo de tipos de instalación.
+
+#### Added (escritura — 9 tools nuevas, solo con `FREEMATICA_ENABLE_WRITES=true`)
+
+- **`freematica_create_ppre_contrato`** — `POST /ppre/v2/contratos`. Alta de contrato con campos CON\_\*.
+- **`freematica_create_ppre_orden_trabajo`** — `POST /ppre/v1/ordenes-trabajo`. Alta de orden de trabajo con campos AVI\_\* y PPC\_\*.
+- **`freematica_update_ppre_orden_trabajo`** — `PUT /ppre/v1/ordenes-trabajo/{idreg}`. Actualización de orden de trabajo.
+- **`freematica_update_ppre_lineas_actas_partes`** — `PUT /ppre/v2/partes/importar-lineas-actas-partes/{idReg}`. Importar líneas de actas de partes.
+- **`freematica_create_ppre_ficha_instalacion_material`** — `POST /ppre/v1/fichas-instalacion-material`. Alta de material en ficha de instalación.
+- **`freematica_update_ppre_ficha_instalacion`** — `PUT /ppre/v1/fichas-instalacion/{idReg}`. Actualización de ficha de instalación.
+- **`freematica_create_ppre_marcaje`** — `POST /ppre/v1/guardar`. Grabar marcaje IKAROS.
+- **`freematica_update_ppre_marcaje_v1`** — `PUT /ppre/v1/actualizar/{idReg}`. Actualizar marcaje (v1).
+- **`freematica_update_ppre_marcaje_v2`** — `PUT /ppre/v2/actualizar/{idReg}`. Actualizar marcaje (v2).
+
+#### Not implemented (by design)
+
+- `DELETE /ppre/v2/contratos/opcionales/{idReg}` — borrado de opcionales (fuera de alcance, sin tool de borrado en este repo).
+- `DELETE /ppre/v1/eliminar/{idReg}` y `DELETE /ppre/v2/eliminar/{idReg}` — borrado de marcajes (fuera de alcance).
+- `DELETE /ppre/v1/ordenes-trabajo/{idreg}` — borrado de OT (fuera de alcance).
+- `POST /ppre/v1/control/entrada` y `POST /ppre/v2/control/entrada` — login de la app móvil, no es un tool de datos.
+- `GET /ppre/v1/clients` — endpoint de filtros de UI, no expone datos de negocio.
+
+---
+
 ## [Unreleased] — módulo pers (RRHH) completo: lectura y escritura
 
 ### Módulo `pers` (RRHH / Personal) — Fase 1 completa

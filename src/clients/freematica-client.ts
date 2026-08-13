@@ -3145,6 +3145,268 @@ export class FreematicaClient extends BaseClient {
       `/pvss/v2/contratos-servicios-material/${encodeURIComponent(idReg)}`,
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // PPRE — Preventivos / Mantenimiento / Instalaciones
+  // ---------------------------------------------------------------------------
+
+  async listPpreContratos(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v1/contratos?${qs}` : '/ppre/v1/contratos';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPpreContratosV2(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v2/contratos?${qs}` : '/ppre/v2/contratos';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async getPpreContratoV1(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/ppre/v1/contratos/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) throw new FreematicaError('not_found', `Contrato ppre v1 no encontrado: ${idReg}`);
+    return item;
+  }
+
+  async getPpreContratoV2(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/ppre/v2/contratos/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) throw new FreematicaError('not_found', `Contrato ppre v2 no encontrado: ${idReg}`);
+    return item;
+  }
+
+  async listPpreContratosInstalacion(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v1/contratosInstalacion?${qs}` : '/ppre/v1/contratosInstalacion';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPpreTiposContrato(): Promise<unknown> {
+    return this.get<unknown>('/ppre/v2/tipos-contrato');
+  }
+
+  async createPpreContrato(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPpreContrato', 'POST /ppre/v2/contratos', body);
+    return this.post<Record<string, unknown>>('/ppre/v2/contratos', body);
+  }
+
+  async listPpreOrdenesTrabajo(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v1/ordenes-trabajo?${qs}` : '/ppre/v1/ordenes-trabajo';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async getPpreOrdenTrabajo(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/ppre/v1/ordenes-trabajo/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) throw new FreematicaError('not_found', `Orden de trabajo no encontrada: ${idReg}`);
+    return item;
+  }
+
+  async createPpreOrdenTrabajo(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPpreOrdenTrabajo', 'POST /ppre/v1/ordenes-trabajo', body);
+    return this.post<Record<string, unknown>>('/ppre/v1/ordenes-trabajo', body);
+  }
+
+  async updatePpreOrdenTrabajo(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePpreOrdenTrabajo', `PUT /ppre/v1/ordenes-trabajo/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/ppre/v1/ordenes-trabajo/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async listPprePartes(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v1/partes?${qs}` : '/ppre/v1/partes';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async getPpreParte(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/ppre/v1/partes/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) throw new FreematicaError('not_found', `Parte no encontrado: ${idReg}`);
+    return item;
+  }
+
+  async getPpreParteComponentesFichaTecnica(idReg: string): Promise<unknown> {
+    return this.get<unknown>(`/ppre/v1/partes/${encodeURIComponent(idReg)}/componentes-ficha-tecnica`);
+  }
+
+  async listPpreParteUltimasIntervenciones(idReg: string, opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const base = `/ppre/v1/partes/${encodeURIComponent(idReg)}/ultimas-intervenciones`;
+    const path = qs ? `${base}?${qs}` : base;
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPprePartesOrdenTrabajo(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v2/partes/partes-orden-trabajo?${qs}` : '/ppre/v2/partes/partes-orden-trabajo';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPprePartesFinMantenedor(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v2/partes/partes-fin-mantenedor?${qs}` : '/ppre/v2/partes/partes-fin-mantenedor';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPpreCabeceraActasPartes(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v2/partes/cabecera-actas-partes?${qs}` : '/ppre/v2/partes/cabecera-actas-partes';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPpreLineasActasPartes(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v2/partes/lineas-actas-partes?${qs}` : '/ppre/v2/partes/lineas-actas-partes';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async updatePpreLineasActasPartes(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePpreLineasActasPartes', `PUT /ppre/v2/partes/importar-lineas-actas-partes/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/ppre/v2/partes/importar-lineas-actas-partes/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async listPpreFichasInstalacion(opts: { idReg?: string; page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const base = opts.idReg
+      ? `/ppre/v1/fichas-instalacion/${encodeURIComponent(opts.idReg)}`
+      : '/ppre/v1/fichas-instalacion';
+    const path = qs ? `${base}?${qs}` : base;
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async getPpreFichaTecnica(idReg: string): Promise<unknown> {
+    return this.get<unknown>(`/ppre/v1/ficha-tecnica/${encodeURIComponent(idReg)}`);
+  }
+
+  async listPpreComponentesFichaTecnica(idReg: string, opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const base = `/ppre/v1/fichas-tecnicas/${encodeURIComponent(idReg)}/componentes`;
+    const path = qs ? `${base}?${qs}` : base;
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async createPpreFichaInstalacionMaterial(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPpreFichaInstalacionMaterial', 'POST /ppre/v1/fichas-instalacion-material', body);
+    return this.post<Record<string, unknown>>('/ppre/v1/fichas-instalacion-material', body);
+  }
+
+  async updatePpreFichaInstalacion(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePpreFichaInstalacion', `PUT /ppre/v1/fichas-instalacion/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/ppre/v1/fichas-instalacion/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async listPpreMarcajes(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v1/marcajes?${qs}` : '/ppre/v1/marcajes';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPpreMarcajesV2(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v2/marcajes?${qs}` : '/ppre/v2/marcajes';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async createPpreMarcaje(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPpreMarcaje', 'POST /ppre/v1/guardar', body);
+    return this.post<Record<string, unknown>>('/ppre/v1/guardar', body);
+  }
+
+  async updatePpreMarcajeV1(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePpreMarcajeV1', `PUT /ppre/v1/actualizar/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/ppre/v1/actualizar/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async updatePpreMarcajeV2(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePpreMarcajeV2', `PUT /ppre/v2/actualizar/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/ppre/v2/actualizar/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async listPpreIncidenciasAnomalias(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v1/incidencias-anomalias?${qs}` : '/ppre/v1/incidencias-anomalias';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  async listPpreTipoInstalacion(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+    const params = new URLSearchParams();
+    if (opts.items !== undefined) params.set('items', String(opts.items));
+    if (opts.page !== undefined) params.set('page', String(opts.page));
+    const qs = params.toString();
+    const path = qs ? `/ppre/v1/tipo-instalacion?${qs}` : '/ppre/v1/tipo-instalacion';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
 }
 
 // ---------------------------------------------------------------------------

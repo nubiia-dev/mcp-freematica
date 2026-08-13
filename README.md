@@ -139,58 +139,90 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_get_sesion_formacion`                         | `GET /pers/v1/sesiones-formacion/{idreg}`                      | Detalle de una sesión de formación                                                                 |
 | `freematica_list_vss_incidencias`                         | `GET /pers/v2/vss-incidencias`                                 | Incidencias de personal (módulo VSS)                                                               |
 | `freematica_get_vss_incidencia`                           | `GET /pers/v2/vss-incidencias/{idReg}`                         | Detalle de una incidencia VSS del personal                                                         |
+| `freematica_list_ppre_contratos`                          | `GET /ppre/v1/contratos`                                       | Lista paginada de contratos de instalación/mantenimiento (v1)                                      |
+| `freematica_list_ppre_contratos_v2`                       | `GET /ppre/v2/contratos`                                       | Lista de contratos de instalación/mantenimiento vigentes (v2)                                      |
+| `freematica_get_ppre_contrato_v1`                         | `GET /ppre/v1/contratos/{idreg}`                               | Detalle de un contrato (v1)                                                                        |
+| `freematica_get_ppre_contrato_v2`                         | `GET /ppre/v2/contratos/{idReg}`                               | Detalle de un contrato (v2)                                                                        |
+| `freematica_list_ppre_contratos_instalacion`              | `GET /ppre/v1/contratosInstalacion`                            | Contratos agrupados por instalación                                                                |
+| `freematica_list_ppre_tipos_contrato`                     | `GET /ppre/v2/tipos-contrato`                                  | Catálogo de tipos de contrato (ppre)                                                               |
+| `freematica_list_ppre_ordenes_trabajo`                    | `GET /ppre/v1/ordenes-trabajo`                                 | Lista paginada de órdenes de trabajo                                                               |
+| `freematica_get_ppre_orden_trabajo`                       | `GET /ppre/v1/ordenes-trabajo/{idreg}`                         | Detalle de una orden de trabajo                                                                    |
+| `freematica_list_ppre_partes`                             | `GET /ppre/v1/partes`                                          | Lista paginada de partes                                                                           |
+| `freematica_get_ppre_parte`                               | `GET /ppre/v1/partes/{idreg}`                                  | Detalle de un parte                                                                                |
+| `freematica_get_ppre_parte_componentes_ficha_tecnica`     | `GET /ppre/v1/partes/{idreg}/componentes-ficha-tecnica`        | Componentes de la ficha técnica asociada a un parte                                                |
+| `freematica_list_ppre_parte_ultimas_intervenciones`       | `GET /ppre/v1/partes/{idreg}/ultimas-intervenciones`           | Últimas intervenciones de un parte                                                                 |
+| `freematica_list_ppre_partes_orden_trabajo`               | `GET /ppre/v2/partes/partes-orden-trabajo`                     | Partes cumplimentados asociados a órdenes de trabajo                                               |
+| `freematica_list_ppre_partes_fin_mantenedor`              | `GET /ppre/v2/partes/partes-fin-mantenedor`                    | Partes finalizados por el mantenedor                                                               |
+| `freematica_list_ppre_cabecera_actas_partes`              | `GET /ppre/v2/partes/cabecera-actas-partes`                    | Cabecera de actas de partes                                                                        |
+| `freematica_list_ppre_lineas_actas_partes`                | `GET /ppre/v2/partes/lineas-actas-partes`                      | Líneas de actas de partes                                                                          |
+| `freematica_list_ppre_fichas_instalacion`                 | `GET /ppre/v1/fichas-instalacion/{idReg}`                      | Fichas de instalación (idReg en path, opcional para listar todas)                                  |
+| `freematica_get_ppre_ficha_tecnica`                       | `GET /ppre/v1/ficha-tecnica/{idReg}`                           | Ficha técnica de una instalación                                                                   |
+| `freematica_list_ppre_componentes_ficha_tecnica`          | `GET /ppre/v1/fichas-tecnicas/{idreg}/componentes`             | Componentes de una ficha técnica                                                                   |
+| `freematica_list_ppre_marcajes`                           | `GET /ppre/v1/marcajes`                                        | Marcajes IKAROS (v1)                                                                               |
+| `freematica_list_ppre_marcajes_v2`                        | `GET /ppre/v2/marcajes`                                        | Marcajes IKAROS (v2)                                                                               |
+| `freematica_list_ppre_incidencias_anomalias`              | `GET /ppre/v1/incidencias-anomalias`                           | Catálogo de incidencias y anomalías (ppre)                                                         |
+| `freematica_list_ppre_tipo_instalacion`                   | `GET /ppre/v1/tipo-instalacion`                                | Catálogo de tipos de instalación                                                                   |
 
 ### Tools de escritura (requieren `FREEMATICA_ENABLE_WRITES=true`)
 
 Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=true` se registran además estas tools de creación y actualización. **No existe ninguna tool de borrado.** Todas las escrituras dejan log de auditoría (operación + endpoint + campos a nivel info; body completo a nivel debug).
 
-| Tool                                           | Endpoint Freemática                                             | Descripción                                                      |
-| ---------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `freematica_create_contrato`                   | `POST /pvss/v2/contratos`                                       | Alta de cabecera de contrato                                     |
-| `freematica_update_contrato`                   | `PUT /pvss/v2/contratos/{idReg}`                                | Actualización de cabecera de contrato                            |
-| `freematica_create_servicio_contrato`          | `POST /pvss/v2/contratos/{idReg}/servicios`                     | Alta de servicio (identificación derivada del idReg)             |
-| `freematica_update_servicio_fechas`            | `PUT /pvss/v2/contratos/{id}/servicio/{id}`                     | Fechas inicio/fin del servicio (mecanismo de baja)               |
-| `freematica_create_servicio_historico_precios` | `POST /pvss/v2/contratos/{id}/servicios-historico-precios/{id}` | Alta de revisión de precios del servicio                         |
-| `freematica_update_servicio_historico_precios` | `PUT /pvss/v2/contratos/{id}/servicios-historico-precios/{id}`  | Actualización de revisión de precios                             |
-| `freematica_create_servicio_facturacion_txt`   | `POST /pvss/v2/contratos/{id}/servicios-facturacion-txt/{id}`   | Alta de línea de texto de facturación                            |
-| `freematica_update_servicio_facturacion`       | `PUT /pvss/v2/contratos/{id}/servicios-facturacion/{id}`        | Datos de facturación del servicio (precios hora, forma de pago…) |
-| `freematica_create_contrato_opcionales`        | `POST /ppre/v2/contratos/opcionales`                            | Alta de opcionales de contrato                                   |
-| `freematica_update_contrato_opcionales`        | `PUT /ppre/v2/contratos/opcionales/{idReg}`                     | Actualización de opcionales de contrato                          |
-| `freematica_create_cliente`                    | `POST /pgrl/v2/clientes`                                        | Alta de cliente (idReg derivado de grupo+código)                 |
-| `freematica_update_cliente`                    | `PUT /pgrl/v2/clientes/{idReg}`                                 | Actualización parcial de cliente (fetch+merge)                   |
-| `freematica_create_contacto_cliente`           | `POST /pgrl/v2/contactos-clientes`                              | Alta de contacto de cliente                                      |
-| `freematica_update_contacto_cliente`           | `PUT /pgrl/v2/contactos-clientes/{idReg}`                       | Actualización parcial de contacto (fetch+merge)                  |
-| `freematica_create_localizacion_cliente`       | `POST /pgrl/v2/localizaciones-{tipo}-clientes`                  | Alta de localización (tipo: cobro/envio/factura/servicio)        |
-| `freematica_update_localizacion_cliente`       | `PUT /pgrl/v2/localizaciones-{tipo}-clientes/{idReg}`           | Actualización parcial de localización (fetch+merge)              |
-| `freematica_create_persona`                    | `POST /pers/v1/personal`                                        | Alta de persona/empleado (campos VSSPER\_\* + camposAdicionales) |
-| `freematica_update_persona`                    | `PUT /pers/v1/personal/{idReg}`                                 | Actualización parcial de persona (fetch+merge)                   |
-| `freematica_create_personal_identificacion`    | `POST /pers/v1/personal-identificacion/{idreg}`                 | Alta de datos de identificación de una persona                   |
-| `freematica_create_personal_nota`              | `POST /pers/v2/personal-notas`                                  | Alta de nota de personal (PERNOT\_\*)                            |
-| `freematica_update_personal_nota`              | `PUT /pers/v2/personal-notas/{idReg}`                           | Actualización de nota de personal (fetch+merge)                  |
-| `freematica_create_personal_experiencia`       | `POST /pers/v2/personal-experiencia`                            | Alta de experiencia laboral (PEREX\_\*)                          |
-| `freematica_create_personal_formacion`         | `POST /pers/v2/personal-formaciones`                            | Alta de formación del personal                                   |
-| `freematica_update_personal_formacion`         | `PUT /pers/v2/personal-formaciones/{idReg}`                     | Actualización de formación del personal                          |
-| `freematica_create_incidencia_base`            | `POST /pers/v2/incidencias-base`                                | Alta de incidencia base                                          |
-| `freematica_update_incidencia_base_fecha_fin`  | `PUT /pers/v2/incidencias-base/{idReg}`                         | Actualización de fecha fin de incidencia base                    |
-| `freematica_create_personal_pago`              | `POST /pers/v1/personal_pago`                                   | Alta de datos bancarios de persona                               |
-| `freematica_update_personal_pago`              | `PUT /pers/v1/personal_pago/{idreg}`                            | Actualización de datos bancarios de persona                      |
-| `freematica_create_personal_tramo`             | `POST /pers/v1/personal_tramos`                                 | Alta de tramo de horario (PERHH\_\*)                             |
-| `freematica_update_personal_tramo`             | `PUT /pers/v1/personal_tramos/{idreg}`                          | Actualización de tramo de horario (PERHH\_\*)                    |
-| `freematica_create_personal_contrato`          | `POST /pers/v1/personal_contratos`                              | Alta de contrato laboral (PERCTRAB\_\*)                          |
-| `freematica_update_personal_contrato`          | `PUT /pers/v1/personal_contratos/{idreg}`                       | Actualización de contrato laboral (PERCTRAB\_\*)                 |
-| `freematica_create_personal_adicional`         | `POST /pers/v2/personal-adicionales`                            | Alta de campo adicional de personal (VSSPERA\_\*)                |
-| `freematica_update_personal_adicional`         | `PUT /pers/v2/personal-adicionales/{idReg}`                     | Actualización de campo adicional de personal (VSSPERA\_\*)       |
-| `freematica_create_anticipo_personal`          | `POST /pers/v2/personal/anticipos`                              | Alta de anticipo de nómina                                       |
-| `freematica_create_calendario_personal`        | `POST /pers/v2/personal-cal`                                    | Alta de entrada en calendario personal                           |
-| `freematica_update_calendario_personal`        | `PUT /pers/v2/personal-cal/{idReg}`                             | Actualización de entrada en calendario personal                  |
-| `freematica_update_cpd_bulk`                   | `POST /pers/v1/cpd/actualizar`                                  | Actualización masiva de CPDs                                     |
-| `freematica_update_cpd_gestion`                | `PUT /pers/v1/cpd/{idreg}/gestion`                              | Gestión de estado de un CPD (firmar, validar, rechazar)          |
-| `freematica_create_personal_irpf`              | `POST /pers/v2/personal_irpf`                                   | Alta de datos IRPF de persona                                    |
-| `freematica_update_personal_irpf`              | `PUT /pers/v2/personal_irpf/{idreg}`                            | Actualización de datos IRPF de persona                           |
-| `freematica_create_personal_irpf_ad`           | `POST /pers/v2/personal_irpf_ad/{idreg}`                        | Alta de IRPF ascendientes/descendientes de persona               |
-| `freematica_update_personal_irpf_ad`           | `PUT /pers/v2/personal_irpf_ad/{idreg}`                         | Actualización de IRPF ascendientes/descendientes                 |
-| `freematica_update_preventor`                  | `PUT /pers/v1/control/preventor`                                | Actualización de estado de formación en Preventor                |
-| `freematica_update_preventor_estado`           | `POST /pers/v2/preventor/actualizar-estado`                     | Actualización de estado Preventor (nuevo formato v2)             |
+| Tool                                                | Endpoint Freemática                                             | Descripción                                                      |
+| --------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `freematica_create_contrato`                        | `POST /pvss/v2/contratos`                                       | Alta de cabecera de contrato                                     |
+| `freematica_update_contrato`                        | `PUT /pvss/v2/contratos/{idReg}`                                | Actualización de cabecera de contrato                            |
+| `freematica_create_servicio_contrato`               | `POST /pvss/v2/contratos/{idReg}/servicios`                     | Alta de servicio (identificación derivada del idReg)             |
+| `freematica_update_servicio_fechas`                 | `PUT /pvss/v2/contratos/{id}/servicio/{id}`                     | Fechas inicio/fin del servicio (mecanismo de baja)               |
+| `freematica_create_servicio_historico_precios`      | `POST /pvss/v2/contratos/{id}/servicios-historico-precios/{id}` | Alta de revisión de precios del servicio                         |
+| `freematica_update_servicio_historico_precios`      | `PUT /pvss/v2/contratos/{id}/servicios-historico-precios/{id}`  | Actualización de revisión de precios                             |
+| `freematica_create_servicio_facturacion_txt`        | `POST /pvss/v2/contratos/{id}/servicios-facturacion-txt/{id}`   | Alta de línea de texto de facturación                            |
+| `freematica_update_servicio_facturacion`            | `PUT /pvss/v2/contratos/{id}/servicios-facturacion/{id}`        | Datos de facturación del servicio (precios hora, forma de pago…) |
+| `freematica_create_contrato_opcionales`             | `POST /ppre/v2/contratos/opcionales`                            | Alta de opcionales de contrato                                   |
+| `freematica_update_contrato_opcionales`             | `PUT /ppre/v2/contratos/opcionales/{idReg}`                     | Actualización de opcionales de contrato                          |
+| `freematica_create_cliente`                         | `POST /pgrl/v2/clientes`                                        | Alta de cliente (idReg derivado de grupo+código)                 |
+| `freematica_update_cliente`                         | `PUT /pgrl/v2/clientes/{idReg}`                                 | Actualización parcial de cliente (fetch+merge)                   |
+| `freematica_create_contacto_cliente`                | `POST /pgrl/v2/contactos-clientes`                              | Alta de contacto de cliente                                      |
+| `freematica_update_contacto_cliente`                | `PUT /pgrl/v2/contactos-clientes/{idReg}`                       | Actualización parcial de contacto (fetch+merge)                  |
+| `freematica_create_localizacion_cliente`            | `POST /pgrl/v2/localizaciones-{tipo}-clientes`                  | Alta de localización (tipo: cobro/envio/factura/servicio)        |
+| `freematica_update_localizacion_cliente`            | `PUT /pgrl/v2/localizaciones-{tipo}-clientes/{idReg}`           | Actualización parcial de localización (fetch+merge)              |
+| `freematica_create_persona`                         | `POST /pers/v1/personal`                                        | Alta de persona/empleado (campos VSSPER\_\* + camposAdicionales) |
+| `freematica_update_persona`                         | `PUT /pers/v1/personal/{idReg}`                                 | Actualización parcial de persona (fetch+merge)                   |
+| `freematica_create_personal_identificacion`         | `POST /pers/v1/personal-identificacion/{idreg}`                 | Alta de datos de identificación de una persona                   |
+| `freematica_create_personal_nota`                   | `POST /pers/v2/personal-notas`                                  | Alta de nota de personal (PERNOT\_\*)                            |
+| `freematica_update_personal_nota`                   | `PUT /pers/v2/personal-notas/{idReg}`                           | Actualización de nota de personal (fetch+merge)                  |
+| `freematica_create_personal_experiencia`            | `POST /pers/v2/personal-experiencia`                            | Alta de experiencia laboral (PEREX\_\*)                          |
+| `freematica_create_personal_formacion`              | `POST /pers/v2/personal-formaciones`                            | Alta de formación del personal                                   |
+| `freematica_update_personal_formacion`              | `PUT /pers/v2/personal-formaciones/{idReg}`                     | Actualización de formación del personal                          |
+| `freematica_create_incidencia_base`                 | `POST /pers/v2/incidencias-base`                                | Alta de incidencia base                                          |
+| `freematica_update_incidencia_base_fecha_fin`       | `PUT /pers/v2/incidencias-base/{idReg}`                         | Actualización de fecha fin de incidencia base                    |
+| `freematica_create_personal_pago`                   | `POST /pers/v1/personal_pago`                                   | Alta de datos bancarios de persona                               |
+| `freematica_update_personal_pago`                   | `PUT /pers/v1/personal_pago/{idreg}`                            | Actualización de datos bancarios de persona                      |
+| `freematica_create_personal_tramo`                  | `POST /pers/v1/personal_tramos`                                 | Alta de tramo de horario (PERHH\_\*)                             |
+| `freematica_update_personal_tramo`                  | `PUT /pers/v1/personal_tramos/{idreg}`                          | Actualización de tramo de horario (PERHH\_\*)                    |
+| `freematica_create_personal_contrato`               | `POST /pers/v1/personal_contratos`                              | Alta de contrato laboral (PERCTRAB\_\*)                          |
+| `freematica_update_personal_contrato`               | `PUT /pers/v1/personal_contratos/{idreg}`                       | Actualización de contrato laboral (PERCTRAB\_\*)                 |
+| `freematica_create_personal_adicional`              | `POST /pers/v2/personal-adicionales`                            | Alta de campo adicional de personal (VSSPERA\_\*)                |
+| `freematica_update_personal_adicional`              | `PUT /pers/v2/personal-adicionales/{idReg}`                     | Actualización de campo adicional de personal (VSSPERA\_\*)       |
+| `freematica_create_anticipo_personal`               | `POST /pers/v2/personal/anticipos`                              | Alta de anticipo de nómina                                       |
+| `freematica_create_calendario_personal`             | `POST /pers/v2/personal-cal`                                    | Alta de entrada en calendario personal                           |
+| `freematica_update_calendario_personal`             | `PUT /pers/v2/personal-cal/{idReg}`                             | Actualización de entrada en calendario personal                  |
+| `freematica_update_cpd_bulk`                        | `POST /pers/v1/cpd/actualizar`                                  | Actualización masiva de CPDs                                     |
+| `freematica_update_cpd_gestion`                     | `PUT /pers/v1/cpd/{idreg}/gestion`                              | Gestión de estado de un CPD (firmar, validar, rechazar)          |
+| `freematica_create_personal_irpf`                   | `POST /pers/v2/personal_irpf`                                   | Alta de datos IRPF de persona                                    |
+| `freematica_update_personal_irpf`                   | `PUT /pers/v2/personal_irpf/{idreg}`                            | Actualización de datos IRPF de persona                           |
+| `freematica_create_personal_irpf_ad`                | `POST /pers/v2/personal_irpf_ad/{idreg}`                        | Alta de IRPF ascendientes/descendientes de persona               |
+| `freematica_update_personal_irpf_ad`                | `PUT /pers/v2/personal_irpf_ad/{idreg}`                         | Actualización de IRPF ascendientes/descendientes                 |
+| `freematica_update_preventor`                       | `PUT /pers/v1/control/preventor`                                | Actualización de estado de formación en Preventor                |
+| `freematica_update_preventor_estado`                | `POST /pers/v2/preventor/actualizar-estado`                     | Actualización de estado Preventor (nuevo formato v2)             |
+| `freematica_create_ppre_contrato`                   | `POST /ppre/v2/contratos`                                       | Alta de contrato de instalación/mantenimiento (CON\_\*)          |
+| `freematica_create_ppre_orden_trabajo`              | `POST /ppre/v1/ordenes-trabajo`                                 | Alta de orden de trabajo (AVI\_\*, PPC\_\*)                      |
+| `freematica_update_ppre_orden_trabajo`              | `PUT /ppre/v1/ordenes-trabajo/{idreg}`                          | Actualización de orden de trabajo                                |
+| `freematica_update_ppre_lineas_actas_partes`        | `PUT /ppre/v2/partes/importar-lineas-actas-partes/{idReg}`      | Importar líneas de actas de partes                               |
+| `freematica_create_ppre_ficha_instalacion_material` | `POST /ppre/v1/fichas-instalacion-material`                     | Alta de material en ficha de instalación                         |
+| `freematica_update_ppre_ficha_instalacion`          | `PUT /ppre/v1/fichas-instalacion/{idReg}`                       | Actualización de ficha de instalación                            |
+| `freematica_create_ppre_marcaje`                    | `POST /ppre/v1/guardar`                                         | Grabar marcaje IKAROS (trackType, serviceTag, lat/lng, etc.)     |
+| `freematica_update_ppre_marcaje_v1`                 | `PUT /ppre/v1/actualizar/{idReg}`                               | Actualizar marcaje IKAROS (v1)                                   |
+| `freematica_update_ppre_marcaje_v2`                 | `PUT /ppre/v2/actualizar/{idReg}`                               | Actualizar marcaje IKAROS (v2)                                   |
 
 ## Filtros tipados (FIQL interno)
 
