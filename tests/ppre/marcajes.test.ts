@@ -83,6 +83,39 @@ describe('ppre marcajes tools', () => {
     });
   });
 
+  describe('freematica_list_ppre_marcajes_v2', () => {
+    it('lista marcajes v2 con paginación', async () => {
+      const scope = nock(BASE_URL)
+        .get('/ppre/v2/marcajes')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnvelope([MARCAJE], 25));
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_list_ppre_marcajes_v2');
+      const result = await handler({ page: 1, items: 20 });
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.total).toBe(25);
+      expect(parsed.items[0].trackType).toBe('ENT');
+      scope.done();
+    });
+
+    it('devuelve error() en fallo del API', async () => {
+      nock(BASE_URL)
+        .get('/ppre/v2/marcajes')
+        .query(true)
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_list_ppre_marcajes_v2');
+      const result = await handler({ page: 1, items: 20 });
+
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content[0].text).error).toBe('server_error');
+    });
+  });
+
   describe('freematica_create_ppre_marcaje', () => {
     it('POST a /ppre/v1/guardar con los campos del marcaje', async () => {
       let sentBody: Record<string, unknown> = {};

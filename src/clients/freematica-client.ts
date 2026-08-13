@@ -3207,7 +3207,7 @@ export class FreematicaClient extends BaseClient {
     return this.post<Record<string, unknown>>('/ppre/v2/contratos', body);
   }
 
-  async listPpreOrdenesTraba(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
+  async listPpreOrdenesTrabajo(opts: { page?: number; items?: number }): Promise<ListResult<Record<string, unknown>>> {
     const params = new URLSearchParams();
     if (opts.items !== undefined) params.set('items', String(opts.items));
     if (opts.page !== undefined) params.set('page', String(opts.page));

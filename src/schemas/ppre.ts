@@ -228,7 +228,22 @@ export type OrdenTrabajoFields = {
   camposAdicionales?: Record<string, string | number>;
 };
 
-export function buildOrdenTrabajoBody(args: OrdenTrabajoFields): Record<string, unknown> {
+/** Campos que solo son válidos en POST y deben excluirse en PUT. */
+const ORDEN_TRABAJO_POST_ONLY_FIELDS = ['PPC_STATUS_COMENTARIOS', 'AVI_TIPO_INSTALACION', 'AVI_TIPO_PROCESO'] as const;
+
+/**
+ * Construye el body para crear o actualizar una orden de trabajo.
+ *
+ * @param args - Campos de la orden de trabajo.
+ * @param opts - Opciones de construcción.
+ * @param opts.mode - 'create' (POST, incluye todos los campos) | 'update' (PUT, excluye los campos POST-only).
+ *                    Por defecto 'create'.
+ */
+export function buildOrdenTrabajoBody(
+  args: OrdenTrabajoFields,
+  opts: { mode?: 'create' | 'update' } = {},
+): Record<string, unknown> {
+  const mode = opts.mode ?? 'create';
   const body: Record<string, unknown> = {};
   setIf(body, 'AVI_CODEMP', args.AVI_CODEMP);
   setIf(body, 'AVI_DELEG', args.AVI_DELEG);
@@ -260,17 +275,26 @@ export function buildOrdenTrabajoBody(args: OrdenTrabajoFields): Record<string, 
   setIf(body, 'AVI_TIPO_MANT', args.AVI_TIPO_MANT);
   setIf(body, 'AVI_TEXTO_TRAB_REALIZADO', args.AVI_TEXTO_TRAB_REALIZADO);
   setIf(body, 'PPC_GENERAR_PARTES', args.PPC_GENERAR_PARTES);
-  setIf(body, 'PPC_STATUS_COMENTARIOS', args.PPC_STATUS_COMENTARIOS);
+  if (mode === 'create') {
+    setIf(body, 'PPC_STATUS_COMENTARIOS', args.PPC_STATUS_COMENTARIOS);
+  }
   setIf(body, 'PPL_IMP_LIN_OPC1_CTTO', args.PPL_IMP_LIN_OPC1_CTTO);
   setIf(body, 'PPL_CANT_LIN_IMPUT', args.PPL_CANT_LIN_IMPUT);
   setIf(body, 'PPC_HORA_AVISO_ACU', args.PPC_HORA_AVISO_ACU);
   setIf(body, 'PPC_HORA_RECOGIDA_ACU', args.PPC_HORA_RECOGIDA_ACU);
   setIf(body, 'PPC_HORA_LLEGADA_ACU', args.PPC_HORA_LLEGADA_ACU);
   setIf(body, 'PPC_HORA_SALIDA_ACU', args.PPC_HORA_SALIDA_ACU);
-  setIf(body, 'AVI_TIPO_INSTALACION', args.AVI_TIPO_INSTALACION);
-  setIf(body, 'AVI_TIPO_PROCESO', args.AVI_TIPO_PROCESO);
+  if (mode === 'create') {
+    setIf(body, 'AVI_TIPO_INSTALACION', args.AVI_TIPO_INSTALACION);
+    setIf(body, 'AVI_TIPO_PROCESO', args.AVI_TIPO_PROCESO);
+  }
   setIf(body, 'AVI_PARTE_OPERARIO', args.AVI_PARTE_OPERARIO);
-  if (args.camposAdicionales) Object.assign(body, args.camposAdicionales);
+  if (args.camposAdicionales) {
+    const excluded = mode === 'update' ? new Set<string>(ORDEN_TRABAJO_POST_ONLY_FIELDS) : new Set<string>();
+    for (const [k, v] of Object.entries(args.camposAdicionales)) {
+      if (!excluded.has(k)) body[k] = v;
+    }
+  }
   return body;
 }
 
@@ -281,7 +305,7 @@ export function buildOrdenTrabajoBody(args: OrdenTrabajoFields): Record<string, 
 export const CreateMarcajeShape = {
   idReg: z.string().optional().describe('idReg del marcaje (idReg).'),
   date: z.string().optional().describe('Fecha y hora ISO del marcaje (date).'),
-  trackType: z.enum(['ENT', 'NOV', 'SAL', 'I', 'A', 'POS']).optional().describe('Tipo de marcaje: ENT=Entrada, NOV=Novedad, SAL=Salida, I=Incidencia, A=Ausencia, POS=Posición (trackType).'),
+  trackType: z.enum(['ENT', 'NOV', 'SAL', 'I', 'A', 'POS']).optional().describe('Tipo de marcaje: ENT=Entrada, NOV=Novedad, SAL=Salida, I=Incidencia, A=Alarma, POS=Posición (trackType).'),
   serviceTag: z.string().optional().describe('Tag del servicio (serviceTag).'),
   device: z.string().optional().describe('Identificador del dispositivo (device).'),
   latitude: z.number().optional().describe('Latitud GPS (latitude).'),

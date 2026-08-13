@@ -7,7 +7,7 @@ const CONTRATO = {
   CON_DELEG: '08',
   CON_NUMCONT: 1234,
   CON_CODCLI: 'CLI001',
-  idReg: 'cHByZV9jb250cmF0bw==',
+  idReg: 'ppre-contrato-01',
 };
 
 const READ_TOOLS = [
@@ -111,6 +111,132 @@ describe('ppre contratos tools', () => {
       const { server } = buildServer();
       const handler = getHandler(server, 'freematica_list_ppre_tipos_contrato');
       const result = await handler({});
+
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content[0].text).error).toBe('server_error');
+    });
+  });
+
+  describe('freematica_list_ppre_contratos_v2', () => {
+    it('lista contratos ppre v2 con paginación', async () => {
+      const scope = nock(BASE_URL)
+        .get('/ppre/v2/contratos')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnvelope([CONTRATO], 10));
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_list_ppre_contratos_v2');
+      const result = await handler({ page: 1, items: 20 });
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.total).toBe(10);
+      expect(parsed.items[0].CON_NUMCONT).toBe(1234);
+      scope.done();
+    });
+
+    it('devuelve error() en fallo del API', async () => {
+      nock(BASE_URL)
+        .get('/ppre/v2/contratos')
+        .query(true)
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_list_ppre_contratos_v2');
+      const result = await handler({ page: 1, items: 20 });
+
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content[0].text).error).toBe('server_error');
+    });
+  });
+
+  describe('freematica_get_ppre_contrato_v1', () => {
+    it('obtiene detalle de contrato v1 por idReg', async () => {
+      const scope = nock(BASE_URL)
+        .get(`/ppre/v1/contratos/${CONTRATO.idReg}`)
+        .reply(200, listEnvelope([CONTRATO], 1));
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_get_ppre_contrato_v1');
+      const result = await handler({ id: CONTRATO.idReg });
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.CON_CODCLI).toBe('CLI001');
+      scope.done();
+    });
+
+    it('devuelve error() cuando el API retorna error', async () => {
+      nock(BASE_URL)
+        .get(`/ppre/v1/contratos/${CONTRATO.idReg}`)
+        .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_get_ppre_contrato_v1');
+      const result = await handler({ id: CONTRATO.idReg });
+
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content[0].text).error).toBe('not_found');
+    });
+  });
+
+  describe('freematica_get_ppre_contrato_v2', () => {
+    it('obtiene detalle de contrato v2 por idReg', async () => {
+      const scope = nock(BASE_URL)
+        .get(`/ppre/v2/contratos/${CONTRATO.idReg}`)
+        .reply(200, listEnvelope([CONTRATO], 1));
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_get_ppre_contrato_v2');
+      const result = await handler({ id: CONTRATO.idReg });
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.CON_NUMCONT).toBe(1234);
+      scope.done();
+    });
+
+    it('devuelve error() cuando el API retorna error', async () => {
+      nock(BASE_URL)
+        .get(`/ppre/v2/contratos/${CONTRATO.idReg}`)
+        .reply(200, { errorCode: '401', errorMessage: 'Unauthorized', data: null });
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_get_ppre_contrato_v2');
+      const result = await handler({ id: CONTRATO.idReg });
+
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content[0].text).error).toBe('invalid_token');
+    });
+  });
+
+  describe('freematica_list_ppre_contratos_instalacion', () => {
+    it('lista contratos de instalación con paginación', async () => {
+      const scope = nock(BASE_URL)
+        .get('/ppre/v1/contratosInstalacion')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnvelope([CONTRATO], 8));
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_list_ppre_contratos_instalacion');
+      const result = await handler({ page: 1, items: 20 });
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.total).toBe(8);
+      expect(parsed.items[0].CON_CODCLI).toBe('CLI001');
+      scope.done();
+    });
+
+    it('devuelve error() en fallo del API', async () => {
+      nock(BASE_URL)
+        .get('/ppre/v1/contratosInstalacion')
+        .query(true)
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const { server } = buildServer();
+      const handler = getHandler(server, 'freematica_list_ppre_contratos_instalacion');
+      const result = await handler({ page: 1, items: 20 });
 
       expect(result.isError).toBe(true);
       expect(JSON.parse(result.content[0].text).error).toBe('server_error');

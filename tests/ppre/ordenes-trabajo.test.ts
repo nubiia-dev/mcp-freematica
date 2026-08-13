@@ -125,5 +125,47 @@ describe('ppre ordenes-trabajo tools', () => {
       expect(result.isError).toBeUndefined();
       expect(sentBody['AVI_TEXTO_TRAB_REALIZADO']).toBe('Trabajo completado');
     });
+
+    it('NO incluye campos POST-only en el body del PUT', async () => {
+      let sentBody: Record<string, unknown> = {};
+      nock(BASE_URL)
+        .put(`/ppre/v1/ordenes-trabajo/${ORDEN.idReg}`, (body) => {
+          sentBody = body;
+          return true;
+        })
+        .reply(200, okEnvelope(ORDEN));
+
+      const { server } = buildServer({ enableWrites: true });
+      const handler = getHandler(server, 'freematica_update_ppre_orden_trabajo');
+      await handler({
+        idReg: ORDEN.idReg,
+        AVI_TEXTO_TRAB_REALIZADO: 'Completado',
+        // camposAdicionales con campos POST-only — deben quedar excluidos
+        camposAdicionales: {
+          PPC_STATUS_COMENTARIOS: 'no-debe-ir',
+          AVI_TIPO_INSTALACION: 'no-debe-ir',
+          AVI_TIPO_PROCESO: 'no-debe-ir',
+          AVI_MANTENEDOR: 'M001',
+        },
+      });
+
+      expect(sentBody['PPC_STATUS_COMENTARIOS']).toBeUndefined();
+      expect(sentBody['AVI_TIPO_INSTALACION']).toBeUndefined();
+      expect(sentBody['AVI_TIPO_PROCESO']).toBeUndefined();
+      expect(sentBody['AVI_MANTENEDOR']).toBe('M001');
+    });
+
+    it('propaga errores del API como error()', async () => {
+      nock(BASE_URL)
+        .put(`/ppre/v1/ordenes-trabajo/${ORDEN.idReg}`)
+        .reply(200, { errorCode: '500', errorMessage: 'Internal Server Error', data: null });
+
+      const { server } = buildServer({ enableWrites: true });
+      const handler = getHandler(server, 'freematica_update_ppre_orden_trabajo');
+      const result = await handler({ idReg: ORDEN.idReg });
+
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content[0].text).error).toBe('server_error');
+    });
   });
 });

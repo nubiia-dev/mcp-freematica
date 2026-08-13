@@ -34,7 +34,7 @@ export function registerPpreOrdenesTrabajoTools(
     { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     async ({ page, items }): Promise<CallToolResult> => {
       try {
-        const result = await client.listPpreOrdenesTraba({ page, items });
+        const result = await client.listPpreOrdenesTrabajo({ page, items });
         return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;
@@ -103,7 +103,7 @@ export function registerPpreOrdenesTrabajoTools(
     { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ idReg, ...rest }): Promise<CallToolResult> => {
       try {
-        const body = buildOrdenTrabajoBody(rest as OrdenTrabajoFields);
+        const body = buildOrdenTrabajoBody(rest as OrdenTrabajoFields, { mode: 'update' });
         const result = await client.updatePpreOrdenTrabajo(idReg, body);
         return ok(result) as CallToolResult;
       } catch (err) {
