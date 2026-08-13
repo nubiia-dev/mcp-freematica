@@ -197,7 +197,7 @@ export const UpdatePemfRutaShape = {
   claseServicio: z.string().optional().describe('Clase de servicio (claseServicio).'),
   contrato: z.string().optional().describe('Número de contrato (contrato).'),
   servicio: z.string().optional().describe('Código de servicio (servicio).'),
-  turno: z.string().optional().describe('Turno (turno).'),
+  turno: z.union([z.string(), z.number()]).optional().describe('Turno (turno). Numérico en la API (ej. 0).'),
   frecuencia: z.string().optional().describe('Frecuencia de la ruta (frecuencia).'),
   diaDef: z.string().optional().describe('Día definición (diaDef).'),
   hhPpto: z.number().optional().describe('Horas presupuestadas (hhPpto).'),
@@ -230,7 +230,7 @@ export type PemfRutaFields = {
   claseServicio?: string;
   contrato?: string;
   servicio?: string;
-  turno?: string;
+  turno?: string | number;
   frecuencia?: string;
   diaDef?: string;
   hhPpto?: number;
