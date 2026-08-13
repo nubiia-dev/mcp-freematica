@@ -526,6 +526,834 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Personal extendido — lectura (personal-ext tools)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista de personas — endpoint de sincronización incremental v2.
+   *
+   * Endpoint: GET /pers/v2/personal
+   *
+   * @param opts - Paginación y filtro opcional por fecha de modificación.
+   */
+  async listPersonalV2(opts: ListOptions & { fchmodificacion?: string } = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('placeholder://x/pers/v2/personal');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.fchmodificacion !== undefined) url.searchParams.set('fchmodificacion', opts.fchmodificacion);
+    const qs = url.searchParams.toString();
+    const path = qs ? `/pers/v2/personal?${qs}` : '/pers/v2/personal';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Lista paginada de datos de identificación del personal.
+   *
+   * Endpoint: GET /pers/v2/personal-identificacion
+   */
+  async listPersonalIdentificacion(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/personal-identificacion', opts);
+  }
+
+  /**
+   * Lista paginada de notas de personal.
+   *
+   * Endpoint: GET /pers/v2/personal-notas
+   *
+   * @param opts - Paginación y filtro opcional por idReg de persona.
+   */
+  async listPersonalNotas(opts: ListOptions & { idReg?: string } = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('placeholder://x/pers/v2/personal-notas');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.idReg !== undefined) url.searchParams.set('idReg', opts.idReg);
+    const qs = url.searchParams.toString();
+    const path = qs ? `/pers/v2/personal-notas?${qs}` : '/pers/v2/personal-notas';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de una nota de personal por idReg.
+   *
+   * Endpoint: GET /pers/v2/personal-notas/{idReg}
+   */
+  async getPersonalNota(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v2/personal-notas/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Nota de personal no encontrada: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de experiencias profesionales del personal.
+   *
+   * Endpoint: GET /pers/v1/personal-experiencias
+   *
+   * @param opts - Paginación y filtro opcional por idReg de persona.
+   */
+  async listPersonalExperiencias(opts: ListOptions & { idReg?: string } = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('placeholder://x/pers/v1/personal-experiencias');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.idReg !== undefined) url.searchParams.set('idReg', opts.idReg);
+    const qs = url.searchParams.toString();
+    const path = qs ? `/pers/v1/personal-experiencias?${qs}` : '/pers/v1/personal-experiencias';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de una experiencia profesional por idReg.
+   *
+   * Endpoint: GET /pers/v1/personal-experiencias/{idreg}
+   */
+  async getPersonalExperiencia(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/personal-experiencias/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Experiencia no encontrada: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de formaciones del personal.
+   *
+   * Endpoint: GET /pers/v1/personal-formaciones
+   *
+   * @param opts - Paginación y filtro opcional por idReg de persona.
+   */
+  async listPersonalFormaciones(opts: ListOptions & { idReg?: string } = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('placeholder://x/pers/v1/personal-formaciones');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.idReg !== undefined) url.searchParams.set('idReg', opts.idReg);
+    const qs = url.searchParams.toString();
+    const path = qs ? `/pers/v1/personal-formaciones?${qs}` : '/pers/v1/personal-formaciones';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de una formación de personal por idReg.
+   *
+   * Endpoint: GET /pers/v1/personal-formaciones/{idReg}
+   */
+  async getPersonalFormacion(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/personal-formaciones/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Formación no encontrada: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de contratos laborales del personal.
+   *
+   * Endpoint: GET /pers/v1/personal_contratos
+   */
+  async listPersonalContratos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v1/personal_contratos', opts);
+  }
+
+  /**
+   * Detalle de un contrato laboral por idReg.
+   *
+   * Endpoint: GET /pers/v1/personal_contratos/{idreg}
+   */
+  async getPersonalContrato(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/personal_contratos/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Contrato laboral no encontrado: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de tramos horarios del personal (v1).
+   *
+   * Endpoint: GET /pers/v1/personal_tramos
+   */
+  async listPersonalTramos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v1/personal_tramos', opts);
+  }
+
+  /**
+   * Detalle de un tramo horario por idReg (v1).
+   *
+   * Endpoint: GET /pers/v1/personal_tramos/{idreg}
+   */
+  async getPersonalTramo(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/personal_tramos/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Tramo horario no encontrado: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista de tramos horarios — endpoint de sincronización incremental v2.
+   *
+   * Endpoint: GET /pers/v2/personal/tramos
+   *
+   * @param opts - Paginación y filtro opcional por fecha de modificación.
+   */
+  async listPersonalTramosSync(opts: ListOptions & { fchmodificacion?: string } = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('placeholder://x/pers/v2/personal/tramos');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.fchmodificacion !== undefined) url.searchParams.set('fchmodificacion', opts.fchmodificacion);
+    const qs = url.searchParams.toString();
+    const path = qs ? `/pers/v2/personal/tramos?${qs}` : '/pers/v2/personal/tramos';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Detalle de un tramo horario por idReg (v2 — sincronización).
+   *
+   * Endpoint: GET /pers/v2/personal/tramos/{idreg}
+   */
+  async getPersonalTramoV2(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v2/personal/tramos/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Tramo horario v2 no encontrado: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de datos de pago del personal.
+   *
+   * Endpoint: GET /pers/v1/personal_pago
+   */
+  async listPersonalPago(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v1/personal_pago', opts);
+  }
+
+  /**
+   * Detalle de los datos de pago de una persona por idReg.
+   *
+   * Endpoint: GET /pers/v1/personal_pago/{idreg}
+   */
+  async getPersonalPago(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/personal_pago/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Datos de pago no encontrados: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de datos adicionales del personal.
+   *
+   * Endpoint: GET /pers/v2/personal-adicionales
+   */
+  async listPersonalAdicionales(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/personal-adicionales', opts);
+  }
+
+  /**
+   * Lista paginada de prórrogas de contratos laborales.
+   *
+   * Endpoint: GET /pers/v1/personal-prorroga
+   */
+  async listPersonalProrroga(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v1/personal-prorroga', opts);
+  }
+
+  /**
+   * Detalle de una prórroga de contrato por idReg.
+   *
+   * Endpoint: GET /pers/v1/personal-prorroga/{idreg}
+   */
+  async getPersonalProrroga(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/personal-prorroga/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Prórroga no encontrada: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de incidencias de personal.
+   *
+   * Endpoint: GET /pers/v2/incidencias
+   */
+  async listIncidenciasPersonal(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/incidencias', opts);
+  }
+
+  /**
+   * Agenda de una persona (lista-like).
+   *
+   * Endpoint: GET /pers/v1/agenda-persona
+   *
+   * @param opts - Paginación y filtro opcional por idReg de persona.
+   */
+  async getAgendaPersona(opts: ListOptions & { idReg?: string } = {}): Promise<ListResult<Record<string, unknown>>> {
+    const url = new URL('placeholder://x/pers/v1/agenda-persona');
+    if (opts.items !== undefined) url.searchParams.set('items', String(opts.items));
+    if (opts.page !== undefined) url.searchParams.set('page', String(opts.page));
+    if (opts.idReg !== undefined) url.searchParams.set('idReg', opts.idReg);
+    const qs = url.searchParams.toString();
+    const path = qs ? `/pers/v1/agenda-persona?${qs}` : '/pers/v1/agenda-persona';
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(path);
+    return { items: data.items, total: Number(data.total) };
+  }
+
+  /**
+   * Lista paginada de equipamiento de ficha de seguridad.
+   *
+   * Endpoint: GET /pers/v2/equipamiento-ficha-seguridad
+   */
+  async listEquipamientoFichaSeguridad(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/equipamiento-ficha-seguridad', opts);
+  }
+
+  /**
+   * Lista paginada de anticipos del personal.
+   *
+   * Endpoint: GET /pers/v2/personal/anticipos
+   */
+  async listAnticiposPersonal(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/personal/anticipos', opts);
+  }
+
+  /**
+   * Detalle de un anticipo de personal por idReg.
+   *
+   * Endpoint: GET /pers/v2/personal/anticipos/{idReg}
+   */
+  async getAnticipoPersonal(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v2/personal/anticipos/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Anticipo no encontrado: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada del calendario personal.
+   *
+   * Endpoint: GET /pers/v2/personal-cal
+   */
+  async listCalendarioPersonal(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/personal-cal', opts);
+  }
+
+  /**
+   * Detalle de una entrada del calendario personal por idReg.
+   *
+   * Endpoint: GET /pers/v2/personal-cal/{idReg}
+   */
+  async getCalendarioPersonal(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v2/personal-cal/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Entrada de calendario personal no encontrada: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de documentos CPD.
+   *
+   * Endpoint: GET /pers/v1/cpd
+   */
+  async listCpd(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v1/cpd', opts);
+  }
+
+  /**
+   * Detalle de un documento CPD por idReg.
+   *
+   * Endpoint: GET /pers/v1/cpd/{idreg}
+   */
+  async getCpd(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/cpd/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Documento CPD no encontrado: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista de movimientos de un documento CPD.
+   *
+   * Endpoint: GET /pers/v1/cpd/{idreg}/movimientos
+   */
+  async listCpdMovimientos(idReg: string, opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(
+      `/pers/v1/cpd/${encodeURIComponent(idReg)}/movimientos`,
+      opts,
+    );
+  }
+
+  /**
+   * Lista de documentos CPD firmados mediante VID.
+   *
+   * Endpoint: GET /pers/v1/cpd/firmados-vid
+   */
+  async listCpdFirmadosVid(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v1/cpd/firmados-vid', opts);
+  }
+
+  /**
+   * Lista paginada de datos de IRPF del personal.
+   *
+   * Endpoint: GET /pers/v2/personal_irpf
+   */
+  async listPersonalIrpf(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/personal_irpf', opts);
+  }
+
+  /**
+   * Detalle de los datos IRPF de una persona por idReg.
+   *
+   * Endpoint: GET /pers/v2/personal_irpf/{idreg}
+   */
+  async getPersonalIrpf(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v2/personal_irpf/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Datos IRPF no encontrados: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de sesiones de formación.
+   *
+   * Endpoint: GET /pers/v1/sesiones-formacion
+   */
+  async listSesionesFormacion(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v1/sesiones-formacion', opts);
+  }
+
+  /**
+   * Detalle de una sesión de formación por idReg.
+   *
+   * Endpoint: GET /pers/v1/sesiones-formacion/{idreg}
+   */
+  async getSesionFormacion(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v1/sesiones-formacion/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Sesión de formación no encontrada: ${idReg}`);
+    }
+    return item;
+  }
+
+  /**
+   * Lista paginada de incidencias VSS (Vigilancia de la Salud).
+   *
+   * Endpoint: GET /pers/v2/vss-incidencias
+   */
+  async listVssIncidencias(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pers/v2/vss-incidencias', opts);
+  }
+
+  /**
+   * Detalle de una incidencia VSS por idReg.
+   *
+   * Endpoint: GET /pers/v2/vss-incidencias/{idReg}
+   */
+  async getVssIncidencia(idReg: string): Promise<Record<string, unknown>> {
+    const data = await this.get<FreematicaListData<Record<string, unknown>>>(
+      `/pers/v2/vss-incidencias/${encodeURIComponent(idReg)}`,
+    );
+    const item = data.items?.[0];
+    if (item === undefined) {
+      throw new FreematicaError('not_found', `Incidencia VSS no encontrada: ${idReg}`);
+    }
+    return item;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Personal extendido — escritura (personal-ext write tools)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Obtiene la persona para hacer merge en el update (usa v1 como el listado).
+   *
+   * Endpoint: GET /pers/v1/personal/{idreg}
+   */
+  async getPersonaForUpdate(idReg: string): Promise<Record<string, unknown>> {
+    return this.getPersona(idReg);
+  }
+
+  /**
+   * Alta de persona.
+   *
+   * Endpoint: POST /pers/v1/personal — body VoPersonal (VSSPER_*).
+   */
+  async createPersona(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersona', 'POST /pers/v1/personal', body);
+    return this.post<Record<string, unknown>>('/pers/v1/personal', body);
+  }
+
+  /**
+   * Actualización de persona.
+   *
+   * Endpoint: PUT /pers/v1/personal/{idReg} — body VoPersonal completo.
+   */
+  async updatePersona(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersona', `PUT /pers/v1/personal/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v1/personal/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de identificación de personal.
+   *
+   * Endpoint: POST /pers/v1/personal-identificacion/{idreg}
+   */
+  async createPersonalIdentificacion(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalIdentificacion', `POST /pers/v1/personal-identificacion/${idReg}`, body);
+    return this.post<Record<string, unknown>>(
+      `/pers/v1/personal-identificacion/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de nota de personal.
+   *
+   * Endpoint: POST /pers/v2/personal-notas — body VoPersonalNotas (PERNOT_*).
+   */
+  async createPersonalNota(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalNota', 'POST /pers/v2/personal-notas', body);
+    return this.post<Record<string, unknown>>('/pers/v2/personal-notas', body);
+  }
+
+  /**
+   * Actualización de nota de personal.
+   *
+   * Endpoint: PUT /pers/v2/personal-notas/{idReg}
+   */
+  async updatePersonalNota(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalNota', `PUT /pers/v2/personal-notas/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v2/personal-notas/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de experiencia profesional de personal.
+   *
+   * Endpoint: POST /pers/v2/personal-experiencia — body VoPersonalExperiencias (PEREX_*).
+   */
+  async createPersonalExperiencia(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalExperiencia', 'POST /pers/v2/personal-experiencia', body);
+    return this.post<Record<string, unknown>>('/pers/v2/personal-experiencia', body);
+  }
+
+  /**
+   * Alta de formación de personal.
+   *
+   * Endpoint: POST /pers/v2/personal-formaciones
+   */
+  async createPersonalFormacion(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalFormacion', 'POST /pers/v2/personal-formaciones', body);
+    return this.post<Record<string, unknown>>('/pers/v2/personal-formaciones', body);
+  }
+
+  /**
+   * Actualización de formación de personal.
+   *
+   * Endpoint: PUT /pers/v2/personal-formaciones/{idReg}
+   */
+  async updatePersonalFormacion(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalFormacion', `PUT /pers/v2/personal-formaciones/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v2/personal-formaciones/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de incidencia base.
+   *
+   * Endpoint: POST /pers/v2/incidencias-base
+   */
+  async createIncidenciaBase(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createIncidenciaBase', 'POST /pers/v2/incidencias-base', body);
+    return this.post<Record<string, unknown>>('/pers/v2/incidencias-base', body);
+  }
+
+  /**
+   * Actualización de incidencia base (cierre / fecha de fin).
+   *
+   * Endpoint: PUT /pers/v2/incidencias-base/{idReg}
+   */
+  async updateIncidenciaBase(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateIncidenciaBase', `PUT /pers/v2/incidencias-base/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v2/incidencias-base/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de datos de pago de personal.
+   *
+   * Endpoint: POST /pers/v1/personal_pago
+   */
+  async createPersonalPago(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalPago', 'POST /pers/v1/personal_pago', body);
+    return this.post<Record<string, unknown>>('/pers/v1/personal_pago', body);
+  }
+
+  /**
+   * Actualización de datos de pago de personal.
+   *
+   * Endpoint: PUT /pers/v1/personal_pago/{idreg}
+   */
+  async updatePersonalPago(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalPago', `PUT /pers/v1/personal_pago/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v1/personal_pago/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de tramo horario de personal.
+   *
+   * Endpoint: POST /pers/v1/personal_tramos — body VoPersonalTramos (PERHH_*).
+   */
+  async createPersonalTramo(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalTramo', 'POST /pers/v1/personal_tramos', body);
+    return this.post<Record<string, unknown>>('/pers/v1/personal_tramos', body);
+  }
+
+  /**
+   * Actualización de tramo horario de personal.
+   *
+   * Endpoint: PUT /pers/v1/personal_tramos/{idreg}
+   */
+  async updatePersonalTramo(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalTramo', `PUT /pers/v1/personal_tramos/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v1/personal_tramos/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de contrato laboral de personal.
+   *
+   * Endpoint: POST /pers/v1/personal_contratos — body VoPersonalContratos (PERCTRAB_*).
+   */
+  async createPersonalContrato(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalContrato', 'POST /pers/v1/personal_contratos', body);
+    return this.post<Record<string, unknown>>('/pers/v1/personal_contratos', body);
+  }
+
+  /**
+   * Actualización de contrato laboral de personal.
+   *
+   * Endpoint: PUT /pers/v1/personal_contratos/{idreg}
+   */
+  async updatePersonalContrato(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalContrato', `PUT /pers/v1/personal_contratos/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v1/personal_contratos/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de dato adicional de personal.
+   *
+   * Endpoint: POST /pers/v2/personal-adicionales — body VoPersonalAdicionales (VSSPERA_*).
+   */
+  async createPersonalAdicional(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalAdicional', 'POST /pers/v2/personal-adicionales', body);
+    return this.post<Record<string, unknown>>('/pers/v2/personal-adicionales', body);
+  }
+
+  /**
+   * Actualización de dato adicional de personal.
+   *
+   * Endpoint: PUT /pers/v2/personal-adicionales/{idReg}
+   */
+  async updatePersonalAdicional(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalAdicional', `PUT /pers/v2/personal-adicionales/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v2/personal-adicionales/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de anticipo de personal.
+   *
+   * Endpoint: POST /pers/v2/personal/anticipos
+   */
+  async createAnticipoPersonal(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createAnticipoPersonal', 'POST /pers/v2/personal/anticipos', body);
+    return this.post<Record<string, unknown>>('/pers/v2/personal/anticipos', body);
+  }
+
+  /**
+   * Alta de entrada del calendario personal.
+   *
+   * Endpoint: POST /pers/v2/personal-cal
+   */
+  async createCalendarioPersonal(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCalendarioPersonal', 'POST /pers/v2/personal-cal', body);
+    return this.post<Record<string, unknown>>('/pers/v2/personal-cal', body);
+  }
+
+  /**
+   * Actualización de entrada del calendario personal.
+   *
+   * Endpoint: PUT /pers/v2/personal-cal/{idReg}
+   */
+  async updateCalendarioPersonal(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCalendarioPersonal', `PUT /pers/v2/personal-cal/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v2/personal-cal/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualización masiva del CPD.
+   *
+   * Endpoint: POST /pers/v1/cpd/actualizar
+   */
+  async updateCpdBulk(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCpdBulk', 'POST /pers/v1/cpd/actualizar', body);
+    return this.post<Record<string, unknown>>('/pers/v1/cpd/actualizar', body);
+  }
+
+  /**
+   * Gestión de un documento CPD (aprobar, rechazar, firmar, etc.).
+   *
+   * Endpoint: PUT /pers/v1/cpd/{idreg}/gestion
+   */
+  async updateCpdGestion(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCpdGestion', `PUT /pers/v1/cpd/${idReg}/gestion`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v1/cpd/${encodeURIComponent(idReg)}/gestion`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de datos IRPF de personal.
+   *
+   * Endpoint: POST /pers/v2/personal_irpf
+   */
+  async createPersonalIrpf(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalIrpf', 'POST /pers/v2/personal_irpf', body);
+    return this.post<Record<string, unknown>>('/pers/v2/personal_irpf', body);
+  }
+
+  /**
+   * Actualización de datos IRPF de personal.
+   *
+   * Endpoint: PUT /pers/v2/personal_irpf/{idreg}
+   */
+  async updatePersonalIrpf(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalIrpf', `PUT /pers/v2/personal_irpf/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v2/personal_irpf/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Alta de datos adicionales IRPF (irpf_ad).
+   *
+   * Endpoint: POST /pers/v2/personal_irpf_ad/{idreg}
+   */
+  async createPersonalIrpfAd(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPersonalIrpfAd', `POST /pers/v2/personal_irpf_ad/${idReg}`, body);
+    return this.post<Record<string, unknown>>(
+      `/pers/v2/personal_irpf_ad/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualización de datos adicionales IRPF (irpf_ad).
+   *
+   * Endpoint: PUT /pers/v2/personal_irpf_ad/{idreg}
+   */
+  async updatePersonalIrpfAd(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePersonalIrpfAd', `PUT /pers/v2/personal_irpf_ad/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/pers/v2/personal_irpf_ad/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Actualización del preventor laboral.
+   *
+   * Endpoint: PUT /pers/v1/control/preventor
+   */
+  async updatePreventor(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePreventor', 'PUT /pers/v1/control/preventor', body);
+    return this.put<Record<string, unknown>>('/pers/v1/control/preventor', body);
+  }
+
+  /**
+   * Actualización del estado del preventor laboral.
+   *
+   * Endpoint: POST /pers/v2/preventor/actualizar-estado
+   */
+  async updatePreventorEstado(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePreventorEstado', 'POST /pers/v2/preventor/actualizar-estado', body);
+    return this.post<Record<string, unknown>>('/pers/v2/preventor/actualizar-estado', body);
+  }
+
+  // ---------------------------------------------------------------------------
   // Calendarios laborales (v0.5.0)
   // ---------------------------------------------------------------------------
 

@@ -112,6 +112,43 @@ const READ_ONLY_TOOLS = [
   'freematica_get_incidencia_servicio',
   'freematica_list_incidencecode',
   'freematica_get_contratos_servicios_material',
+  // personal-ext read tools
+  'freematica_list_personal_v2',
+  'freematica_list_personal_identificacion',
+  'freematica_list_personal_notas',
+  'freematica_get_personal_nota',
+  'freematica_list_personal_experiencias',
+  'freematica_get_personal_experiencia',
+  'freematica_list_personal_formaciones',
+  'freematica_get_personal_formacion',
+  'freematica_list_personal_contratos',
+  'freematica_get_personal_contrato',
+  'freematica_list_personal_tramos',
+  'freematica_get_personal_tramo',
+  'freematica_list_personal_tramos_sync',
+  'freematica_get_personal_tramo_v2',
+  'freematica_list_personal_pago',
+  'freematica_get_personal_pago',
+  'freematica_list_personal_adicionales',
+  'freematica_list_personal_prorroga',
+  'freematica_get_personal_prorroga',
+  'freematica_list_incidencias_personal',
+  'freematica_get_agenda_persona',
+  'freematica_list_equipamiento_ficha_seguridad',
+  'freematica_list_anticipos_personal',
+  'freematica_get_anticipo_personal',
+  'freematica_list_calendario_personal',
+  'freematica_get_calendario_personal',
+  'freematica_list_cpd',
+  'freematica_get_cpd',
+  'freematica_list_cpd_movimientos',
+  'freematica_list_cpd_firmados_vid',
+  'freematica_list_personal_irpf',
+  'freematica_get_personal_irpf',
+  'freematica_list_sesiones_formacion',
+  'freematica_get_sesion_formacion',
+  'freematica_list_vss_incidencias',
+  'freematica_get_vss_incidencia',
 ].sort();
 
 const WRITE_TOOLS = [
@@ -131,6 +168,36 @@ const WRITE_TOOLS = [
   'freematica_update_servicio_facturacion',
   'freematica_update_servicio_fechas',
   'freematica_update_servicio_historico_precios',
+  // personal-ext write tools
+  'freematica_create_persona',
+  'freematica_update_persona',
+  'freematica_create_personal_identificacion',
+  'freematica_create_personal_nota',
+  'freematica_update_personal_nota',
+  'freematica_create_personal_experiencia',
+  'freematica_create_personal_formacion',
+  'freematica_update_personal_formacion',
+  'freematica_create_incidencia_base',
+  'freematica_update_incidencia_base_fecha_fin',
+  'freematica_create_personal_pago',
+  'freematica_update_personal_pago',
+  'freematica_create_personal_tramo',
+  'freematica_update_personal_tramo',
+  'freematica_create_personal_contrato',
+  'freematica_update_personal_contrato',
+  'freematica_create_personal_adicional',
+  'freematica_update_personal_adicional',
+  'freematica_create_anticipo_personal',
+  'freematica_create_calendario_personal',
+  'freematica_update_calendario_personal',
+  'freematica_update_cpd_bulk',
+  'freematica_update_cpd_gestion',
+  'freematica_create_personal_irpf',
+  'freematica_update_personal_irpf',
+  'freematica_create_personal_irpf_ad',
+  'freematica_update_personal_irpf_ad',
+  'freematica_update_preventor',
+  'freematica_update_preventor_estado',
 ].sort();
 
 describe('createFreematicaServer', () => {
@@ -140,7 +207,7 @@ describe('createFreematicaServer', () => {
     expect(names).toEqual(READ_ONLY_TOOLS);
   });
 
-  it('registers the 16 write tools only with enableWrites=true', () => {
+  it('registers all write tools only with enableWrites=true', () => {
     const server = createFreematicaServer({ client: TEST_CLIENT, enableWrites: true });
     const names = registeredToolNames(server);
     expect(names).toEqual([...READ_ONLY_TOOLS, ...WRITE_TOOLS].sort());

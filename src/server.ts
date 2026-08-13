@@ -18,6 +18,7 @@ import { registerMasterDataTools } from './tools/master-data.js';
 import { registerOportunidadesNegocioTools } from './tools/oportunidades-negocio.js';
 import { registerPedidosComprasTools } from './tools/pedidos-compras.js';
 import { registerPersonalTools } from './tools/personal.js';
+import { registerPersonalExtTools } from './tools/personal-ext.js';
 import { registerPrlTools } from './tools/prl.js';
 import { registerProveedoresTools } from './tools/proveedores.js';
 import { registerVinculosPersonasServiciosTools } from './tools/vinculos-personas-servicios.js';
@@ -55,6 +56,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerContabilidadTools(server, opts.client);
   registerPrlTools(server, opts.client);
   registerPersonalTools(server, opts.client);
+  registerPersonalExtTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerCalendariosTools(server, opts.client);
   registerFacturasElectronicasTools(server, opts.client);
   registerAlbaranesTools(server, opts.client);

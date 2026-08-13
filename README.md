@@ -103,6 +103,42 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_get_incidencia_servicio`                      | `GET /pvss/v2/incidencias-servicios/{idReg}`                   | Detalle de una incidencia en servicio                                                              |
 | `freematica_list_incidencecode`                           | `GET /pvss/v2/incidencecode`                                   | Catálogo de códigos de incidencia (v2)                                                             |
 | `freematica_get_contratos_servicios_material`             | `GET /pvss/v2/contratos-servicios-material/{idreg}`            | Detalle de material asignado a un servicio de contrato por idReg                                   |
+| `freematica_list_personal_v2`                             | `GET /pers/v2/personal`                                        | Sincronización incremental de personas (param `fchmodificacion` opcional)                          |
+| `freematica_list_personal_identificacion`                 | `GET /pers/v2/personal-identificacion`                         | Datos de identificación del personal                                                               |
+| `freematica_list_personal_notas`                          | `GET /pers/v2/personal-notas`                                  | Notas del personal (filtrables por `idReg` de persona)                                             |
+| `freematica_get_personal_nota`                            | `GET /pers/v2/personal-notas/{idReg}`                          | Detalle de una nota de personal                                                                    |
+| `freematica_list_personal_experiencias`                   | `GET /pers/v1/personal-experiencias`                           | Historial de experiencia laboral del personal                                                      |
+| `freematica_get_personal_experiencia`                     | `GET /pers/v1/personal-experiencias/{idreg}`                   | Detalle de una experiencia laboral                                                                 |
+| `freematica_list_personal_formaciones`                    | `GET /pers/v1/personal-formaciones`                            | Historial de formaciones del personal                                                              |
+| `freematica_get_personal_formacion`                       | `GET /pers/v1/personal-formaciones/{idReg}`                    | Detalle de una formación del personal                                                              |
+| `freematica_list_personal_contratos`                      | `GET /pers/v1/personal_contratos`                              | Contratos laborales del personal                                                                   |
+| `freematica_get_personal_contrato`                        | `GET /pers/v1/personal_contratos/{idreg}`                      | Detalle de un contrato laboral                                                                     |
+| `freematica_list_personal_tramos`                         | `GET /pers/v1/personal_tramos`                                 | Tramos de horario del personal (v1)                                                                |
+| `freematica_get_personal_tramo`                           | `GET /pers/v1/personal_tramos/{idreg}`                         | Detalle de un tramo de horario (v1)                                                                |
+| `freematica_list_personal_tramos_sync`                    | `GET /pers/v2/personal/tramos`                                 | Sincronización incremental de tramos de horario (param `fchmodificacion` opcional)                 |
+| `freematica_get_personal_tramo_v2`                        | `GET /pers/v2/personal/tramos/{idreg}`                         | Detalle de un tramo de horario (v2)                                                                |
+| `freematica_list_personal_pago`                           | `GET /pers/v1/personal_pago`                                   | Datos bancarios y de pago del personal                                                             |
+| `freematica_get_personal_pago`                            | `GET /pers/v1/personal_pago/{idreg}`                           | Detalle de datos bancarios de una persona                                                          |
+| `freematica_list_personal_adicionales`                    | `GET /pers/v2/personal-adicionales`                            | Campos adicionales personalizables del personal                                                    |
+| `freematica_list_personal_prorroga`                       | `GET /pers/v1/personal-prorroga`                               | Prórrogas de contratos del personal                                                                |
+| `freematica_get_personal_prorroga`                        | `GET /pers/v1/personal-prorroga/{idreg}`                       | Detalle de una prórroga de contrato                                                                |
+| `freematica_list_incidencias_personal`                    | `GET /pers/v2/incidencias`                                     | Incidencias del personal                                                                           |
+| `freematica_get_agenda_persona`                           | `GET /pers/v1/agenda-persona`                                  | Agenda de citas y eventos de personas                                                              |
+| `freematica_list_equipamiento_ficha_seguridad`            | `GET /pers/v2/equipamiento-ficha-seguridad`                    | Equipamiento de fichas de seguridad del personal                                                   |
+| `freematica_list_anticipos_personal`                      | `GET /pers/v2/personal/anticipos`                              | Anticipos de nómina del personal                                                                   |
+| `freematica_get_anticipo_personal`                        | `GET /pers/v2/personal/anticipos/{idReg}`                      | Detalle de un anticipo de nómina                                                                   |
+| `freematica_list_calendario_personal`                     | `GET /pers/v2/personal-cal`                                    | Entradas del calendario personal (vacaciones, permisos, ausencias)                                 |
+| `freematica_get_calendario_personal`                      | `GET /pers/v2/personal-cal/{idReg}`                            | Detalle de una entrada del calendario personal                                                     |
+| `freematica_list_cpd`                                     | `GET /pers/v1/cpd`                                             | Documentos del empleado (CPD: nóminas, comunicaciones, etc.)                                       |
+| `freematica_get_cpd`                                      | `GET /pers/v1/cpd/{idreg}`                                     | Detalle de un CPD                                                                                  |
+| `freematica_list_cpd_movimientos`                         | `GET /pers/v1/cpd/{idreg}/movimientos`                         | Movimientos/historial de estados de un CPD                                                         |
+| `freematica_list_cpd_firmados_vid`                        | `GET /pers/v1/cpd/firmados-vid`                                | CPDs firmados vía viafirma (VID)                                                                   |
+| `freematica_list_personal_irpf`                           | `GET /pers/v2/personal_irpf`                                   | Datos de IRPF del personal                                                                         |
+| `freematica_get_personal_irpf`                            | `GET /pers/v2/personal_irpf/{idreg}`                           | Detalle de datos IRPF de una persona                                                               |
+| `freematica_list_sesiones_formacion`                      | `GET /pers/v1/sesiones-formacion`                              | Sesiones de formación del personal                                                                 |
+| `freematica_get_sesion_formacion`                         | `GET /pers/v1/sesiones-formacion/{idreg}`                      | Detalle de una sesión de formación                                                                 |
+| `freematica_list_vss_incidencias`                         | `GET /pers/v2/vss-incidencias`                                 | Incidencias de personal (módulo VSS)                                                               |
+| `freematica_get_vss_incidencia`                           | `GET /pers/v2/vss-incidencias/{idReg}`                         | Detalle de una incidencia VSS del personal                                                         |
 
 ### Tools de escritura (requieren `FREEMATICA_ENABLE_WRITES=true`)
 
@@ -126,6 +162,35 @@ Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=tr
 | `freematica_update_contacto_cliente`           | `PUT /pgrl/v2/contactos-clientes/{idReg}`                       | Actualización parcial de contacto (fetch+merge)                  |
 | `freematica_create_localizacion_cliente`       | `POST /pgrl/v2/localizaciones-{tipo}-clientes`                  | Alta de localización (tipo: cobro/envio/factura/servicio)        |
 | `freematica_update_localizacion_cliente`       | `PUT /pgrl/v2/localizaciones-{tipo}-clientes/{idReg}`           | Actualización parcial de localización (fetch+merge)              |
+| `freematica_create_persona`                    | `POST /pers/v1/personal`                                        | Alta de persona/empleado (campos VSSPER\_\* + camposAdicionales) |
+| `freematica_update_persona`                    | `PUT /pers/v1/personal/{idReg}`                                 | Actualización parcial de persona (fetch+merge)                   |
+| `freematica_create_personal_identificacion`    | `POST /pers/v1/personal-identificacion/{idreg}`                 | Alta de datos de identificación de una persona                   |
+| `freematica_create_personal_nota`              | `POST /pers/v2/personal-notas`                                  | Alta de nota de personal (PERNOT\_\*)                            |
+| `freematica_update_personal_nota`              | `PUT /pers/v2/personal-notas/{idReg}`                           | Actualización de nota de personal (fetch+merge)                  |
+| `freematica_create_personal_experiencia`       | `POST /pers/v2/personal-experiencia`                            | Alta de experiencia laboral (PEREX\_\*)                          |
+| `freematica_create_personal_formacion`         | `POST /pers/v2/personal-formaciones`                            | Alta de formación del personal                                   |
+| `freematica_update_personal_formacion`         | `PUT /pers/v2/personal-formaciones/{idReg}`                     | Actualización de formación del personal                          |
+| `freematica_create_incidencia_base`            | `POST /pers/v2/incidencias-base`                                | Alta de incidencia base                                          |
+| `freematica_update_incidencia_base_fecha_fin`  | `PUT /pers/v2/incidencias-base/{idReg}`                         | Actualización de fecha fin de incidencia base                    |
+| `freematica_create_personal_pago`              | `POST /pers/v1/personal_pago`                                   | Alta de datos bancarios de persona                               |
+| `freematica_update_personal_pago`              | `PUT /pers/v1/personal_pago/{idreg}`                            | Actualización de datos bancarios de persona                      |
+| `freematica_create_personal_tramo`             | `POST /pers/v1/personal_tramos`                                 | Alta de tramo de horario (PERHH\_\*)                             |
+| `freematica_update_personal_tramo`             | `PUT /pers/v1/personal_tramos/{idreg}`                          | Actualización de tramo de horario (PERHH\_\*)                    |
+| `freematica_create_personal_contrato`          | `POST /pers/v1/personal_contratos`                              | Alta de contrato laboral (PERCTRAB\_\*)                          |
+| `freematica_update_personal_contrato`          | `PUT /pers/v1/personal_contratos/{idreg}`                       | Actualización de contrato laboral (PERCTRAB\_\*)                 |
+| `freematica_create_personal_adicional`         | `POST /pers/v2/personal-adicionales`                            | Alta de campo adicional de personal (VSSPERA\_\*)                |
+| `freematica_update_personal_adicional`         | `PUT /pers/v2/personal-adicionales/{idReg}`                     | Actualización de campo adicional de personal (VSSPERA\_\*)       |
+| `freematica_create_anticipo_personal`          | `POST /pers/v2/personal/anticipos`                              | Alta de anticipo de nómina                                       |
+| `freematica_create_calendario_personal`        | `POST /pers/v2/personal-cal`                                    | Alta de entrada en calendario personal                           |
+| `freematica_update_calendario_personal`        | `PUT /pers/v2/personal-cal/{idReg}`                             | Actualización de entrada en calendario personal                  |
+| `freematica_update_cpd_bulk`                   | `POST /pers/v1/cpd/actualizar`                                  | Actualización masiva de CPDs                                     |
+| `freematica_update_cpd_gestion`                | `PUT /pers/v1/cpd/{idreg}/gestion`                              | Gestión de estado de un CPD (firmar, validar, rechazar)          |
+| `freematica_create_personal_irpf`              | `POST /pers/v2/personal_irpf`                                   | Alta de datos IRPF de persona                                    |
+| `freematica_update_personal_irpf`              | `PUT /pers/v2/personal_irpf/{idreg}`                            | Actualización de datos IRPF de persona                           |
+| `freematica_create_personal_irpf_ad`           | `POST /pers/v2/personal_irpf_ad/{idreg}`                        | Alta de IRPF ascendientes/descendientes de persona               |
+| `freematica_update_personal_irpf_ad`           | `PUT /pers/v2/personal_irpf_ad/{idreg}`                         | Actualización de IRPF ascendientes/descendientes                 |
+| `freematica_update_preventor`                  | `PUT /pers/v1/control/preventor`                                | Actualización de estado de formación en Preventor                |
+| `freematica_update_preventor_estado`           | `POST /pers/v2/preventor/actualizar-estado`                     | Actualización de estado Preventor (nuevo formato v2)             |
 
 ## Filtros tipados (FIQL interno)
 
