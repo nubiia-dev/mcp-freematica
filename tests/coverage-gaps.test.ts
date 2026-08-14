@@ -962,7 +962,7 @@ describe('tool catch branches — pgrl-correo.ts (pgrl completar)', () => {
     const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
     vi.spyOn(client, 'mailingUnsubscribe').mockRejectedValueOnce(new Error('network'));
     const server = new McpServer({ name: 'test', version: '0.0.0' });
-    registerPgrlCorreoTools(server, client);
+    registerPgrlCorreoTools(server, client, { enableWrites: true });
     const result = (await getHandler(server, 'freematica_mailing_unsubscribe')({ idReg: 'X' })) as {
       content: { type: string; text: string }[]; isError?: boolean;
     };
@@ -974,7 +974,7 @@ describe('tool catch branches — pgrl-correo.ts (pgrl completar)', () => {
     const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
     vi.spyOn(client, 'mailingSubscribe').mockRejectedValueOnce(new Error('network'));
     const server = new McpServer({ name: 'test', version: '0.0.0' });
-    registerPgrlCorreoTools(server, client);
+    registerPgrlCorreoTools(server, client, { enableWrites: true });
     const result = (await getHandler(server, 'freematica_mailing_subscribe')({ idReg: 'X' })) as {
       content: { type: string; text: string }[]; isError?: boolean;
     };

@@ -289,11 +289,11 @@ const READ_ONLY_TOOLS = [
   'freematica_get_correos_totales',
   'freematica_list_correo_v1',
   'freematica_verificar_mail',
-  'freematica_mailing_unsubscribe',
-  'freematica_mailing_subscribe',
 ].sort();
 
 const WRITE_TOOLS = [
+  'freematica_mailing_unsubscribe',
+  'freematica_mailing_subscribe',
   'freematica_create_cliente',
   'freematica_create_contacto_cliente',
   'freematica_create_localizacion_cliente',

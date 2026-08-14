@@ -123,13 +123,19 @@ export function registerPgrlCorreoTools(
     },
   );
 
+  if (!opts.enableWrites) return;
+
+  // --------------------------------------------------------------------------
+  // Escritura: alta/baja de mailing (cambian estado; solo con writes)
+  // --------------------------------------------------------------------------
+
   server.tool(
     'freematica_mailing_unsubscribe',
     'Da de baja a un contacto del mailing en Freemática.',
     {
       idReg: z.string().min(1).describe('idReg del contacto.'),
     },
-    { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+    { readOnlyHint: false, destructiveHint: true, openWorldHint: true },
     async ({ idReg }): Promise<CallToolResult> => {
       try {
         const result = await client.mailingUnsubscribe(idReg);
@@ -158,8 +164,6 @@ export function registerPgrlCorreoTools(
       }
     },
   );
-
-  if (!opts.enableWrites) return;
 
   // --------------------------------------------------------------------------
   // Escritura: crear correos

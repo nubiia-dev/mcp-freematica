@@ -64,8 +64,6 @@ describe('registerPgrlCorreoTools', () => {
     expect(tools).toHaveProperty('freematica_get_correos_totales');
     expect(tools).toHaveProperty('freematica_list_correo_v1');
     expect(tools).toHaveProperty('freematica_verificar_mail');
-    expect(tools).toHaveProperty('freematica_mailing_unsubscribe');
-    expect(tools).toHaveProperty('freematica_mailing_subscribe');
   });
 
   it('does NOT register write tools when enableWrites is false', () => {
@@ -75,6 +73,8 @@ describe('registerPgrlCorreoTools', () => {
     expect(tools).not.toHaveProperty('freematica_create_correo');
     expect(tools).not.toHaveProperty('freematica_update_correo_estado_v1');
     expect(tools).not.toHaveProperty('freematica_update_correo_estado');
+    expect(tools).not.toHaveProperty('freematica_mailing_unsubscribe');
+    expect(tools).not.toHaveProperty('freematica_mailing_subscribe');
   });
 
   it('registers write tools when enableWrites is true', () => {
@@ -84,6 +84,8 @@ describe('registerPgrlCorreoTools', () => {
     expect(tools).toHaveProperty('freematica_create_correo');
     expect(tools).toHaveProperty('freematica_update_correo_estado_v1');
     expect(tools).toHaveProperty('freematica_update_correo_estado');
+    expect(tools).toHaveProperty('freematica_mailing_unsubscribe');
+    expect(tools).toHaveProperty('freematica_mailing_subscribe');
   });
 
   it('list_correos returns items, count, total', async () => {
@@ -297,7 +299,7 @@ describe('registerPgrlCorreoTools', () => {
       .get('/pgrl/v1/mailing/unsubscribe/CONTACTID')
       .reply(200, detailEnv(fake));
 
-    const server = buildServer();
+    const server = buildServer(true);
     const handler = getHandler(server, 'freematica_mailing_unsubscribe');
     const result = (await handler({ idReg: 'CONTACTID' })) as {
       content: { type: string; text: string }[];
@@ -314,7 +316,7 @@ describe('registerPgrlCorreoTools', () => {
       .get('/pgrl/v1/mailing/unsubscribe/BAD')
       .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
 
-    const server = buildServer();
+    const server = buildServer(true);
     const handler = getHandler(server, 'freematica_mailing_unsubscribe');
     const result = (await handler({ idReg: 'BAD' })) as {
       content: { type: string; text: string }[];
@@ -332,7 +334,7 @@ describe('registerPgrlCorreoTools', () => {
       .get('/pgrl/v1/mailing/subscribe/CONTACTID')
       .reply(200, detailEnv(fake));
 
-    const server = buildServer();
+    const server = buildServer(true);
     const handler = getHandler(server, 'freematica_mailing_subscribe');
     const result = (await handler({ idReg: 'CONTACTID' })) as {
       content: { type: string; text: string }[];
@@ -349,7 +351,7 @@ describe('registerPgrlCorreoTools', () => {
       .get('/pgrl/v1/mailing/subscribe/BAD')
       .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
 
-    const server = buildServer();
+    const server = buildServer(true);
     const handler = getHandler(server, 'freematica_mailing_subscribe');
     const result = (await handler({ idReg: 'BAD' })) as {
       content: { type: string; text: string }[];
