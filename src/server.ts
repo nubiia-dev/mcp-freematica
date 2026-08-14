@@ -34,6 +34,9 @@ import { registerPgrlCalendariosFestivosTools } from './tools/pgrl-calendarios-f
 import { registerPgrlCatalogosTools } from './tools/pgrl-catalogos.js';
 import { registerPgrlInstaladoresTools } from './tools/pgrl-instaladores.js';
 import { registerPgrlCorreoTools } from './tools/pgrl-correo.js';
+import { registerPvssEscriturasTools } from './tools/pvss-escrituras.js';
+import { registerPvenEscriturasTools } from './tools/pven-escrituras.js';
+import { registerPcmpEscriturasTools } from './tools/pcmp-escrituras.js';
 
 export interface CreateFreematicaServerOptions {
   client: FreematicaClient;
@@ -62,7 +65,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerPedidosComprasTools(server, opts.client);
   registerProveedoresTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerLocalizacionesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
-  registerContabilidadTools(server, opts.client);
+  registerContabilidadTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPrlTools(server, opts.client);
   registerPersonalTools(server, opts.client);
   registerPersonalExtTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
@@ -71,8 +74,8 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerAlbaranesTools(server, opts.client);
   registerArticulosTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerVinculosPersonasServiciosTools(server, opts.client);
-  registerHabilitacionesTools(server, opts.client);
-  registerCuadrantesTools(server, opts.client);
+  registerHabilitacionesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerCuadrantesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerServiciosPvssTools(server, opts.client);
   registerPpreTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPemfTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
@@ -83,6 +86,9 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerPgrlCatalogosTools(server, opts.client);
   registerPgrlInstaladoresTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPgrlCorreoTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPvssEscriturasTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPvenEscriturasTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPcmpEscriturasTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
 
   return server;
 }

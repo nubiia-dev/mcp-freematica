@@ -23,10 +23,10 @@ interface ToolEntry {
   callback?: (args: Record<string, unknown>) => Promise<unknown>;
 }
 
-function buildServer() {
+function buildServer(enableWrites = false) {
   const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
   const server = new McpServer({ name: 'test', version: '0.0.0' });
-  registerHabilitacionesTools(server, client);
+  registerHabilitacionesTools(server, client, { enableWrites });
   return server;
 }
 
@@ -52,13 +52,116 @@ describe('registerHabilitacionesTools', () => {
     nock.cleanAll();
   });
 
-  it('registers all 4 habilitaciones tools', () => {
+  it('registers all 6 habilitaciones read tools', () => {
     const server = buildServer();
     const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
     expect(tools).toHaveProperty(LIST_SERV_ALTA);
     expect(tools).toHaveProperty(LIST_SERV_BAJA);
     expect(tools).toHaveProperty(LIST_PERS_ALTA);
     expect(tools).toHaveProperty(LIST_PERS_BAJA);
+    expect(tools).toHaveProperty('freematica_list_solicitudes_material');
+    expect(tools).toHaveProperty('freematica_get_solicitud_material');
+  });
+
+  it('gate: write tools not registered without enableWrites', () => {
+    const tools = (buildServer(false) as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    expect(tools).not.toHaveProperty('freematica_actualizar_alta_habilitaciones_personal');
+    expect(tools).not.toHaveProperty('freematica_actualizar_baja_habilitaciones_personal');
+    expect(tools).not.toHaveProperty('freematica_actualizar_alta_habilitaciones_servicios');
+    expect(tools).not.toHaveProperty('freematica_actualizar_baja_habilitaciones_servicios');
+    expect(tools).not.toHaveProperty('freematica_create_solicitud_material');
+  });
+
+  it('write tools registered with enableWrites', () => {
+    const tools = (buildServer(true) as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    expect(tools).toHaveProperty('freematica_actualizar_alta_habilitaciones_personal');
+    expect(tools).toHaveProperty('freematica_actualizar_baja_habilitaciones_personal');
+    expect(tools).toHaveProperty('freematica_actualizar_alta_habilitaciones_servicios');
+    expect(tools).toHaveProperty('freematica_actualizar_baja_habilitaciones_servicios');
+    expect(tools).toHaveProperty('freematica_create_solicitud_material');
+  });
+
+  describe('freematica_actualizar_alta_habilitaciones_personal', () => {
+    it('happy path — PUT /peqv/v2/habilitaciones/personal/actualizar/alta', async () => {
+      nock(BASE_URL)
+        .put('/peqv/v2/habilitaciones/personal/actualizar/alta')
+        .reply(200, { errorCode: '200', errorMessage: '', data: { ok: true } });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_actualizar_alta_habilitaciones_personal');
+      const result = (await handler({ datos: [{ nif: '12345678A' }] })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .put('/peqv/v2/habilitaciones/personal/actualizar/alta')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_actualizar_alta_habilitaciones_personal');
+      const result = (await handler({ datos: [] })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  describe('freematica_create_solicitud_material', () => {
+    it('happy path — POST /peqv/v2/solicitud-material', async () => {
+      nock(BASE_URL)
+        .post('/peqv/v2/solicitud-material')
+        .reply(200, { errorCode: '200', errorMessage: '', data: { EQSM_ID: 'SM001' } });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_create_solicitud_material');
+      const result = (await handler({ EQSM_COD_ART: 'ART001', EQSM_CANT_SOLICITADA: 5 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .post('/peqv/v2/solicitud-material')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_create_solicitud_material');
+      const result = (await handler({})) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  describe('freematica_list_solicitudes_material', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ EQSM_ID: 'SM001' }];
+      nock(BASE_URL)
+        .get('/peqv/v2/solicitud-material')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 5));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_solicitudes_material');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/peqv/v2/solicitud-material')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_solicitudes_material');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
   });
 
   // -------------------------------------------------------------------------

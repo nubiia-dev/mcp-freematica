@@ -289,6 +289,18 @@ const READ_ONLY_TOOLS = [
   'freematica_get_correos_totales',
   'freematica_list_correo_v1',
   'freematica_verificar_mail',
+  // Fase 7 — nuevas lecturas
+  'freematica_list_acompanante_ruta',
+  'freematica_list_campos_estadisticos',
+  'freematica_list_inspecciones',
+  'freematica_list_naturalezas_abono',
+  'freematica_list_normas',
+  'freematica_list_plantillas',
+  'freematica_list_propuestas_compra',
+  'freematica_list_rutas_gestion',
+  'freematica_list_rutas_planificacion',
+  'freematica_get_solicitud_material',
+  'freematica_list_solicitudes_material',
 ].sort();
 
 const WRITE_TOOLS = [
@@ -393,6 +405,31 @@ const WRITE_TOOLS = [
   'freematica_create_correo',
   'freematica_update_correo_estado_v1',
   'freematica_update_correo_estado',
+  // Fase 7 — nuevas escrituras
+  'freematica_actualizar_alta_habilitaciones_personal',
+  'freematica_actualizar_alta_habilitaciones_servicios',
+  'freematica_actualizar_baja_habilitaciones_personal',
+  'freematica_actualizar_baja_habilitaciones_servicios',
+  'freematica_create_albaran_venta',
+  'freematica_create_campo_estadistico',
+  'freematica_create_computo_pers',
+  'freematica_create_computo_pers_h',
+  'freematica_create_factura_estado',
+  'freematica_create_informe_control',
+  'freematica_create_propuesta_compra',
+  'freematica_create_solicitud_material',
+  'freematica_import_asientos',
+  'freematica_recibir_pedido',
+  'freematica_update_albaran_fch_traspaso_ext',
+  'freematica_update_campo_estadistico',
+  'freematica_update_computo_pers',
+  'freematica_update_cuadrante',
+  'freematica_update_factura_compra',
+  'freematica_update_factura_electronica_v1',
+  'freematica_update_factura_electronica_v2',
+  'freematica_update_factura_leido',
+  'freematica_update_pedido_fechas',
+  'freematica_update_servicio_fch_fin',
 ].sort();
 
 describe('createFreematicaServer', () => {

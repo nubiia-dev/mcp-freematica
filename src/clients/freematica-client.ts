@@ -3781,6 +3781,185 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // PVSS escrituras — Fase 7
+  // ---------------------------------------------------------------------------
+
+  /** Alta de cómputo de persona. */
+  async createComputoPers(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createComputoPers', 'POST /pvss/v2/computos-pers', body);
+    return this.post<Record<string, unknown>>('/pvss/v2/computos-pers', body);
+  }
+
+  /** Actualización de cómputo de persona. */
+  async updateComputoPers(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateComputoPers', `PUT /pvss/v2/computos-pers/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pvss/v2/computos-pers/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Alta de cómputo histórico de persona. */
+  async createComputoPersH(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createComputoPersH', 'POST /pvss/v2/computos-pers-h', body);
+    return this.post<Record<string, unknown>>('/pvss/v2/computos-pers-h', body);
+  }
+
+  /** Actualización de cuadrante (campos adicionales libres). */
+  async updateCuadrante(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCuadrante', `PUT /pvss/v2/cuadrante/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pvss/v2/cuadrante/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Alta de campo estadístico. */
+  async createCampoEstadistico(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCampoEstadistico', 'POST /pvss/v2/campos-estadisticos', body);
+    return this.post<Record<string, unknown>>('/pvss/v2/campos-estadisticos', body);
+  }
+
+  /** Actualización de campo estadístico. */
+  async updateCampoEstadistico(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCampoEstadistico', `PUT /pvss/v2/campos-estadisticos/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pvss/v2/campos-estadisticos/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Alta de informe de control. */
+  async createInformeControl(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createInformeControl', 'POST /pvss/v2/informes-control', body);
+    return this.post<Record<string, unknown>>('/pvss/v2/informes-control', body);
+  }
+
+  /** Actualización de fecha fin de servicio. */
+  async updateServicioFchFin(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateServicioFchFin', `PUT /pvss/v2/servicios-fch-fin/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pvss/v2/servicios-fch-fin/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // ---------------------------------------------------------------------------
+  // PVEN escrituras — Fase 7
+  // ---------------------------------------------------------------------------
+
+  /** Alta de albarán de venta. */
+  async createAlbaranVenta(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createAlbaranVenta', 'POST /pven/v2/albaranes-ventas', body);
+    return this.post<Record<string, unknown>>('/pven/v2/albaranes-ventas', body);
+  }
+
+  /** Actualización de fecha traspaso externo en albarán de venta. */
+  async updateAlbaranFchTraspasoExt(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateAlbaranFchTraspasoExt', `PUT /pven/v2/albaranes-ventas-fechatraspasoext/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pven/v2/albaranes-ventas-fechatraspasoext/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Alta de estado de factura (AAPP / EDICOM). */
+  async createFacturaEstado(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createFacturaEstado', 'POST /pven/v1/facturas/estados', body);
+    return this.post<Record<string, unknown>>('/pven/v1/facturas/estados', body);
+  }
+
+  /** Actualización de factura electrónica (v1). */
+  async updateFacturaElectronicaV1(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateFacturaElectronicaV1', `PUT /pven/v1/facturas/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pven/v1/facturas/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Actualización de factura electrónica (v2). */
+  async updateFacturaElectronicaV2(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateFacturaElectronicaV2', `PUT /pven/v2/facturas/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pven/v2/facturas/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Marca una factura como leída. */
+  async updateFacturaLeido(idReg: string): Promise<Record<string, unknown>> {
+    this.logWrite('updateFacturaLeido', `PUT /pven/v1/facturas/${idReg}/leido`, {});
+    return this.put<Record<string, unknown>>(`/pven/v1/facturas/${encodeURIComponent(idReg)}/leido`, {});
+  }
+
+  // ---------------------------------------------------------------------------
+  // PCMP escrituras — Fase 7
+  // ---------------------------------------------------------------------------
+
+  /** Actualización de factura de compra. */
+  async updateFacturaCompra(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateFacturaCompra', `PUT /pcmp/v2/facturas-compras/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pcmp/v2/facturas-compras/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Actualización de fechas de pedido de compra. */
+  async updatePedidoFechas(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePedidoFechas', `PUT /pcmp/v2/pedidos-fechas/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pcmp/v2/pedidos-fechas/${encodeURIComponent(idReg)}`, body);
+  }
+
+  /** Recepcionar un pedido de compra. */
+  async recibirPedido(idReg: string): Promise<Record<string, unknown>> {
+    this.logWrite('recibirPedido', `PUT /pcmp/v2/control/recibir-pedidos/${idReg}`, {});
+    return this.put<Record<string, unknown>>(`/pcmp/v2/control/recibir-pedidos/${encodeURIComponent(idReg)}`, {});
+  }
+
+  /** Alta de propuesta de compra. */
+  async createPropuestaCompra(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPropuestaCompra', 'POST /pcmp/v1/propuestas', body);
+    return this.post<Record<string, unknown>>('/pcmp/v1/propuestas', body);
+  }
+
+  /** Lista paginada de propuestas de compra. */
+  async listPropuestasCompra(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcmp/v1/propuestas', opts);
+  }
+
+  // ---------------------------------------------------------------------------
+  // PEQV escrituras — Fase 7
+  // ---------------------------------------------------------------------------
+
+  /** Actualiza altas de habilitaciones de personal. */
+  async actualizarAltaHabilitacionesPersonal(datos: unknown[]): Promise<Record<string, unknown>> {
+    this.logWrite('actualizarAltaHabilitacionesPersonal', 'PUT /peqv/v2/habilitaciones/personal/actualizar/alta', { count: datos.length });
+    return this.put<Record<string, unknown>>('/peqv/v2/habilitaciones/personal/actualizar/alta', datos);
+  }
+
+  /** Actualiza bajas de habilitaciones de personal. */
+  async actualizarBajaHabilitacionesPersonal(datos: unknown[]): Promise<Record<string, unknown>> {
+    this.logWrite('actualizarBajaHabilitacionesPersonal', 'PUT /peqv/v2/habilitaciones/personal/actualizar/baja', { count: datos.length });
+    return this.put<Record<string, unknown>>('/peqv/v2/habilitaciones/personal/actualizar/baja', datos);
+  }
+
+  /** Actualiza altas de habilitaciones de servicios. */
+  async actualizarAltaHabilitacionesServicios(datos: unknown[]): Promise<Record<string, unknown>> {
+    this.logWrite('actualizarAltaHabilitacionesServicios', 'PUT /peqv/v2/habilitaciones/servicios/actualizar/alta', { count: datos.length });
+    return this.put<Record<string, unknown>>('/peqv/v2/habilitaciones/servicios/actualizar/alta', datos);
+  }
+
+  /** Actualiza bajas de habilitaciones de servicios. */
+  async actualizarBajaHabilitacionesServicios(datos: unknown[]): Promise<Record<string, unknown>> {
+    this.logWrite('actualizarBajaHabilitacionesServicios', 'PUT /peqv/v2/habilitaciones/servicios/actualizar/baja', { count: datos.length });
+    return this.put<Record<string, unknown>>('/peqv/v2/habilitaciones/servicios/actualizar/baja', datos);
+  }
+
+  /** Alta de solicitud de material. */
+  async createSolicitudMaterial(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createSolicitudMaterial', 'POST /peqv/v2/solicitud-material', body);
+    return this.post<Record<string, unknown>>('/peqv/v2/solicitud-material', body);
+  }
+
+  /** Lista paginada de solicitudes de material. */
+  async listSolicitudesMaterial(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/peqv/v2/solicitud-material', opts);
+  }
+
+  /** Detalle de una solicitud de material por `idReg` opaco. */
+  async getSolicitudMaterial(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/peqv/v2/solicitud-material/${encodeURIComponent(idReg)}`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // PCON escrituras — Fase 7
+  // ---------------------------------------------------------------------------
+
+  /** Importación de asientos contables. */
+  async importAsientos(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('importAsientos', 'POST /pcon/v2/import-asientos', body);
+    return this.post<Record<string, unknown>>('/pcon/v2/import-asientos', body);
+  }
+
+  // ---------------------------------------------------------------------------
   // PPRE — Preventivos / Mantenimiento / Instalaciones
   // ---------------------------------------------------------------------------
 
