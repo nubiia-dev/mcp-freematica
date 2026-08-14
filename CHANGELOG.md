@@ -2,6 +2,38 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — Fase 8: módulos pequeños (pett, pkai, pedv, pfree, pdir, pgdoc, pcuo, mcom, ppde, comp, psel, ptes)
+
+### Nuevos módulos — 12 dominios adicionales
+
+Implementa 12 módulos que cubren ETT, fichajes KAIROS, pedidos venta portal, IPs, indicadores CSM, documentos electrónicos, beneficiarios/partes, usuarios comunicaciones, portal empleado, compras, selección y tesorería. Se añaden **29 tools de lectura** y **26 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`).
+
+#### Added (lectura — 29 tools)
+
+- **pett**: `freematica_list_pett_peticiones_serv`, `freematica_list_pett_peticiones_serv_perso`, `freematica_list_pett_ofertas`, `freematica_list_pett_partes_ett_c`
+- **pkai**: `freematica_list_pkai_historicos_v1`, `freematica_list_pkai_historicos_v2`, `freematica_list_pkai_tipos_marcajes`
+- **pedv**: `freematica_list_pedv_pedidos`, `freematica_list_pedv_pedidos_lineas`
+- **pfree**: `freematica_list_pfree_ips`, `freematica_list_pfree_ips_erp`, `freematica_get_pfree_ip`, `freematica_get_pfree_ip_erp`
+- **pdir**: `freematica_list_pdir_csm_grupo_indicador`, `freematica_list_pdir_csm_indicador`, `freematica_get_pdir_csm_indicador`
+- **pgdoc**: `freematica_list_pgdoc_edocs`
+- **pcuo**: `freematica_list_pcuo_beneficiarios`, `freematica_get_pcuo_beneficiario`, `freematica_list_pcuo_partes`, `freematica_get_pcuo_parte`
+- **mcom**: `freematica_list_mcom_usuarios`, `freematica_get_mcom_usuario`
+- **ppde**: `freematica_list_ppde_configuracion_acceso_usuario`, `freematica_get_ppde_configuracion_acceso_usuario`, `freematica_list_ppde_personal_doc`, `freematica_get_ppde_personal_doc`, `freematica_list_ppde_solicitud_vacaciones`, `freematica_get_ppde_solicitud_vacacion`
+
+#### Added (escritura — 26 tools, requieren `FREEMATICA_ENABLE_WRITES=true`)
+
+- **pett**: `freematica_create_pett_peticion_serv`, `freematica_create_pett_peticion_serv_perso`, `freematica_update_pett_peticion_serv`, `freematica_update_pett_peticion_serv_perso_estado`, `freematica_update_pett_peticion_serv_duplicar`, `freematica_create_pett_gestion_partes_ett_c`, `freematica_update_pett_proceso_servicio_fin`, `freematica_update_pett_proceso_servicio`, `freematica_update_pett_proceso_servicio_prorroga`
+- **pkai**: `freematica_create_pkai_marcaje`
+- **pedv**: `freematica_create_pedv_pedido_servir`, `freematica_update_pedv_servir_pedido_v2`
+- **pcuo**: `freematica_create_pcuo_beneficiario`, `freematica_update_pcuo_beneficiario`, `freematica_create_pcuo_parte`, `freematica_update_pcuo_parte`
+- **mcom**: `freematica_create_mcom_usuario`, `freematica_update_mcom_usuario`
+- **ppde**: `freematica_update_ppde_solicitud_vacacion`, `freematica_create_ppde_recordatorio_firma`
+- **comp**: `freematica_create_comp_albaran_compra`, `freematica_create_comp_registro_gastos_contrato`
+- **psel**: `freematica_create_psel_candidato`
+- **ptes**: `freematica_create_ptes_importar_fichero_n43`
+
+---
+
 ## [Unreleased] — Fase 7: escrituras pvss/pven/pcmp/peqv/pcon + nuevas lecturas
 
 ### Módulos `pvss`, `pven`, `pcmp`, `peqv`, `pcon` (escrituras y lecturas adicionales)

@@ -287,6 +287,35 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_list_propuestas_compra`                       | `GET /pcmp/v1/propuestas`                                      | Lista de propuestas de compra                                                                      |
 | `freematica_list_solicitudes_material`                    | `GET /peqv/v2/solicitud-material`                              | Lista de solicitudes de material (CAE/equipamiento)                                                |
 | `freematica_get_solicitud_material`                       | `GET /peqv/v2/solicitud-material/{idreg}`                      | Detalle de una solicitud de material                                                               |
+| `freematica_list_pett_peticiones_serv`                    | `GET /pett/v2/peticiones-serv`                                 | Lista de peticiones de servicio ETT                                                                |
+| `freematica_list_pett_peticiones_serv_perso`              | `GET /pett/v2/peticiones-serv-perso`                           | Lista de personal en peticiones de servicio ETT                                                    |
+| `freematica_list_pett_ofertas`                            | `GET /pett/v2/ofertas`                                         | Lista de ofertas ETT                                                                               |
+| `freematica_list_pett_partes_ett_c`                       | `GET /pett/v1/partes_ett_c`                                    | Lista de partes ETT cliente                                                                        |
+| `freematica_list_pkai_historicos_v1`                      | `GET /pkai/v1/historicos`                                      | Histórico de fichajes KAIROS (v1)                                                                  |
+| `freematica_list_pkai_historicos_v2`                      | `GET /pkai/v2/historicos`                                      | Histórico de fichajes KAIROS (v2)                                                                  |
+| `freematica_list_pkai_tipos_marcajes`                     | `GET /pkai/v1/tiposmarcajes`                                   | Lista de tipos de marcaje KAIROS                                                                   |
+| `freematica_list_pedv_pedidos`                            | `GET /pedv/v1/pedidos`                                         | Lista de pedidos de venta del portal                                                               |
+| `freematica_list_pedv_pedidos_lineas`                     | `GET /pedv/v1/pedidos-lineas`                                  | Lista de líneas de pedidos de venta del portal                                                     |
+| `freematica_list_pfree_ips`                               | `GET /pfree/v2/ips`                                            | Lista de IPs internas Freemática                                                                   |
+| `freematica_list_pfree_ips_erp`                           | `GET /pfree/v2/ips-erp`                                        | Lista de IPs ERP Freemática                                                                        |
+| `freematica_get_pfree_ip`                                 | `GET /pfree/v2/ips/{idReg}`                                    | Detalle de una IP interna                                                                          |
+| `freematica_get_pfree_ip_erp`                             | `GET /pfree/v2/ips-erp/{idReg}`                                | Detalle de una IP ERP                                                                              |
+| `freematica_list_pdir_csm_grupo_indicador`                | `GET /pdir/v1/csm/grupoindicador`                              | Lista de grupos de indicadores CSM                                                                 |
+| `freematica_list_pdir_csm_indicador`                      | `GET /pdir/v1/csm/indicador`                                   | Lista de indicadores CSM                                                                           |
+| `freematica_get_pdir_csm_indicador`                       | `GET /pdir/v1/csm/indicador/{idreg}`                           | Detalle de un indicador CSM                                                                        |
+| `freematica_list_pgdoc_edocs`                             | `GET /pgdoc/v2/edocs/docs`                                     | Lista de documentos electrónicos (edocs)                                                           |
+| `freematica_list_pcuo_beneficiarios`                      | `GET /pcuo/v2/beneficiarios`                                   | Lista de beneficiarios (cuotas/servicios)                                                          |
+| `freematica_get_pcuo_beneficiario`                        | `GET /pcuo/v2/beneficiarios/{idReg}`                           | Detalle de un beneficiario                                                                         |
+| `freematica_list_pcuo_partes`                             | `GET /pcuo/v2/partes`                                          | Lista de partes de beneficiarios                                                                   |
+| `freematica_get_pcuo_parte`                               | `GET /pcuo/v2/partes/{idReg}`                                  | Detalle de un parte de beneficiario                                                                |
+| `freematica_list_mcom_usuarios`                           | `GET /mcom/v2/usuarios`                                        | Lista de usuarios del módulo de comunicaciones                                                     |
+| `freematica_get_mcom_usuario`                             | `GET /mcom/v2/usuarios/{idReg}`                                | Detalle de un usuario de comunicaciones                                                            |
+| `freematica_list_ppde_configuracion_acceso_usuario`       | `GET /ppde/v2/configuracion-acceso-usuario`                    | Lista de configuraciones de acceso de usuario (portal empleado)                                    |
+| `freematica_get_ppde_configuracion_acceso_usuario`        | `GET /ppde/v2/configuracion-acceso-usuario/{idreg}`            | Detalle de configuración de acceso de usuario                                                      |
+| `freematica_list_ppde_personal_doc`                       | `GET /ppde/v1/personal_doc`                                    | Lista de documentos de personal (portal empleado)                                                  |
+| `freematica_get_ppde_personal_doc`                        | `GET /ppde/v1/personal_doc/{idreg}`                            | Detalle de un documento de personal                                                                |
+| `freematica_list_ppde_solicitud_vacaciones`               | `GET /ppde/v2/solicitud-vacaciones`                            | Lista de solicitudes de vacaciones (portal empleado)                                               |
+| `freematica_get_ppde_solicitud_vacacion`                  | `GET /ppde/v2/solicitud-vacaciones/{idreg}`                    | Detalle de una solicitud de vacaciones                                                             |
 
 ### Tools de escritura (requieren `FREEMATICA_ENABLE_WRITES=true`)
 
@@ -411,6 +440,30 @@ Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=tr
 | `freematica_actualizar_baja_habilitaciones_servicios`   | `PUT /peqv/v2/habilitaciones/servicios/actualizar/baja`         | Comunicar actualización de bajas de habilitaciones de servicios  |
 | `freematica_create_solicitud_material`                  | `POST /peqv/v2/solicitud-material`                              | Alta de solicitud de material (CAE/equipamiento)                 |
 | `freematica_import_asientos`                            | `POST /pcon/v2/import-asientos`                                 | Insertar asiento contable en borrador (campos BORR\_\*)          |
+| `freematica_create_pett_peticion_serv`                  | `POST /pett/v2/peticiones-serv`                                 | Alta de petición de servicio ETT                                 |
+| `freematica_create_pett_peticion_serv_perso`            | `POST /pett/v2/peticiones-serv/perso`                           | Alta de persona en petición de servicio ETT                      |
+| `freematica_update_pett_peticion_serv`                  | `PUT /pett/v2/peticiones-serv/{idreg}`                          | Actualización de petición de servicio ETT                        |
+| `freematica_update_pett_peticion_serv_perso_estado`     | `PUT /pett/v2/peticiones-serv/perso/estado/{idreg}`             | Actualizar estado de persona en petición de servicio ETT         |
+| `freematica_update_pett_peticion_serv_duplicar`         | `PUT /pett/v2/peticiones-serv/duplicar/{idreg}`                 | Duplicar petición de servicio ETT                                |
+| `freematica_create_pett_gestion_partes_ett_c`           | `POST /pett/v1/gestion_partes_ett_c`                            | Gestionar partes ETT cliente                                     |
+| `freematica_update_pett_proceso_servicio_fin`           | `PUT /pett/v2/procesos_servicio_fin/{idreg}`                    | Fin de proceso de servicio ETT                                   |
+| `freematica_update_pett_proceso_servicio`               | `PUT /pett/v2/procesos-servicio/{idreg}`                        | Actualizar proceso de servicio ETT                               |
+| `freematica_update_pett_proceso_servicio_prorroga`      | `PUT /pett/v2/procesos-servicio-prorrogas/{idreg}`              | Prórroga de proceso de servicio ETT                              |
+| `freematica_create_pkai_marcaje`                        | `POST /pkai/v1/marcajes`                                        | Guardar marcaje KAIROS                                           |
+| `freematica_create_pedv_pedido_servir`                  | `POST /pedv/v1/pedidos/{idreg}/servir`                          | Servir pedido de venta (v1)                                      |
+| `freematica_update_pedv_servir_pedido_v2`               | `PUT /pedv/v2/control/servir-pedidos/{idReg}`                   | Servir pedido de venta (v2)                                      |
+| `freematica_create_pcuo_beneficiario`                   | `POST /pcuo/v2/beneficiarios`                                   | Alta de beneficiario                                             |
+| `freematica_update_pcuo_beneficiario`                   | `PUT /pcuo/v2/beneficiarios/{idReg}`                            | Actualización de beneficiario                                    |
+| `freematica_create_pcuo_parte`                          | `POST /pcuo/v2/partes`                                          | Alta de parte de beneficiario                                    |
+| `freematica_update_pcuo_parte`                          | `PUT /pcuo/v2/partes/{idReg}`                                   | Actualización de parte de beneficiario                           |
+| `freematica_create_mcom_usuario`                        | `POST /mcom/v2/usuarios`                                        | Alta de usuario de comunicaciones                                |
+| `freematica_update_mcom_usuario`                        | `PUT /mcom/v2/usuarios/{idReg}`                                 | Actualización de usuario de comunicaciones                       |
+| `freematica_update_ppde_solicitud_vacacion`             | `PUT /ppde/v2/solicitud-vacaciones/{idreg}`                     | Actualizar observaciones de solicitud de vacaciones              |
+| `freematica_create_ppde_recordatorio_firma`             | `POST /ppde/v2/recordatorio_firma`                              | Enviar recordatorio de firma (portal empleado)                   |
+| `freematica_create_comp_albaran_compra`                 | `POST /comp/v2/albaranes-compras`                               | Alta de albarán de compras                                       |
+| `freematica_create_comp_registro_gastos_contrato`       | `POST /comp/v2/registro-gastos-contratos`                       | Registro de gastos de contratos                                  |
+| `freematica_create_psel_candidato`                      | `POST /psel/v2/control/candidatos`                              | Alta de candidato (selección de personal)                        |
+| `freematica_create_ptes_importar_fichero_n43`           | `POST /ptes/v1/importar-fichero-n43`                            | Importar fichero N43 (tesorería)                                 |
 
 ## Filtros tipados (FIQL interno)
 
