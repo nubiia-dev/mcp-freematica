@@ -4116,6 +4116,226 @@ export class FreematicaClient extends BaseClient {
   async listPemfDescubiertos(): Promise<Record<string, unknown>> {
     return this.get<Record<string, unknown>>('/pemf/v1/descubiertos');
   }
+
+  // ---------------------------------------------------------------------------
+  // Módulo part — Inventario/Artículos (v0.10.0)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Lista paginada de artículos-costes.
+   *
+   * Endpoint: GET /part/v2/articulos-costes
+   */
+  async listArticulosCostes(opts: ListOptions): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/part/v2/articulos-costes', opts);
+  }
+
+  /**
+   * Detalle de un artículo-coste por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v2/articulos-costes/{idreg}
+   */
+  async getArticuloCoste(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/part/v2/articulos-costes/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Alta de artículo en el catálogo de inventario.
+   *
+   * Endpoint: POST /part/v2/articulos — body VoArticulosV2.
+   */
+  async createArticulo(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createArticulo', 'POST /part/v2/articulos', body);
+    return this.post<Record<string, unknown>>('/part/v2/articulos', body);
+  }
+
+  /**
+   * Actualización de artículo (cuerpo completo, el caller hace fetch+merge).
+   *
+   * Endpoint: PUT /part/v2/articulos/{idreg} — body VoArticulosV2.
+   */
+  async updateArticulo(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateArticulo', `PUT /part/v2/articulos/${idReg}`, body);
+    return this.put<Record<string, unknown>>(
+      `/part/v2/articulos/${encodeURIComponent(idReg)}`,
+      body,
+    );
+  }
+
+  /**
+   * Lista paginada de registros de serie/lote de artículos.
+   *
+   * Endpoint: GET /part/v2/articulos-serie-lote
+   */
+  async listArticulosSerieLote(opts: ListOptions): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/part/v2/articulos-serie-lote', opts);
+  }
+
+  /**
+   * Detalle de un registro de serie/lote por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v2/articulos-serie-lote/{idReg}
+   */
+  async getArticuloSerieLote(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/part/v2/articulos-serie-lote/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Alta de un registro de serie o lote para un artículo.
+   *
+   * Endpoint: POST /part/v2/articulos-serie-lote — body VoArticuloSerieLote.
+   */
+  async createArticuloSerieLote(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createArticuloSerieLote', 'POST /part/v2/articulos-serie-lote', body);
+    return this.post<Record<string, unknown>>('/part/v2/articulos-serie-lote', body);
+  }
+
+  /**
+   * Lista paginada de existencias por serie/lote.
+   *
+   * Endpoint: GET /part/v2/stocks-serie-lote
+   */
+  async listStocksSerieLote(opts: ListOptions): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/part/v2/stocks-serie-lote', opts);
+  }
+
+  /**
+   * Detalle de existencias por serie/lote por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v2/stocks-serie-lote/{idReg}
+   */
+  async getStockSerieLote(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/part/v2/stocks-serie-lote/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de stocks de artículos (existencias por almacén).
+   *
+   * Endpoint: GET /part/v1/stocks
+   */
+  async listStocks(opts: ListOptions): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/part/v1/stocks', opts);
+  }
+
+  /**
+   * Detalle de stock de un artículo por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v1/stocks/{idreg}
+   */
+  async getStock(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/part/v1/stocks/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Registra un movimiento de stock (entrada, salida o traspaso).
+   *
+   * Endpoint: POST /part/v2/movimiento-stock — body VoMovimientoStock.
+   */
+  async createMovimientoStock(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createMovimientoStock', 'POST /part/v2/movimiento-stock', body);
+    return this.post<Record<string, unknown>>('/part/v2/movimiento-stock', body);
+  }
+
+  /**
+   * Registra una entrada de producción.
+   *
+   * Endpoint: POST /part/v1/entradas-produccion — body nativo del endpoint.
+   */
+  async createEntradaProduccion(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createEntradaProduccion', 'POST /part/v1/entradas-produccion', body);
+    return this.post<Record<string, unknown>>('/part/v1/entradas-produccion', body);
+  }
+
+  /**
+   * Crea un albarán de traspaso (movimiento entre almacenes).
+   *
+   * Endpoint: POST /part/v2/albaranes-traspaso — body { VoTraspasoAlbaranCab, lineas }.
+   */
+  async createAlbaranTraspaso(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createAlbaranTraspaso', 'POST /part/v2/albaranes-traspaso', body);
+    return this.post<Record<string, unknown>>('/part/v2/albaranes-traspaso', body);
+  }
+
+  /**
+   * Ejecuta el traspaso efectivo de un albarán de traspaso.
+   *
+   * Endpoint: PUT /part/v2/control/albaran-traspaso/{idReg} — body vacío {}.
+   */
+  async traspasoAlbaran(idReg: string): Promise<Record<string, unknown>> {
+    this.logWrite('traspasoAlbaran', `PUT /part/v2/control/albaran-traspaso/${idReg}`, {});
+    return this.put<Record<string, unknown>>(
+      `/part/v2/control/albaran-traspaso/${encodeURIComponent(idReg)}`,
+      {},
+    );
+  }
+
+  /**
+   * Lista paginada de familias de artículos.
+   *
+   * Endpoint: GET /part/v1/familias
+   */
+  async listFamilias(opts: ListOptions): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/part/v1/familias', opts);
+  }
+
+  /**
+   * Detalle de una familia de artículos por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v1/familias/{idreg}
+   */
+  async getFamilia(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/part/v1/familias/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de líneas de artículos.
+   *
+   * Endpoint: GET /part/v1/lineas
+   */
+  async listLineas(opts: ListOptions): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/part/v1/lineas', opts);
+  }
+
+  /**
+   * Detalle de una línea de artículos por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v1/lineas/{idreg}
+   */
+  async getLinea(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/part/v1/lineas/${encodeURIComponent(idReg)}`,
+    );
+  }
+
+  /**
+   * Lista paginada de subfamilias de artículos.
+   *
+   * Endpoint: GET /part/v1/subfamilias
+   */
+  async listSubfamilias(opts: ListOptions): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/part/v1/subfamilias', opts);
+  }
+
+  /**
+   * Detalle de una subfamilia de artículos por `idReg` opaco.
+   *
+   * Endpoint: GET /part/v1/subfamilias/{idreg}
+   */
+  async getSubfamilia(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      `/part/v1/subfamilias/${encodeURIComponent(idReg)}`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
