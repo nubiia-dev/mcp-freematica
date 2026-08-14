@@ -2,7 +2,13 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
-## [Unreleased] — Fase 8: módulos pequeños (pett, pkai, pedv, pfree, pdir, pgdoc, pcuo, mcom, ppde, comp, psel, ptes)
+## [0.11.0] — 2026-08-14
+
+### Cobertura completa de la API de Freemática (lectura y escritura)
+
+Programa de 8 fases que lleva el MCP a cubrir **toda la API de Freemática en lectura y escritura, excepto Nóminas (`pnom`)**. Se pasa de ~105 a más de 400 herramientas. Las herramientas de escritura (`create`/`update`) se registran solo con `FREEMATICA_ENABLE_WRITES=true` y dejan log de auditoría; **no se implementan borrados (DELETE)** por diseño. Se descartan de forma intencional las utilidades que no son dato de negocio (logins de aplicación, flujos IVR/telefonía, webhooks de firma electrónica y descargas binarias), documentadas en cada módulo. Cada fase se detalla a continuación por módulo.
+
+### Fase 8: módulos pequeños (pett, pkai, pedv, pfree, pdir, pgdoc, pcuo, mcom, ppde, comp, psel, ptes)
 
 ### Nuevos módulos — 12 dominios adicionales
 
@@ -34,7 +40,7 @@ Implementa 12 módulos que cubren ETT, fichajes KAIROS, pedidos venta portal, IP
 
 ---
 
-## [Unreleased] — Fase 7: escrituras pvss/pven/pcmp/peqv/pcon + nuevas lecturas
+### Fase 7: escrituras pvss/pven/pcmp/peqv/pcon + nuevas lecturas
 
 ### Módulos `pvss`, `pven`, `pcmp`, `peqv`, `pcon` (escrituras y lecturas adicionales)
 
@@ -103,7 +109,7 @@ Rellena los huecos de escritura y lectura pendientes en 5 módulos ya cubiertos 
 
 ---
 
-## [Unreleased] — módulo pgrl completado: correo, calendarios festivos, catálogos, instaladores, proveedores escritura
+### módulo pgrl completado: correo, calendarios festivos, catálogos, instaladores, proveedores escritura
 
 ### Módulo `pgrl` (completar)
 
@@ -186,7 +192,7 @@ También se extienden los módulos existentes con endpoints v1 y detalles indivi
 
 ---
 
-## [Unreleased] — módulo part (Inventario/Artículos) completo: lectura y escritura
+### módulo part (Inventario/Artículos) completo: lectura y escritura
 
 ### Módulo `part` (Inventario/Artículos)
 
@@ -228,7 +234,7 @@ Se extiende también `src/tools/articulos.ts` con 2 tools de lectura (`list_cost
 
 ---
 
-## [Unreleased] — módulo pcrm (CRM extendido) completo: lectura y escritura
+### módulo pcrm (CRM extendido) completo: lectura y escritura
 
 ### Módulo `pcrm` (CRM extendido)
 
@@ -276,7 +282,7 @@ Implementación completa del módulo `/pcrm/` de la API de Freemática (Fase 4).
 
 ---
 
-## [Unreleased] — módulo pemf (e-Movifree / Operativa de Campo) completo: lectura y escritura
+### módulo pemf (e-Movifree / Operativa de Campo) completo: lectura y escritura
 
 ### Módulo `pemf` (e-Movifree / Operativa de Campo)
 
@@ -335,7 +341,7 @@ Implementación completa del módulo `/pemf/` de la API de Freemática. Se añad
 
 ---
 
-## [Unreleased] — módulo ppre (Preventivos/Mantenimiento/Instalaciones) completo: lectura y escritura
+### módulo ppre (Preventivos/Mantenimiento/Instalaciones) completo: lectura y escritura
 
 ### Módulo `ppre` (Preventivos / Mantenimiento / Instalaciones)
 
@@ -389,7 +395,7 @@ Implementación completa del módulo `/ppre/` de la API de Freemática. Se añad
 
 ---
 
-## [Unreleased] — módulo pers (RRHH) completo: lectura y escritura
+### módulo pers (RRHH) completo: lectura y escritura
 
 ### Módulo `pers` (RRHH / Personal) — Fase 1 completa
 
