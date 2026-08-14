@@ -103,6 +103,54 @@ export function registerClientesTools(
     },
   );
 
+  // --------------------------------------------------------------------------
+  // Tools v1: acceso al endpoint /pgrl/v1/clientes
+  // --------------------------------------------------------------------------
+
+  server.tool(
+    'freematica_list_clientes_v1',
+    [
+      'Devuelve la lista paginada de clientes usando el endpoint v1 de Freemática.',
+      '',
+      'Versión v1 del endpoint. Generalmente preferir freematica_list_clientes (v2) para datos más completos.',
+      '',
+      'Paginación 1-indexed.',
+    ].join('\n'),
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listClientesV1({ page, items });
+        return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_cliente_v1',
+    [
+      'Devuelve el detalle de un cliente usando el endpoint v1 de Freemática.',
+      '',
+      'Versión v1 del endpoint. Generalmente preferir freematica_get_cliente (v2) para datos más completos.',
+    ].join('\n'),
+    {
+      idReg: z.string().min(1).describe('Identificador del cliente (v1).'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getClienteV1(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
   if (!opts.enableWrites) return;
 
   server.tool(

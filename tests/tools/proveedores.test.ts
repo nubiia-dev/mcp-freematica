@@ -21,10 +21,10 @@ interface ToolEntry {
   callback?: (args: Record<string, unknown>) => Promise<unknown>;
 }
 
-function buildServer() {
+function buildServer(enableWrites = false) {
   const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
   const server = new McpServer({ name: 'test', version: '0.0.0' });
-  registerProveedoresTools(server, client);
+  registerProveedoresTools(server, client, { enableWrites });
   return server;
 }
 
@@ -328,5 +328,98 @@ describe('registerProveedoresTools', () => {
     expect(result.isError).toBe(true);
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('server_error');
+  });
+
+  // --------------------------------------------------------------------------
+  // write tools — create/update proveedor
+  // --------------------------------------------------------------------------
+
+  it('does NOT register write tools by default', () => {
+    const server = buildServer(false);
+    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    expect(tools).not.toHaveProperty('freematica_create_proveedor');
+    expect(tools).not.toHaveProperty('freematica_update_proveedor');
+  });
+
+  it('registers write tools when enableWrites is true', () => {
+    const server = buildServer(true);
+    const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    expect(tools).toHaveProperty('freematica_create_proveedor');
+    expect(tools).toHaveProperty('freematica_update_proveedor');
+  });
+
+  it('create_proveedor posts fields and returns created object', async () => {
+    const fields = { COD_PRO: 'P999', NOMBRE_PRO: 'Nuevo Proveedor', NIF: '12345678Z' };
+    nock(BASE_URL)
+      .post('/pgrl/v2/proveedores', fields)
+      .reply(200, detailEnv(fields));
+
+    const server = buildServer(true);
+    const handler = getHandler(server, 'freematica_create_proveedor');
+    const result = (await handler({ fields })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed).toEqual(fields);
+  });
+
+  it('create_proveedor returns error on server failure', async () => {
+    nock(BASE_URL)
+      .post('/pgrl/v2/proveedores')
+      .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+
+    const server = buildServer(true);
+    const handler = getHandler(server, 'freematica_create_proveedor');
+    const result = (await handler({ fields: {} })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('server_error');
+  });
+
+  it('update_proveedor fetches current, merges fields, and returns updated object', async () => {
+    const current = { COD_PRO: 'P001', NOMBRE_PRO: 'Old Name', NIF: '12345678A' };
+    const fields = { NOMBRE_PRO: 'New Name' };
+    const updated = { ...current, ...fields };
+    nock(BASE_URL)
+      .get('/pgrl/v2/proveedores/PROID')
+      .reply(200, detailEnv(current));
+    nock(BASE_URL)
+      .put('/pgrl/v2/proveedores/PROID', updated)
+      .reply(200, detailEnv(updated));
+
+    const server = buildServer(true);
+    const handler = getHandler(server, 'freematica_update_proveedor');
+    const result = (await handler({ idReg: 'PROID', fields })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.NOMBRE_PRO).toBe('New Name');
+  });
+
+  it('update_proveedor returns error when proveedor not found', async () => {
+    nock(BASE_URL)
+      .get('/pgrl/v2/proveedores/BAD')
+      .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+
+    const server = buildServer(true);
+    const handler = getHandler(server, 'freematica_update_proveedor');
+    const result = (await handler({ idReg: 'BAD', fields: {} })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('not_found');
   });
 });

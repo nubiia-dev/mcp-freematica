@@ -1,5 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { z } from 'zod';
 import { FreematicaError } from '../clients/base-client.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
 import { PaginationSchema } from '../schemas/pagination.js';
@@ -60,6 +61,53 @@ export function registerContactosClientesTools(
           page,
           itemsPerPage: items,
         }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  // --------------------------------------------------------------------------
+  // Tools v1 y detalle de contacto de cliente
+  // --------------------------------------------------------------------------
+
+  server.tool(
+    'freematica_list_contactos_clientes_v1',
+    [
+      'Devuelve la lista paginada de contactos de clientes usando el endpoint v1 de Freemática.',
+      '',
+      'Paginación 1-indexed.',
+    ].join('\n'),
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listContactosClientesV1({ page, items });
+        return okList({
+          items: result.items,
+          total: result.total,
+          page,
+          itemsPerPage: items,
+        }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_contacto_cliente',
+    'Devuelve el detalle de un contacto de cliente por su `idReg`. El `idReg` sale de freematica_list_contactos_clientes.',
+    {
+      idReg: z.string().min(1).describe('Identificador del contacto de cliente.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getContactoCliente(idReg);
+        return ok(result) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;
         return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;

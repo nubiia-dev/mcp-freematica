@@ -349,6 +349,236 @@ export function registerLocalizacionesTools(
     },
   );
 
+  // --------------------------------------------------------------------------
+  // Tools adicionales de lectura: detalles por tipo (v1 y v2)
+  // --------------------------------------------------------------------------
+
+  server.tool(
+    'freematica_list_localizaciones_cobro_clientes_v1',
+    'Devuelve la lista paginada de localizaciones de cobro de clientes (v1). Paginación 1-indexed.',
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listLocalizacionesCobroClientesV1({ page, items });
+        return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_cobro_cliente',
+    'Devuelve el detalle de una localización de cobro de cliente (v1) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionCobroClienteV1(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_cobro_cliente_v2',
+    'Devuelve el detalle de una localización de cobro de cliente (v2) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionCobroClienteV2(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_list_localizaciones_envio_clientes_v1',
+    'Devuelve la lista paginada de localizaciones de envío de clientes (v1). Paginación 1-indexed.',
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listLocalizacionesEnvioClientesV1({ page, items });
+        return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_envio_cliente',
+    'Devuelve el detalle de una localización de envío de cliente (v1) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionEnvioClienteV1(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_envio_cliente_v2',
+    'Devuelve el detalle de una localización de envío de cliente (v2) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionEnvioClienteV2(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_factura_cliente',
+    'Devuelve el detalle de una localización de factura de cliente (v1) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionFacturaClienteV1(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_list_localizaciones_servicio_clientes_v1',
+    'Devuelve la lista paginada de localizaciones de servicio de clientes (v1). Paginación 1-indexed.',
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listLocalizacionesServicioClientesV1({ page, items });
+        return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_servicio_cliente',
+    'Devuelve el detalle de una localización de servicio de cliente (v1) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionServicioClienteV1(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_servicio_cliente_v2',
+    'Devuelve el detalle de una localización de servicio de cliente (v2) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionServicioClienteV2(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_list_localizaciones_pago_proveedores_v1',
+    'Devuelve la lista paginada de localizaciones de pago de proveedores (v1). Paginación 1-indexed.',
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listLocalizacionesPagoProveedoresV1({ page, items });
+        return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_pago_proveedor',
+    'Devuelve el detalle de una localización de pago de proveedor (v1) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionPagoProveedorV1(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_get_localizacion_pago_proveedor_v2',
+    'Devuelve el detalle de una localización de pago de proveedor (v2) por su `idReg`.',
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización.'),
+    },
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ idReg }): Promise<CallToolResult> => {
+      try {
+        const result = await client.getLocalizacionPagoProveedorV2(idReg);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
   if (!opts.enableWrites) return;
 
   // --------------------------------------------------------------------------
@@ -401,6 +631,61 @@ export function registerLocalizacionesTools(
         const current = await client.getLocalizacionCliente(locTipo, idReg);
         const body = mergeForUpdate(current, changes);
         const updated = await client.updateLocalizacionCliente(locTipo, idReg, body);
+        return ok(updated) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  // --------------------------------------------------------------------------
+  // Escritura: localizaciones de pago de proveedores
+  // --------------------------------------------------------------------------
+
+  server.tool(
+    'freematica_create_localizacion_pago_proveedor',
+    [
+      'Da de alta una localización de pago de proveedor.',
+      '',
+      'Endpoint: POST /pgrl/v2/localizaciones-pago-proveedores.',
+      'Campos nativos del Vo de localización de pago (COD_GRUPO_PRO, COD_PRO, LOCALIZ_PRO, NOMBRE_LOC, COD_FPAGO, etc.).',
+    ].join('\n'),
+    {
+      fields: z.record(z.string(), z.unknown()).describe(
+        'Campos nativos del Vo de localización de pago (COD_GRUPO_PRO, COD_PRO, LOCALIZ_PRO, NOMBRE_LOC, COD_FPAGO, etc.).',
+      ),
+    },
+    { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    async ({ fields }): Promise<CallToolResult> => {
+      try {
+        const created = await client.createLocalizacionPagoProveedor(fields);
+        return ok(created) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_update_localizacion_pago_proveedor',
+    [
+      'Actualiza una localización de pago de proveedor existente (actualización parcial).',
+      '',
+      'Endpoint: PUT /pgrl/v2/localizaciones-pago-proveedores/{idReg}. La tool recupera la',
+      'localización actual (v2), aplica encima los campos informados y envía el objeto completo.',
+    ].join('\n'),
+    {
+      idReg: z.string().min(1).describe('Identificador de la localización de pago.'),
+      fields: z.record(z.string(), z.unknown()).describe('Campos a actualizar.'),
+    },
+    { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+    async ({ idReg, fields }): Promise<CallToolResult> => {
+      try {
+        const current = await client.getLocalizacionPagoProveedorV2(idReg);
+        const body = { ...(current as Record<string, unknown>), ...fields };
+        const updated = await client.updateLocalizacionPagoProveedor(idReg, body);
         return ok(updated) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;

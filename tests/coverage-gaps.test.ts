@@ -14,6 +14,14 @@
  * 8. src/tools/cartera.ts — líneas 75-76, 91-92: catch con Error genérico
  * 9. src/tools/pedidos-compras.ts — líneas 112-113, 136-137: catch con Error genérico (TD-152)
  * 10. src/tools/part/*.ts — catch con Error genérico (no FreematicaError) — Fase 5
+ * 11. src/tools/pgrl-correo.ts — catch con Error genérico (pgrl completar)
+ * 12. src/tools/pgrl-catalogos.ts — catch con Error genérico (pgrl completar)
+ * 13. src/tools/pgrl-instaladores.ts — catch con Error genérico (pgrl completar)
+ * 14. src/tools/pgrl-calendarios-festivos.ts — catch con Error genérico (pgrl completar)
+ * 15. src/tools/pgrl-cargos-clientes.ts — catch con Error genérico (pgrl completar)
+ * 16. src/tools/proveedores.ts (v1) — catch con Error genérico (pgrl completar)
+ * 17. src/tools/clientes.ts (v1) — catch con Error genérico (pgrl completar)
+ * 18. src/tools/contactos-clientes.ts (v1) — catch con Error genérico (pgrl completar)
  */
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import nock from 'nock';
@@ -22,6 +30,7 @@ import { FreematicaClient } from '../src/clients/freematica-client.js';
 import { BaseClient, FreematicaError } from '../src/clients/base-client.js';
 import { createLogger } from '../src/logger.js';
 import { registerClientesTools } from '../src/tools/clientes.js';
+import { registerContactosClientesTools } from '../src/tools/contactos-clientes.js';
 import { registerOportunidadesNegocioTools } from '../src/tools/oportunidades-negocio.js';
 import { registerLocalizacionesTools } from '../src/tools/localizaciones.js';
 import { registerCalendariosTools } from '../src/tools/calendarios.js';
@@ -30,6 +39,12 @@ import { registerPedidosComprasTools } from '../src/tools/pedidos-compras.js';
 import { registerExistenciasTools } from '../src/tools/part/existencias.js';
 import { registerStocksTools } from '../src/tools/part/stocks.js';
 import { registerTablasAuxiliaresTools } from '../src/tools/part/tablas-auxiliares.js';
+import { registerPgrlCorreoTools } from '../src/tools/pgrl-correo.js';
+import { registerPgrlCatalogosTools } from '../src/tools/pgrl-catalogos.js';
+import { registerPgrlInstaladoresTools } from '../src/tools/pgrl-instaladores.js';
+import { registerPgrlCalendariosFestivosTools } from '../src/tools/pgrl-calendarios-festivos.js';
+import { registerPgrlCargosClientesTools } from '../src/tools/pgrl-cargos-clientes.js';
+import { registerProveedoresTools } from '../src/tools/proveedores.js';
 import { Writable } from 'node:stream';
 
 // ---------------------------------------------------------------------------
@@ -858,5 +873,477 @@ describe('tool catch branches — part module (Fase 5)', () => {
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('unexpected_error');
     expect(parsed.message).toContain('network unavailable');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11. pgrl-correo.ts — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — pgrl-correo.ts (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_correos — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCorreosV2').mockRejectedValueOnce(new Error('network timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_correos')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_correo — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getCorreoV2').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_correo')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_correos_destinatarios — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCorreosDestinatarios').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_correos_destinatarios')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_correos_totales — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getCorreosTotales').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_correos_totales')({})) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_correo_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCorreoV1').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_correo_v1')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('verificar_mail — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'verificarMail').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_verificar_mail')({ email: 'x@x.com' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('mailing_unsubscribe — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'mailingUnsubscribe').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_mailing_unsubscribe')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('mailing_subscribe — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'mailingSubscribe').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client);
+    const result = (await getHandler(server, 'freematica_mailing_subscribe')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('create_correo_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createCorreoV1').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_correo_v1')({ camposAdicionales: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('create_correo (v2) — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createCorreoV2').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_correo')({ camposAdicionales: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('update_correo_estado_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'updateCorreoEstadoV1').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_correo_estado_v1')({ idReg: 'X', fields: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('update_correo_estado (v2) — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'updateCorreoEstadoV2').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCorreoTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_correo_estado')({ idReg: 'X', fields: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 12. pgrl-catalogos.ts — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — pgrl-catalogos.ts (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_delegaciones_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listDelegacionesV1').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCatalogosTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_delegaciones_v1')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_delegacion_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getDelegacionV1').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCatalogosTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_delegacion_v1')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_configuracion_usuario — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getConfiguracionUsuario').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCatalogosTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_configuracion_usuario')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_auditoria_procesos — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listAuditoriaProcesos').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCatalogosTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_auditoria_procesos')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_tipo_impuesto — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getTipoImpuesto').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCatalogosTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_tipo_impuesto')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_usuarios_satelite — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listUsuariosSatelite').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCatalogosTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_usuarios_satelite')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 13. pgrl-instaladores.ts — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — pgrl-instaladores.ts (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_instaladores — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listInstaladores').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlInstaladoresTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_instaladores')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_parte_instalacion — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getParteInstalacion').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlInstaladoresTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_parte_instalacion')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('create_instalador_propuesta_compra — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createInstaladorPropuestaCompra').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlInstaladoresTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_instalador_propuesta_compra')({ idInstalador: 'X', fields: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 14. pgrl-calendarios-festivos.ts — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — pgrl-calendarios-festivos.ts (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_calen_festivos — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCalenFestivos').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCalendariosFestivosTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_calen_festivos')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('update_calen_festivo — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getCalenFestivo').mockRejectedValueOnce(new Error('network error'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCalendariosFestivosTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_calen_festivo')({ idReg: 'X', fields: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 15. pgrl-cargos-clientes.ts — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — pgrl-cargos-clientes.ts (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_cargos_clientes — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCargosClientes').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCargosClientesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_cargos_clientes')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_cargo_cliente — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getCargoCliente').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgrlCargosClientesTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_cargo_cliente')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 16. proveedores.ts (v1 + write) — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — proveedores.ts (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_proveedores_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listProveedoresV1').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerProveedoresTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_proveedores_v1')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('create_proveedor — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createProveedor').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerProveedoresTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_proveedor')({ fields: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('update_proveedor — catches generic Error (thrown by getProveedor)', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getProveedor').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerProveedoresTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_proveedor')({ idReg: 'X', fields: {} })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 17. clientes.ts (v1) — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — clientes.ts v1 (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_clientes_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listClientesV1').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerClientesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_clientes_v1')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_cliente_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getClienteV1').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerClientesTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_cliente_v1')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 18. contactos-clientes.ts (v1) — catch con Error genérico (pgrl completar)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — contactos-clientes.ts v1 (pgrl completar)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_contactos_clientes_v1 — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listContactosClientesV1').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerContactosClientesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_contactos_clientes_v1')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_contacto_cliente — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getContactoCliente').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerContactosClientesTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_contacto_cliente')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
   });
 });

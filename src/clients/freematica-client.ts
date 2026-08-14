@@ -3312,6 +3312,318 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // pgrl — clientes v1
+  // ---------------------------------------------------------------------------
+
+  async listClientesV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/clientes', opts);
+  }
+
+  async getClienteV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — contactos-clientes v1
+  // ---------------------------------------------------------------------------
+
+  async listContactosClientesV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/contactos-clientes', opts);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — localizaciones detail endpoints
+  // ---------------------------------------------------------------------------
+
+  async getLocalizacionCobroClienteV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/localizaciones-cobro-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  async listLocalizacionesCobroClientesV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/localizaciones-cobro-clientes', opts);
+  }
+
+  async getLocalizacionCobroClienteV2(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/localizaciones-cobro-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  async listLocalizacionesEnvioClientesV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/localizaciones-envio-clientes', opts);
+  }
+
+  async getLocalizacionEnvioClienteV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/localizaciones-envio-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  async getLocalizacionEnvioClienteV2(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/localizaciones-envio-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  async getLocalizacionFacturaClienteV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/localizaciones-factura-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  async listLocalizacionesServicioClientesV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/localizaciones-servicio-clientes', opts);
+  }
+
+  async getLocalizacionServicioClienteV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/localizaciones-servicio-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  async getLocalizacionServicioClienteV2(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/localizaciones-servicio-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  async listLocalizacionesPagoProveedoresV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/localizaciones-pago-proveedores', opts);
+  }
+
+  async getLocalizacionPagoProveedorV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/localizaciones-pago-proveedores/${encodeURIComponent(idReg)}`);
+  }
+
+  async getLocalizacionPagoProveedorV2(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/localizaciones-pago-proveedores/${encodeURIComponent(idReg)}`);
+  }
+
+  async createLocalizacionPagoProveedor(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createLocalizacionPagoProveedor', 'POST /pgrl/v2/localizaciones-pago-proveedores', body);
+    return this.post<Record<string, unknown>>('/pgrl/v2/localizaciones-pago-proveedores', body);
+  }
+
+  async updateLocalizacionPagoProveedor(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateLocalizacionPagoProveedor', `PUT /pgrl/v2/localizaciones-pago-proveedores/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pgrl/v2/localizaciones-pago-proveedores/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — proveedores v1
+  // ---------------------------------------------------------------------------
+
+  async listProveedoresV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/proveedores', opts);
+  }
+
+  async createProveedor(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createProveedor', 'POST /pgrl/v2/proveedores', body);
+    return this.post<Record<string, unknown>>('/pgrl/v2/proveedores', body);
+  }
+
+  async updateProveedor(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateProveedor', `PUT /pgrl/v2/proveedores/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pgrl/v2/proveedores/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — cargos-clientes
+  // ---------------------------------------------------------------------------
+
+  async listCargosClientes(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/cargos-clientes', opts);
+  }
+
+  async getCargoCliente(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/cargos-clientes/${encodeURIComponent(idReg)}`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — calendarios festivos
+  // ---------------------------------------------------------------------------
+
+  async listCalenFestivos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/calen-festivos', opts);
+  }
+
+  async getCalenFestivo(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/calen-festivos/${encodeURIComponent(idReg)}`);
+  }
+
+  async createCalenFestivo(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCalenFestivo', 'POST /pgrl/v2/calen-festivos', body);
+    return this.post<Record<string, unknown>>('/pgrl/v2/calen-festivos', body);
+  }
+
+  async updateCalenFestivo(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCalenFestivo', `PUT /pgrl/v2/calen-festivos/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pgrl/v2/calen-festivos/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async updateCalenFestivoDet(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCalenFestivoDet', `PUT /pgrl/v2/calen-festivos-det/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pgrl/v2/calen-festivos-det/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — catálogos dedicados
+  // ---------------------------------------------------------------------------
+
+  async listDelegacionesV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/delegaciones', opts);
+  }
+
+  async getDelegacionV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/delegaciones/${encodeURIComponent(idReg)}`);
+  }
+
+  async listDelegacionesAgrupCod(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/delegaciones/agrupcod', opts);
+  }
+
+  async listDelegacionesV2(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/delegaciones', opts);
+  }
+
+  async getDelegacionV2(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/delegaciones/${encodeURIComponent(idReg)}`);
+  }
+
+  async listEmpresasV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/empresas', opts);
+  }
+
+  async getEmpresaV1(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/empresas/${encodeURIComponent(idReg)}`);
+  }
+
+  async listPaisesV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/paises', opts);
+  }
+
+  async listProvinciasV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/provincias', opts);
+  }
+
+  async listNacionalidades(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/nacionalidades', opts);
+  }
+
+  async listPoblaciones(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/poblaciones', opts);
+  }
+
+  async getPoblacion(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/poblaciones/${encodeURIComponent(idReg)}`);
+  }
+
+  async listSeriesV2(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/series', opts);
+  }
+
+  async listLineasNegocio(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/lineas-negocio', opts);
+  }
+
+  async listBancos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/bancos', opts);
+  }
+
+  async listTiposImpuestos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/tipos-impuestos', opts);
+  }
+
+  async getTipoImpuesto(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/tipos-impuestos/${encodeURIComponent(idReg)}`);
+  }
+
+  async listUsuariosSatelite(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/usuarios-satelite', opts);
+  }
+
+  async getConfiguracionUsuario(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/configuracion-usuario/${encodeURIComponent(idReg)}`);
+  }
+
+  async listAuditoriaProcesos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/auditoria-procesos', opts);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — instaladores
+  // ---------------------------------------------------------------------------
+
+  async listInstaladores(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/instaladores', opts);
+  }
+
+  async getInstalador(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/instaladores/${encodeURIComponent(idReg)}`);
+  }
+
+  async getInstaladorStocks(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/instaladores/${encodeURIComponent(idReg)}/stocks`);
+  }
+
+  async listInstaladorPropuestasCompras(idReg: string, opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>(`/pgrl/v1/instaladores/${encodeURIComponent(idReg)}/propuestas-compras`, opts);
+  }
+
+  async createInstaladorPropuestaCompra(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createInstaladorPropuestaCompra', `POST /pgrl/v1/instaladores/${idReg}/propuestas-compras`, body);
+    return this.post<Record<string, unknown>>(`/pgrl/v1/instaladores/${encodeURIComponent(idReg)}/propuestas-compras`, body);
+  }
+
+  async getParteInstalacion(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/partes-instalacion/${encodeURIComponent(idReg)}`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // pgrl — correos
+  // ---------------------------------------------------------------------------
+
+  async listCorreosV2(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/correos', opts);
+  }
+
+  async getCorreoV2(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/correos/${encodeURIComponent(idReg)}`);
+  }
+
+  async listCorreosDestinatarios(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v2/correos/destinatarios', opts);
+  }
+
+  async getCorreosTotales(): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>('/pgrl/v2/correos/totales');
+  }
+
+  async listCorreoV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgrl/v1/correo', opts);
+  }
+
+  async createCorreoV1(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCorreoV1', 'POST /pgrl/v1/correo', body);
+    return this.post<Record<string, unknown>>('/pgrl/v1/correo', body);
+  }
+
+  async createCorreoV2(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCorreoV2', 'POST /pgrl/v2/correos', body);
+    return this.post<Record<string, unknown>>('/pgrl/v2/correos', body);
+  }
+
+  async updateCorreoEstadoV1(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCorreoEstadoV1', `PUT /pgrl/v1/correo/${idReg}/estado`, body);
+    return this.put<Record<string, unknown>>(`/pgrl/v1/correo/${encodeURIComponent(idReg)}/estado`, body);
+  }
+
+  async updateCorreoEstadoV2(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateCorreoEstadoV2', `PUT /pgrl/v2/correos/${idReg}/estado`, body);
+    return this.put<Record<string, unknown>>(`/pgrl/v2/correos/${encodeURIComponent(idReg)}/estado`, body);
+  }
+
+  async verificarMail(email: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v2/control/mail/verificar?email=${encodeURIComponent(email)}`);
+  }
+
+  async mailingUnsubscribe(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/mailing/unsubscribe/${encodeURIComponent(idReg)}`);
+  }
+
+  async mailingSubscribe(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pgrl/v1/mailing/subscribe/${encodeURIComponent(idReg)}`);
+  }
+
+  // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------
 

@@ -2,6 +2,89 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — módulo pgrl completado: correo, calendarios festivos, catálogos, instaladores, proveedores escritura
+
+### Módulo `pgrl` (completar)
+
+Completación del módulo `/pgrl/` de la API de Freemática. Se añaden **55 tools de solo lectura** y **14 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`). Cubre correos v1/v2, calendarios festivos, catálogos dedicados (delegaciones, empresas, geográficos, series, bancos, tipos de impuestos, usuarios, auditoría), instaladores, cargos de clientes, y escrituras de proveedores y localizaciones de pago de proveedores.
+
+También se extienden los módulos existentes con endpoints v1 y detalles individuales de localizaciones.
+
+#### Added (lectura — 55 tools nuevas)
+
+- **`freematica_list_clientes_v1`** — `GET /pgrl/v1/clientes`. Lista paginada de clientes (v1). Preferir v2 para datos completos.
+- **`freematica_get_cliente_v1`** — `GET /pgrl/v1/clientes/{idReg}`. Detalle de cliente (v1).
+- **`freematica_list_contactos_clientes_v1`** — `GET /pgrl/v1/contactos-clientes`. Lista paginada de contactos de clientes (v1).
+- **`freematica_get_contacto_cliente`** — `GET /pgrl/v1/contactos-clientes/{idReg}`. Detalle de un contacto de cliente.
+- **`freematica_list_localizaciones_cobro_clientes_v1`** — `GET /pgrl/v1/localizaciones-cobro-clientes`. Lista paginada de localizaciones de cobro (v1).
+- **`freematica_get_localizacion_cobro_cliente`** — `GET /pgrl/v1/localizaciones-cobro-clientes/{idReg}`. Detalle de localización de cobro (v1).
+- **`freematica_get_localizacion_cobro_cliente_v2`** — `GET /pgrl/v2/localizaciones-cobro-clientes/{idReg}`. Detalle de localización de cobro (v2).
+- **`freematica_list_localizaciones_envio_clientes_v1`** — `GET /pgrl/v1/localizaciones-envio-clientes`. Lista paginada (v1).
+- **`freematica_get_localizacion_envio_cliente`** — `GET /pgrl/v1/localizaciones-envio-clientes/{idReg}`. Detalle (v1).
+- **`freematica_get_localizacion_envio_cliente_v2`** — `GET /pgrl/v2/localizaciones-envio-clientes/{idReg}`. Detalle (v2).
+- **`freematica_get_localizacion_factura_cliente`** — `GET /pgrl/v1/localizaciones-factura-clientes/{idReg}`. Detalle (v1).
+- **`freematica_list_localizaciones_servicio_clientes_v1`** — `GET /pgrl/v1/localizaciones-servicio-clientes`. Lista paginada (v1).
+- **`freematica_get_localizacion_servicio_cliente`** — `GET /pgrl/v1/localizaciones-servicio-clientes/{idReg}`. Detalle (v1).
+- **`freematica_get_localizacion_servicio_cliente_v2`** — `GET /pgrl/v2/localizaciones-servicio-clientes/{idReg}`. Detalle (v2).
+- **`freematica_list_localizaciones_pago_proveedores_v1`** — `GET /pgrl/v1/localizaciones-pago-proveedores`. Lista paginada (v1).
+- **`freematica_get_localizacion_pago_proveedor`** — `GET /pgrl/v1/localizaciones-pago-proveedores/{idReg}`. Detalle (v1).
+- **`freematica_get_localizacion_pago_proveedor_v2`** — `GET /pgrl/v2/localizaciones-pago-proveedores/{idReg}`. Detalle (v2).
+- **`freematica_list_proveedores_v1`** — `GET /pgrl/v1/proveedores`. Lista paginada de proveedores (v1).
+- **`freematica_list_cargos_clientes`** — `GET /pgrl/v2/cargos-clientes`. Lista paginada de cargos de clientes.
+- **`freematica_get_cargo_cliente`** — `GET /pgrl/v2/cargos-clientes/{idReg}`. Detalle de un cargo de cliente.
+- **`freematica_list_calen_festivos`** — `GET /pgrl/v2/calen-festivos`. Lista paginada de calendarios festivos.
+- **`freematica_get_calen_festivo`** — `GET /pgrl/v2/calen-festivos/{idReg}`. Detalle de un calendario festivo.
+- **`freematica_list_delegaciones_v1`** — `GET /pgrl/v1/delegaciones`. Lista paginada de delegaciones (v1).
+- **`freematica_get_delegacion_v1`** — `GET /pgrl/v1/delegaciones/{idReg}`. Detalle de delegación (v1).
+- **`freematica_list_delegaciones_agrupcod`** — `GET /pgrl/v1/delegaciones/agrupcod`. Delegaciones agrupadas por código.
+- **`freematica_list_delegaciones_v2`** — `GET /pgrl/v2/delegaciones`. Lista paginada de delegaciones (v2).
+- **`freematica_get_delegacion_v2`** — `GET /pgrl/v2/delegaciones/{idReg}`. Detalle de delegación (v2).
+- **`freematica_list_empresas`** — `GET /pgrl/v1/empresas`. Lista paginada de empresas.
+- **`freematica_get_empresa`** — `GET /pgrl/v1/empresas/{idReg}`. Detalle de una empresa.
+- **`freematica_list_paises`** — `GET /pgrl/v1/paises`. Lista paginada de países.
+- **`freematica_list_provincias`** — `GET /pgrl/v1/provincias`. Lista paginada de provincias.
+- **`freematica_list_nacionalidades`** — `GET /pgrl/v1/nacionalidades`. Lista paginada de nacionalidades.
+- **`freematica_list_poblaciones`** — `GET /pgrl/v2/poblaciones`. Lista paginada de poblaciones.
+- **`freematica_get_poblacion`** — `GET /pgrl/v2/poblaciones/{idReg}`. Detalle de una población.
+- **`freematica_list_series`** — `GET /pgrl/v2/series`. Lista paginada de series (v2).
+- **`freematica_list_lineas_negocio`** — `GET /pgrl/v2/lineas-negocio`. Lista paginada de líneas de negocio.
+- **`freematica_list_bancos`** — `GET /pgrl/v2/bancos`. Lista paginada de bancos.
+- **`freematica_list_tipos_impuestos`** — `GET /pgrl/v2/tipos-impuestos`. Lista paginada de tipos de impuestos.
+- **`freematica_get_tipo_impuesto`** — `GET /pgrl/v2/tipos-impuestos/{idReg}`. Detalle de un tipo de impuesto.
+- **`freematica_list_usuarios_satelite`** — `GET /pgrl/v1/usuarios-satelite`. Lista paginada de usuarios satélite.
+- **`freematica_get_configuracion_usuario`** — `GET /pgrl/v1/configuracion-usuario/{idReg}`. Configuración de un usuario.
+- **`freematica_list_auditoria_procesos`** — `GET /pgrl/v2/auditoria-procesos`. Log de auditoría de procesos.
+- **`freematica_list_instaladores`** — `GET /pgrl/v1/instaladores`. Lista paginada de instaladores.
+- **`freematica_get_instalador`** — `GET /pgrl/v1/instaladores/{idReg}`. Detalle de un instalador.
+- **`freematica_get_instalador_stocks`** — `GET /pgrl/v1/instaladores/{idReg}/stocks`. Stocks de un instalador.
+- **`freematica_list_instalador_propuestas_compras`** — `GET /pgrl/v1/instaladores/{idReg}/propuestas-compras`. Propuestas de compra.
+- **`freematica_get_parte_instalacion`** — `GET /pgrl/v1/partes-instalacion/{idReg}`. Detalle de un parte de instalación.
+- **`freematica_list_correos`** — `GET /pgrl/v2/correos`. Lista paginada de correos (v2).
+- **`freematica_get_correo`** — `GET /pgrl/v2/correos/{idReg}`. Detalle de un correo (v2).
+- **`freematica_list_correos_destinatarios`** — `GET /pgrl/v2/correos/destinatarios`. Lista de destinatarios.
+- **`freematica_get_correos_totales`** — `GET /pgrl/v2/correos/totales`. Totales de correos.
+- **`freematica_list_correo_v1`** — `GET /pgrl/v1/correo`. Lista paginada de correos (v1).
+- **`freematica_verificar_mail`** — `GET /pgrl/v2/control/mail/verificar`. Verifica si un email es válido.
+- **`freematica_mailing_unsubscribe`** — `GET /pgrl/v1/mailing/unsubscribe/{idReg}`. Baja de mailing.
+- **`freematica_mailing_subscribe`** — `GET /pgrl/v1/mailing/subscribe/{idReg}`. Alta de mailing.
+
+#### Added (escritura — 14 tools nuevas, solo con `FREEMATICA_ENABLE_WRITES=true`)
+
+- **`freematica_create_proveedor`** — `POST /pgrl/v2/proveedores`. Alta de proveedor (campos nativos libres).
+- **`freematica_update_proveedor`** — `PUT /pgrl/v2/proveedores/{idReg}`. Actualización parcial de proveedor (fetch+merge).
+- **`freematica_create_localizacion_pago_proveedor`** — `POST /pgrl/v2/localizaciones-pago-proveedores`. Alta de localización de pago.
+- **`freematica_update_localizacion_pago_proveedor`** — `PUT /pgrl/v2/localizaciones-pago-proveedores/{idReg}`. Actualización parcial (fetch+merge v2).
+- **`freematica_create_calen_festivo`** — `POST /pgrl/v2/calen-festivos`. Alta de calendario festivo (body libre por campos nativos).
+- **`freematica_update_calen_festivo`** — `PUT /pgrl/v2/calen-festivos/{idReg}`. Actualización de calendario festivo (fetch+merge).
+- **`freematica_update_calen_festivo_det`** — `PUT /pgrl/v2/calen-festivos-det/{idReg}`. Actualización de detalle de calendario festivo.
+- **`freematica_create_instalador_propuesta_compra`** — `POST /pgrl/v1/instaladores/{idReg}/propuestas-compras`. Alta de propuesta de compra.
+- **`freematica_create_correo_v1`** — `POST /pgrl/v1/correo`. Alta de correo (v1).
+- **`freematica_create_correo`** — `POST /pgrl/v2/correos`. Alta de correo (v2).
+- **`freematica_update_correo_estado_v1`** — `PUT /pgrl/v1/correo/{idReg}/estado`. Actualización de estado de correo (v1).
+- **`freematica_update_correo_estado`** — `PUT /pgrl/v2/correos/{idReg}/estado`. Actualización de estado de correo (v2).
+
+---
+
 ## [Unreleased] — módulo part (Inventario/Artículos) completo: lectura y escritura
 
 ### Módulo `part` (Inventario/Artículos)

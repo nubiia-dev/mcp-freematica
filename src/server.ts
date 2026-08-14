@@ -29,6 +29,11 @@ import { registerPpreTools } from './tools/ppre/index.js';
 import { registerPemfTools } from './tools/pemf/index.js';
 import { registerPcrmTools } from './tools/pcrm/index.js';
 import { registerPartTools } from './tools/part/index.js';
+import { registerPgrlCargosClientesTools } from './tools/pgrl-cargos-clientes.js';
+import { registerPgrlCalendariosFestivosTools } from './tools/pgrl-calendarios-festivos.js';
+import { registerPgrlCatalogosTools } from './tools/pgrl-catalogos.js';
+import { registerPgrlInstaladoresTools } from './tools/pgrl-instaladores.js';
+import { registerPgrlCorreoTools } from './tools/pgrl-correo.js';
 
 export interface CreateFreematicaServerOptions {
   client: FreematicaClient;
@@ -55,7 +60,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerFacturasVentasTools(server, opts.client);
   registerFacturasComprasTools(server, opts.client);
   registerPedidosComprasTools(server, opts.client);
-  registerProveedoresTools(server, opts.client);
+  registerProveedoresTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerLocalizacionesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerContabilidadTools(server, opts.client);
   registerPrlTools(server, opts.client);
@@ -73,6 +78,11 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerPemfTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPcrmTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPartTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPgrlCargosClientesTools(server, opts.client);
+  registerPgrlCalendariosFestivosTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPgrlCatalogosTools(server, opts.client);
+  registerPgrlInstaladoresTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPgrlCorreoTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
 
   return server;
 }
