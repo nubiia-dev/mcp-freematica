@@ -3,7 +3,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { FreematicaError } from '../clients/base-client.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
-import { error, ok, okList } from './helpers.js';
+import { error, ok, okList, type RegisterOptions } from './helpers.js';
 
 // ---------------------------------------------------------------------------
 // Tool names
@@ -12,6 +12,7 @@ import { error, ok, okList } from './helpers.js';
 const LIST_CUENTAS_CONTABLES_TOOL = 'freematica_list_cuentas_contables';
 const LIST_CUENTAS_ANALITICAS_TOOL = 'freematica_list_cuentas_analiticas';
 const EXPORT_ASIENTOS_TOOL = 'freematica_export_asientos';
+const IMPORT_ASIENTOS_TOOL = 'freematica_import_asientos';
 
 // ---------------------------------------------------------------------------
 // Descriptions
@@ -212,17 +213,25 @@ const ExportAsientosSchema = {
 // ---------------------------------------------------------------------------
 
 /**
- * Registra las 3 tools de contabilidad en el MCP server.
+ * Registra las tools de contabilidad en el MCP server.
  *
- * Tools registradas:
+ * Tools registradas (lectura):
  * - freematica_list_cuentas_contables  → GET /pcon/v2/cuentas
  * - freematica_list_cuentas_analiticas → GET /pcon/v2/cuentas-analiticas
  * - freematica_export_asientos          → GET /pcon/v2/export-asientos
  *
+ * Tools registradas (escritura, enableWrites=true):
+ * - freematica_import_asientos          → POST /pcon/v2/import-asientos
+ *
  * @param server - Instancia del servidor MCP.
  * @param client - Cliente tipado de Freemática.
+ * @param opts   - Opciones de registro (enableWrites activa tools de escritura).
  */
-export function registerContabilidadTools(server: McpServer, client: FreematicaClient): void {
+export function registerContabilidadTools(
+  server: McpServer,
+  client: FreematicaClient,
+  opts: RegisterOptions = { enableWrites: false },
+): void {
   // -------------------------------------------------------------------------
   // freematica_list_cuentas_contables
   // -------------------------------------------------------------------------
@@ -314,6 +323,53 @@ export function registerContabilidadTools(server: McpServer, client: FreematicaC
         }
 
         return okList({ items: result.items, total: result.total }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  // =========================================================================
+  // ESCRITURAS (requieren enableWrites: true)
+  // =========================================================================
+
+  if (!opts.enableWrites) return;
+
+  // -------------------------------------------------------------------------
+  // freematica_import_asientos
+  // -------------------------------------------------------------------------
+
+  server.tool(
+    IMPORT_ASIENTOS_TOOL,
+    [
+      'Importa asientos contables en Freemática.',
+      '',
+      'Endpoint: POST /pcon/v2/import-asientos.',
+      '',
+      'Campos BORR_* para la cabecera del asiento. El campo LINEAS acepta',
+      'el array de líneas del asiento.',
+    ].join('\n'),
+    {
+      BORR_CODEMP: z.string().optional().describe('Empresa'),
+      BORR_COD: z.string().optional().describe('Código'),
+      BORR_PLANT: z.string().optional().describe('Plantilla'),
+      BORR_FCHASI: z.string().optional().describe('Fecha asiento (ISO)'),
+      BORR_CALEN: z.string().optional().describe('Calendario'),
+      BORR_PER: z.number().int().optional().describe('Período'),
+      BORR_DIARIO: z.string().optional().describe('Diario'),
+      BORR_REF: z.string().optional().describe('Referencia'),
+      BORR_CODDIV: z.string().optional().describe('Código divisa'),
+      BORR_TCAMB: z.string().optional().describe('Tipo cambio'),
+      BORR_VCAMB: z.number().optional().describe('Valor cambio'),
+      BORR_NUMARCH: z.number().int().optional().describe('Número archivo'),
+      LINEAS: z.unknown().optional().describe('Líneas del asiento (array o null)'),
+    },
+    { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    async (args): Promise<CallToolResult> => {
+      try {
+        const result = await client.importAsientos(args as Record<string, unknown>);
+        return ok(result) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;
         return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;

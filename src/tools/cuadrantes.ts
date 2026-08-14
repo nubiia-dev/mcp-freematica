@@ -4,11 +4,22 @@ import { z } from 'zod';
 import { FreematicaError } from '../clients/base-client.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
 import { PaginationSchema } from '../schemas/pagination.js';
-import { error, ok, okList } from './helpers.js';
+import { error, ok, okList, type RegisterOptions } from './helpers.js';
 
 // ---------------------------------------------------------------------------
 // Tool names
 // ---------------------------------------------------------------------------
+
+const LIST_CAMPOS_ESTADISTICOS = 'freematica_list_campos_estadisticos';
+const LIST_INSPECCIONES = 'freematica_list_inspecciones';
+const LIST_PLANTILLAS = 'freematica_list_plantillas';
+const LIST_NORMAS = 'freematica_list_normas';
+const LIST_RUTAS_GESTION = 'freematica_list_rutas_gestion';
+const LIST_RUTAS_PLANIFICACION = 'freematica_list_rutas_planificacion';
+const LIST_ACOMPANANTE_RUTA = 'freematica_list_acompanante_ruta';
+const CREATE_COMPUTO_PERS = 'freematica_create_computo_pers';
+const UPDATE_COMPUTO_PERS = 'freematica_update_computo_pers';
+const CREATE_COMPUTO_PERS_H = 'freematica_create_computo_pers_h';
 
 const LIST_CUADRANTES = 'freematica_list_cuadrantes';
 const LIST_CUADRANTES_DETALLES = 'freematica_list_cuadrantes_detalles';
@@ -106,7 +117,7 @@ const idRegParam = (entity: string, listTool: string) => ({
 /**
  * Registra las tools MCP del dominio Cuadrantes.
  *
- * Tools expuestas:
+ * Tools expuestas (lectura):
  *  1.  freematica_list_cuadrantes
  *  2.  freematica_list_cuadrantes_detalles
  *  3.  freematica_list_cuadrantes_observaciones
@@ -123,11 +134,28 @@ const idRegParam = (entity: string, listTool: string) => ({
  *  14. freematica_get_cuadrante_cierre_persona_especial
  *  15. freematica_list_cuadrantes_cierre_personas_incidencias
  *  16. freematica_get_cuadrante_cierre_persona_incidencia
+ *  17. freematica_list_campos_estadisticos
+ *  18. freematica_list_inspecciones
+ *  19. freematica_list_plantillas
+ *  20. freematica_list_normas
+ *  21. freematica_list_rutas_gestion
+ *  22. freematica_list_rutas_planificacion
+ *  23. freematica_list_acompanante_ruta
+ *
+ * Tools expuestas (escritura, enableWrites=true):
+ *  24. freematica_create_computo_pers
+ *  25. freematica_update_computo_pers
+ *  26. freematica_create_computo_pers_h
  *
  * @param server - Instancia del servidor MCP.
  * @param client - Cliente Freemática autenticado.
+ * @param opts   - Opciones de registro (enableWrites activa tools de escritura).
  */
-export function registerCuadrantesTools(server: McpServer, client: FreematicaClient): void {
+export function registerCuadrantesTools(
+  server: McpServer,
+  client: FreematicaClient,
+  opts: RegisterOptions = { enableWrites: false },
+): void {
   // -------------------------------------------------------------------------
   // 1. freematica_list_cuadrantes
   // -------------------------------------------------------------------------
@@ -326,5 +354,200 @@ export function registerCuadrantesTools(server: McpServer, client: FreematicaCli
     idRegParam('incidencia de cierre de cuadrante', LIST_CIERRE_INCIDENCIAS),
     { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
     makeGetHandler(client, '/pvss/v1/cuadrantes-cierre-personas-incidencias'),
+  );
+
+  // -------------------------------------------------------------------------
+  // 17. freematica_list_campos_estadisticos
+  // -------------------------------------------------------------------------
+  server.tool(
+    LIST_CAMPOS_ESTADISTICOS,
+    'Devuelve la lista paginada de campos estadísticos de cuadrantes.\n\nEndpoint: GET /pvss/v2/campos-estadisticos.',
+    ListCuadrantesSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    makeListHandler(client, '/pvss/v2/campos-estadisticos'),
+  );
+
+  // -------------------------------------------------------------------------
+  // 18. freematica_list_inspecciones
+  // -------------------------------------------------------------------------
+  server.tool(
+    LIST_INSPECCIONES,
+    'Devuelve la lista paginada de inspecciones de cuadrantes.\n\nEndpoint: GET /pvss/v2/inspecciones.',
+    ListCuadrantesSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    makeListHandler(client, '/pvss/v2/inspecciones'),
+  );
+
+  // -------------------------------------------------------------------------
+  // 19. freematica_list_plantillas
+  // -------------------------------------------------------------------------
+  server.tool(
+    LIST_PLANTILLAS,
+    'Devuelve la lista paginada de plantillas de cuadrantes.\n\nEndpoint: GET /pvss/v2/plantillas.',
+    ListCuadrantesSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    makeListHandler(client, '/pvss/v2/plantillas'),
+  );
+
+  // -------------------------------------------------------------------------
+  // 20. freematica_list_normas
+  // -------------------------------------------------------------------------
+  server.tool(
+    LIST_NORMAS,
+    'Devuelve la lista paginada de normas de cuadrantes.\n\nEndpoint: GET /pvss/v2/normas.',
+    ListCuadrantesSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    makeListHandler(client, '/pvss/v2/normas'),
+  );
+
+  // -------------------------------------------------------------------------
+  // 21. freematica_list_rutas_gestion
+  // -------------------------------------------------------------------------
+  server.tool(
+    LIST_RUTAS_GESTION,
+    'Devuelve la lista paginada de rutas de gestión.\n\nEndpoint: GET /pvss/v1/rutas-gestion.',
+    ListCuadrantesSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    makeListHandler(client, '/pvss/v1/rutas-gestion'),
+  );
+
+  // -------------------------------------------------------------------------
+  // 22. freematica_list_rutas_planificacion
+  // -------------------------------------------------------------------------
+  server.tool(
+    LIST_RUTAS_PLANIFICACION,
+    'Devuelve la lista paginada de rutas de planificación.\n\nEndpoint: GET /pvss/v1/rutas-planificacion.',
+    ListCuadrantesSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    makeListHandler(client, '/pvss/v1/rutas-planificacion'),
+  );
+
+  // -------------------------------------------------------------------------
+  // 23. freematica_list_acompanante_ruta
+  // -------------------------------------------------------------------------
+  server.tool(
+    LIST_ACOMPANANTE_RUTA,
+    'Devuelve la lista paginada de acompañantes de ruta.\n\nEndpoint: GET /pvss/v2/acompanante-ruta.',
+    ListCuadrantesSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    makeListHandler(client, '/pvss/v2/acompanante-ruta'),
+  );
+
+  // =========================================================================
+  // ESCRITURAS (requieren enableWrites: true)
+  // =========================================================================
+
+  if (!opts.enableWrites) return;
+
+  // -------------------------------------------------------------------------
+  // 24. freematica_create_computo_pers
+  // -------------------------------------------------------------------------
+
+  const ComputoPersBodySchema = {
+    CONFCP_EMP: z.string().optional().describe('Empresa'),
+    CONFCP_DLG: z.string().optional().describe('Delegación'),
+    CONFCP_CAL: z.string().optional().describe('Calendario'),
+    CONFCP_MES: z.number().int().optional().describe('Mes'),
+    CONFCP_PERS: z.string().optional().describe('Código persona'),
+    CONFCP_CONTRATO: z.number().int().optional().describe('Contrato'),
+    camposAdicionales: z
+      .record(z.string(), z.unknown())
+      .optional()
+      .describe('Campos adicionales CONFCP_* para el alta.'),
+  };
+
+  server.tool(
+    CREATE_COMPUTO_PERS,
+    'Crea un cómputo de persona.\n\nEndpoint: POST /pvss/v2/computos-pers.',
+    ComputoPersBodySchema,
+    { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    async (args): Promise<CallToolResult> => {
+      try {
+        const { camposAdicionales, ...explicit } = args;
+        const body: Record<string, unknown> = { ...explicit, ...(camposAdicionales ?? {}) };
+        const result = await client.createComputoPers(body);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  // -------------------------------------------------------------------------
+  // 25. freematica_update_computo_pers
+  // -------------------------------------------------------------------------
+
+  server.tool(
+    UPDATE_COMPUTO_PERS,
+    'Actualiza un cómputo de persona.\n\nEndpoint: PUT /pvss/v2/computos-pers/:idReg.',
+    {
+      idReg: z.string().min(1).describe('idReg opaco del cómputo de persona.'),
+      CONFCP_EMP: z.string().optional().describe('Empresa'),
+      CONFCP_DLG: z.string().optional().describe('Delegación'),
+      CONFCP_CAL: z.string().optional().describe('Calendario'),
+      CONFCP_MES: z.number().int().optional().describe('Mes'),
+      CONFCP_PERS: z.string().optional().describe('Código persona'),
+      CONFCP_CONTRATO: z.number().int().optional().describe('Contrato'),
+      camposAdicionales: z
+        .record(z.string(), z.unknown())
+        .optional()
+        .describe('Campos adicionales CONFCP_* para la actualización.'),
+    },
+    { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    async (args): Promise<CallToolResult> => {
+      try {
+        const { idReg, camposAdicionales, ...explicit } = args;
+        const body: Record<string, unknown> = { ...explicit, ...(camposAdicionales ?? {}) };
+        const result = await client.updateComputoPers(idReg, body);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  // -------------------------------------------------------------------------
+  // 26. freematica_create_computo_pers_h
+  // -------------------------------------------------------------------------
+
+  server.tool(
+    CREATE_COMPUTO_PERS_H,
+    'Crea un cómputo histórico de persona.\n\nEndpoint: POST /pvss/v2/computos-pers-h.',
+    {
+      CONFCPH_EMP: z.string().optional().describe('Empresa persona'),
+      CONFCPH_DLG: z.string().optional().describe('Delegación persona'),
+      CONFCPH_CAL: z.string().optional().describe('Calendario detalle'),
+      CONFCPH_MES: z.number().int().optional().describe('Mes'),
+      CONFCPH_PERS: z.string().optional().describe('Persona detalle'),
+      CONFCPH_CONTRATO: z.number().int().optional().describe('Contrato'),
+      CONFCPH_ID: z.string().optional().describe('Id'),
+      CONFCPH_H_EMP: z.string().optional().describe('Empresa servicio'),
+      CONFCPH_H_DELEG: z.string().optional().describe('Delegación servicio'),
+      CONFCPH_H_CTRT: z.string().optional().describe('Contrato servicio'),
+      CONFCPH_H_SERV: z.string().optional().describe('Servicio'),
+      CONFCPH_H_CAL: z.string().optional().describe('Calendario detalle servicio'),
+      CONFCPH_H_MES: z.number().int().optional().describe('Mes'),
+      CONFCPH_H_TRAMO: z.number().int().optional().describe('Tramo'),
+      CONFCPH_H_TURNO: z.number().int().optional().describe('Turno'),
+      CONFCPH_H_DIA: z.number().int().optional().describe('Día'),
+      CONFCPH_H_HINI: z.string().optional().describe('Horario inicial'),
+      CONFCPH_H_HFIN: z.string().optional().describe('Horario final'),
+      CONFCPH_H_HTOT: z.number().optional().describe('Total horas'),
+      CONFCPH_H_HNOC: z.number().optional().describe('Horas nocturnas'),
+      CONFCPH_H_HFES: z.number().optional().describe('Horas festivas'),
+      CONFCPH_H_HNOCFES: z.number().optional().describe('Horas nocturnas festivas'),
+    },
+    { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    async (args): Promise<CallToolResult> => {
+      try {
+        const result = await client.createComputoPersH(args as Record<string, unknown>);
+        return ok(result) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
   );
 }

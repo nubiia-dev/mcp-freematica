@@ -18,10 +18,10 @@ interface ToolEntry {
   callback?: (args: Record<string, unknown>) => Promise<unknown>;
 }
 
-function buildServer() {
+function buildServer(enableWrites = false) {
   const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
   const server = new McpServer({ name: 'test', version: '0.0.0' });
-  registerCuadrantesTools(server, client);
+  registerCuadrantesTools(server, client, { enableWrites });
   return server;
 }
 
@@ -51,7 +51,7 @@ describe('registerCuadrantesTools', () => {
     nock.cleanAll();
   });
 
-  it('registers all cuadrante tools', () => {
+  it('registers all cuadrante read tools', () => {
     const server = buildServer();
     const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
     expect(tools).toHaveProperty('freematica_list_cuadrantes');
@@ -70,6 +70,139 @@ describe('registerCuadrantesTools', () => {
     expect(tools).toHaveProperty('freematica_get_cuadrante_cierre_persona_especial');
     expect(tools).toHaveProperty('freematica_list_cuadrantes_cierre_personas_incidencias');
     expect(tools).toHaveProperty('freematica_get_cuadrante_cierre_persona_incidencia');
+    // Nuevas tools de lectura Fase 7
+    expect(tools).toHaveProperty('freematica_list_campos_estadisticos');
+    expect(tools).toHaveProperty('freematica_list_inspecciones');
+    expect(tools).toHaveProperty('freematica_list_plantillas');
+    expect(tools).toHaveProperty('freematica_list_normas');
+    expect(tools).toHaveProperty('freematica_list_rutas_gestion');
+    expect(tools).toHaveProperty('freematica_list_rutas_planificacion');
+    expect(tools).toHaveProperty('freematica_list_acompanante_ruta');
+  });
+
+  it('gate: write tools not registered without enableWrites', () => {
+    const tools = (buildServer(false) as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    expect(tools).not.toHaveProperty('freematica_create_computo_pers');
+    expect(tools).not.toHaveProperty('freematica_update_computo_pers');
+    expect(tools).not.toHaveProperty('freematica_create_computo_pers_h');
+  });
+
+  it('write tools registered with enableWrites', () => {
+    const tools = (buildServer(true) as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+    expect(tools).toHaveProperty('freematica_create_computo_pers');
+    expect(tools).toHaveProperty('freematica_update_computo_pers');
+    expect(tools).toHaveProperty('freematica_create_computo_pers_h');
+  });
+
+  describe('freematica_create_computo_pers', () => {
+    it('happy path — POST /pvss/v2/computos-pers', async () => {
+      nock(BASE_URL)
+        .post('/pvss/v2/computos-pers')
+        .reply(200, { errorCode: '200', errorMessage: '', data: { CONFCP_ID: 'NEW' } });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_create_computo_pers');
+      const result = (await handler({ CONFCP_EMP: '0001', CONFCP_MES: 1 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.CONFCP_ID).toBe('NEW');
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .post('/pvss/v2/computos-pers')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_create_computo_pers');
+      const result = (await handler({})) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  describe('freematica_update_computo_pers', () => {
+    it('happy path — PUT /pvss/v2/computos-pers/:idReg', async () => {
+      nock(BASE_URL)
+        .put('/pvss/v2/computos-pers/ID001%3D%3D')
+        .reply(200, { errorCode: '200', errorMessage: '', data: { ok: true } });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_update_computo_pers');
+      const result = (await handler({ idReg: 'ID001==', CONFCP_MES: 3 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .put('/pvss/v2/computos-pers/ERR')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_update_computo_pers');
+      const result = (await handler({ idReg: 'ERR' })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  describe('freematica_create_computo_pers_h', () => {
+    it('happy path — POST /pvss/v2/computos-pers-h', async () => {
+      nock(BASE_URL)
+        .post('/pvss/v2/computos-pers-h')
+        .reply(200, { errorCode: '200', errorMessage: '', data: { CONFCPH_ID: 'HID' } });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_create_computo_pers_h');
+      const result = (await handler({ CONFCPH_EMP: '0001', CONFCPH_MES: 1 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .post('/pvss/v2/computos-pers-h')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_create_computo_pers_h');
+      const result = (await handler({})) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  describe('freematica_list_campos_estadisticos', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ CAMPO: 'ce1' }];
+      nock(BASE_URL)
+        .get('/pvss/v2/campos-estadisticos')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 5));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_campos_estadisticos');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pvss/v2/campos-estadisticos')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_campos_estadisticos');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -695,6 +828,216 @@ describe('registerCuadrantesTools', () => {
         content: { text: string }[];
         isError?: boolean;
       };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_list_inspecciones
+  // -------------------------------------------------------------------------
+
+  describe('freematica_list_inspecciones', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ INSP_ID: 'I001' }];
+      nock(BASE_URL)
+        .get('/pvss/v2/inspecciones')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 5));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_inspecciones');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pvss/v2/inspecciones')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_inspecciones');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_list_plantillas
+  // -------------------------------------------------------------------------
+
+  describe('freematica_list_plantillas', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ PLAN_ID: 'P001' }];
+      nock(BASE_URL)
+        .get('/pvss/v2/plantillas')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 3));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_plantillas');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pvss/v2/plantillas')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_plantillas');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_list_normas
+  // -------------------------------------------------------------------------
+
+  describe('freematica_list_normas', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ NORM_ID: 'N001' }];
+      nock(BASE_URL)
+        .get('/pvss/v2/normas')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 2));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_normas');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pvss/v2/normas')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_normas');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_list_rutas_gestion
+  // -------------------------------------------------------------------------
+
+  describe('freematica_list_rutas_gestion', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ RUT_ID: 'RG001' }];
+      nock(BASE_URL)
+        .get('/pvss/v1/rutas-gestion')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 10));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_rutas_gestion');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pvss/v1/rutas-gestion')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_rutas_gestion');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_list_rutas_planificacion
+  // -------------------------------------------------------------------------
+
+  describe('freematica_list_rutas_planificacion', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ RUT_ID: 'RP001' }];
+      nock(BASE_URL)
+        .get('/pvss/v1/rutas-planificacion')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 7));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_rutas_planificacion');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pvss/v1/rutas-planificacion')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_rutas_planificacion');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_list_acompanante_ruta
+  // -------------------------------------------------------------------------
+
+  describe('freematica_list_acompanante_ruta', () => {
+    it('returns paginated results', async () => {
+      const fake = [{ ACOMP_ID: 'AR001' }];
+      nock(BASE_URL)
+        .get('/pvss/v2/acompanante-ruta')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 4));
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_acompanante_ruta');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pvss/v2/acompanante-ruta')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_list_acompanante_ruta');
+      const result = (await handler({ page: 1, items: 20 })) as { content: { text: string }[]; isError?: boolean };
 
       expect(result.isError).toBe(true);
     });

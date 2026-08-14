@@ -8,6 +8,7 @@ import {
   ListAlbaranesVentasFiltersSchema,
   ListResultadosFacturacionFiltersSchema,
 } from '../schemas/albaranes.js';
+import { PaginationSchema } from '../schemas/pagination.js';
 import { error, ok, okList } from './helpers.js';
 
 // ---------------------------------------------------------------------------
@@ -19,6 +20,7 @@ const GET_ALBARAN_VENTA_TOOL = 'freematica_get_albaran_venta';
 const LIST_ALBARANES_FACTURA_TOOL = 'freematica_list_albaranes_factura';
 const GET_ALBARAN_FACTURA_TOOL = 'freematica_get_albaran_factura';
 const LIST_RESULTADOS_FACTURACION_TOOL = 'freematica_list_resultados_facturacion';
+const LIST_NATURALEZAS_ABONO_TOOL = 'freematica_list_naturalezas_abono';
 
 // ---------------------------------------------------------------------------
 // Descriptions
@@ -272,6 +274,34 @@ export function registerAlbaranesTools(server: McpServer, client: FreematicaClie
           traspasado,
           order,
         });
+        return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  // -------------------------------------------------------------------------
+  // freematica_list_naturalezas_abono
+  // -------------------------------------------------------------------------
+
+  server.tool(
+    LIST_NATURALEZAS_ABONO_TOOL,
+    [
+      'Devuelve la lista paginada de naturalezas de abono (módulo pven).',
+      '',
+      'Nota: este endpoint (/pven/v1/naturalezas-abono) devuelve los registros operativos paginados del módulo pven.',
+      'Es distinto del catálogo estático "naturalezas-abono" de freematica_get_master_data, que devuelve la tabla maestra.',
+      'Use freematica_get_master_data({ catalog: "naturalezas-abono" }) para el catálogo de referencia (sin paginar).',
+      '',
+      'Endpoint: GET /pven/v1/naturalezas-abono.',
+    ].join('\n'),
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listServiciosPvss('/pven/v1/naturalezas-abono', { page, items });
         return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;

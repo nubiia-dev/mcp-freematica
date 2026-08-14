@@ -2,6 +2,75 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — Fase 7: escrituras pvss/pven/pcmp/peqv/pcon + nuevas lecturas
+
+### Módulos `pvss`, `pven`, `pcmp`, `peqv`, `pcon` (escrituras y lecturas adicionales)
+
+Rellena los huecos de escritura y lectura pendientes en 5 módulos ya cubiertos parcialmente. Se añaden **9 tools de solo lectura** y **22 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`). Descartado: `POST /pvss/v1/control/entrada` (login de app, fuera de alcance MCP).
+
+#### Added (lectura — 9 tools nuevas)
+
+- **`freematica_list_campos_estadisticos`** — `GET /pvss/v2/campos-estadisticos`. Lista de campos estadísticos de cuadrantes.
+- **`freematica_list_inspecciones`** — `GET /pvss/v2/inspecciones`. Lista de inspecciones.
+- **`freematica_list_plantillas`** — `GET /pvss/v2/plantillas`. Lista de plantillas de cuadrantes.
+- **`freematica_list_normas`** — `GET /pvss/v2/normas`. Lista de normas.
+- **`freematica_list_rutas_gestion`** — `GET /pvss/v1/rutas-gestion`. Lista de gestión de rutas.
+- **`freematica_list_rutas_planificacion`** — `GET /pvss/v1/rutas-planificacion`. Lista de planificación de rutas.
+- **`freematica_list_acompanante_ruta`** — `GET /pvss/v2/acompanante-ruta`. Lista de acompañantes en ruta.
+- **`freematica_list_naturalezas_abono`** — `GET /pven/v1/naturalezas-abono`. Lista de naturalezas de abono de ventas.
+- **`freematica_list_propuestas_compra`** — `GET /pcmp/v1/propuestas`. Lista de propuestas de compra.
+- **`freematica_list_solicitudes_material`** — `GET /peqv/v2/solicitud-material`. Lista de solicitudes de material.
+- **`freematica_get_solicitud_material`** — `GET /peqv/v2/solicitud-material/{idreg}`. Detalle de una solicitud de material.
+
+#### Added (escritura — 22 tools nuevas, requieren `FREEMATICA_ENABLE_WRITES=true`)
+
+**pvss — cómputos de persona:**
+
+- **`freematica_create_computo_pers`** — `POST /pvss/v2/computos-pers`. Alta de cómputo de persona.
+- **`freematica_update_computo_pers`** — `PUT /pvss/v2/computos-pers/:idReg`. Actualización de cómputo de persona.
+- **`freematica_create_computo_pers_h`** — `POST /pvss/v2/computos-pers-h`. Alta de detalle de cómputo de persona.
+
+**pvss — cuadrantes y campos:**
+
+- **`freematica_update_cuadrante`** — `PUT /pvss/v2/cuadrante/:idReg`. Actualizar datos de un cuadrante.
+- **`freematica_create_campo_estadistico`** — `POST /pvss/v2/campos-estadisticos`. Graba un nuevo campo estadístico.
+- **`freematica_update_campo_estadistico`** — `PUT /pvss/v2/campos-estadisticos/:idReg`. Modifica un campo estadístico.
+- **`freematica_create_informe_control`** — `POST /pvss/v2/informes-control`. Inserta informes de control.
+- **`freematica_update_servicio_fch_fin`** — `PUT /pvss/v2/servicios-fch-fin/:idReg`. Actualizar fecha fin de servicio.
+
+**pven — albaranes de venta:**
+
+- **`freematica_create_albaran_venta`** — `POST /pven/v2/albaranes-ventas`. Alta de albarán de venta.
+- **`freematica_update_albaran_fch_traspaso_ext`** — `PUT /pven/v2/albaranes-ventas-fechatraspasoext/:idReg`. Modificación fecha traspaso externo de albarán.
+
+**pven — facturas electrónicas:**
+
+- **`freematica_create_factura_estado`** — `POST /pven/v1/facturas/estados`. Actualizar datos AAPP/EDICOM de factura.
+- **`freematica_update_factura_electronica_v1`** — `PUT /pven/v1/facturas/:idreg`. Actualizar factura electrónica (v1).
+- **`freematica_update_factura_electronica_v2`** — `PUT /pven/v2/facturas/:idreg`. Actualizar factura electrónica (v2).
+- **`freematica_update_factura_leido`** — `PUT /pven/v1/facturas/:idreg/leido`. Marcar factura electrónica como leída.
+
+**pcmp — compras:**
+
+- **`freematica_update_factura_compra`** — `PUT /pcmp/v2/facturas-compras/:idReg`. Actualizar fecha exportado de factura de compra.
+- **`freematica_update_pedido_fechas`** — `PUT /pcmp/v2/pedidos-fechas/:idreg`. Actualizar fechas de entrega/enviado/conforme de pedido.
+- **`freematica_recibir_pedido`** — `PUT /pcmp/v2/control/recibir-pedidos/:idReg`. Recibir pedido de compra.
+- **`freematica_create_propuesta_compra`** — `POST /pcmp/v1/propuestas`. Crear propuesta de compra.
+
+**peqv — habilitaciones CAE:**
+
+- **`freematica_actualizar_alta_habilitaciones_personal`** — `PUT /peqv/v2/habilitaciones/personal/actualizar/alta`. Comunicar actualización de altas de licencias de personal.
+- **`freematica_actualizar_baja_habilitaciones_personal`** — `PUT /peqv/v2/habilitaciones/personal/actualizar/baja`. Comunicar actualización de bajas de licencias de personal.
+- **`freematica_actualizar_alta_habilitaciones_servicios`** — `PUT /peqv/v2/habilitaciones/servicios/actualizar/alta`. Comunicar actualización de altas de servicios.
+- **`freematica_actualizar_baja_habilitaciones_servicios`** — `PUT /peqv/v2/habilitaciones/servicios/actualizar/baja`. Comunicar actualización de bajas de servicios.
+- **`freematica_create_solicitud_material`** — `POST /peqv/v2/solicitud-material`. Crear solicitud de material.
+
+**pcon — contabilidad:**
+
+- **`freematica_import_asientos`** — `POST /pcon/v2/import-asientos`. Insertar nuevo asiento contable en borrador.
+
+---
+
 ## [Unreleased] — módulo pgrl completado: correo, calendarios festivos, catálogos, instaladores, proveedores escritura
 
 ### Módulo `pgrl` (completar)

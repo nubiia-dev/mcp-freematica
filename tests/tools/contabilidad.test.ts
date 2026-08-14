@@ -16,16 +16,17 @@ const AUTH_HEADERS = {
 const LIST_CUENTAS_TOOL = 'freematica_list_cuentas_contables';
 const LIST_ANALITICAS_TOOL = 'freematica_list_cuentas_analiticas';
 const EXPORT_ASIENTOS_TOOL = 'freematica_export_asientos';
+const IMPORT_ASIENTOS_TOOL = 'freematica_import_asientos';
 
 interface ToolEntry {
   handler?: (args: Record<string, unknown>) => Promise<unknown>;
   callback?: (args: Record<string, unknown>) => Promise<unknown>;
 }
 
-function buildServer() {
+function buildServer(enableWrites = false) {
   const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
   const server = new McpServer({ name: 'test', version: '0.0.0' });
-  registerContabilidadTools(server, client);
+  registerContabilidadTools(server, client, { enableWrites });
   return server;
 }
 
@@ -663,5 +664,60 @@ describe('freematica_export_asientos', () => {
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.items).toEqual(fake);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// freematica_import_asientos
+// ---------------------------------------------------------------------------
+
+describe('freematica_import_asientos', () => {
+  afterEach(() => nock.cleanAll());
+
+  it('gate: no registrado sin enableWrites', () => {
+    const tools = (
+      buildServer(false) as unknown as { _registeredTools: Record<string, unknown> }
+    )._registeredTools;
+    expect(tools).not.toHaveProperty(IMPORT_ASIENTOS_TOOL);
+  });
+
+  it('registrado con enableWrites', () => {
+    const tools = (
+      buildServer(true) as unknown as { _registeredTools: Record<string, unknown> }
+    )._registeredTools;
+    expect(tools).toHaveProperty(IMPORT_ASIENTOS_TOOL);
+  });
+
+  it('happy path — POST /pcon/v2/import-asientos', async () => {
+    const fakeResponse = { BORR_ID: 'ASI001' };
+    nock(BASE_URL)
+      .post('/pcon/v2/import-asientos')
+      .reply(200, { errorCode: '200', errorMessage: '', data: fakeResponse });
+
+    const server = buildServer(true);
+    const result = await callTool(server, IMPORT_ASIENTOS_TOOL, {
+      BORR_CODEMP: '0001',
+      BORR_DIARIO: 'COM',
+      BORR_PER: 3,
+    });
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.BORR_ID).toBe('ASI001');
+  });
+
+  it('devuelve server_error en respuesta 500', async () => {
+    nock(BASE_URL)
+      .post('/pcon/v2/import-asientos')
+      .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+    const server = buildServer(true);
+    const result = await callTool(server, IMPORT_ASIENTOS_TOOL, {
+      BORR_CODEMP: '0001',
+    });
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('server_error');
   });
 });
