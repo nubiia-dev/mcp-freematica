@@ -165,6 +165,105 @@ describe('registerHabilitacionesTools', () => {
   });
 
   // -------------------------------------------------------------------------
+  // freematica_get_solicitud_material
+  // -------------------------------------------------------------------------
+
+  describe('freematica_get_solicitud_material', () => {
+    it('returns detail for a valid idReg', async () => {
+      const fake = { EQSM_ID: 'SM001', EQSM_COD_ART: 'ART001', EQSM_CANT_SOLICITADA: 5 };
+      nock(BASE_URL)
+        .get('/peqv/v2/solicitud-material/SM001%3D%3D')
+        .reply(200, { errorCode: '200', errorMessage: '', data: fake });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_get_solicitud_material');
+      const result = (await handler({ idReg: 'SM001==' })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed).toEqual(fake);
+    });
+
+    it('returns error on 500 (FreematicaError)', async () => {
+      nock(BASE_URL)
+        .get('/peqv/v2/solicitud-material/ERR')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_get_solicitud_material');
+      const result = (await handler({ idReg: 'ERR' })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+
+    it('returns error on network failure (non-FreematicaError)', async () => {
+      nock(BASE_URL)
+        .get('/peqv/v2/solicitud-material/NET')
+        .replyWithError('ECONNREFUSED');
+
+      const server = buildServer();
+      const handler = getHandler(server, 'freematica_get_solicitud_material');
+      const result = (await handler({ idReg: 'NET' })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_actualizar_baja_habilitaciones_personal
+  // -------------------------------------------------------------------------
+
+  describe('freematica_actualizar_baja_habilitaciones_personal', () => {
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .put('/peqv/v2/habilitaciones/personal/actualizar/baja')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_actualizar_baja_habilitaciones_personal');
+      const result = (await handler({ datos: [] })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_actualizar_alta_habilitaciones_servicios
+  // -------------------------------------------------------------------------
+
+  describe('freematica_actualizar_alta_habilitaciones_servicios', () => {
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .put('/peqv/v2/habilitaciones/servicios/actualizar/alta')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_actualizar_alta_habilitaciones_servicios');
+      const result = (await handler({ datos: [] })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // freematica_actualizar_baja_habilitaciones_servicios
+  // -------------------------------------------------------------------------
+
+  describe('freematica_actualizar_baja_habilitaciones_servicios', () => {
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .put('/peqv/v2/habilitaciones/servicios/actualizar/baja')
+        .reply(200, { errorCode: '500', errorMessage: 'Error', data: null });
+
+      const server = buildServer(true);
+      const handler = getHandler(server, 'freematica_actualizar_baja_habilitaciones_servicios');
+      const result = (await handler({ datos: [] })) as { content: { text: string }[]; isError?: boolean };
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // freematica_list_habilitaciones_servicios_alta
   // -------------------------------------------------------------------------
 

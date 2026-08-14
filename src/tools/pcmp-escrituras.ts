@@ -82,6 +82,7 @@ export function registerPcmpEscriturasTools(
       FCC_CODEMP: z.string().optional().describe('Empresa factura (FCC_CODEMP).'),
       FCC_FCHFAC: z.string().optional().describe('Fecha factura (ISO) (FCC_FCHFAC).'),
       FCC_SERIEFRA: z.string().optional().describe('Serie de factura (FCC_SERIEFRA).'),
+      // Postman muestra FCC_NUMFRA como 0 (entero) → z.number().int() es correcto.
       FCC_NUMFRA: z.number().int().optional().describe('Número de factura (FCC_NUMFRA).'),
       FCC_FCH_EXPORTADO: z
         .string()
@@ -169,6 +170,7 @@ export function registerPcmpEscriturasTools(
       PPCC_CODEMP: z.string().optional().describe('Código empresa (PPCC_CODEMP).'),
       PPCC_DELEG: z.string().optional().describe('Código delegación (PPCC_DELEG).'),
       PPCC_FCHPROP: z.string().optional().describe('Fecha propuesta (ISO) (PPCC_FCHPROP).'),
+      // Postman muestra PPCC_NUMPROP como 0 (entero) → z.number().int() es correcto.
       PPCC_NUMPROP: z.number().int().optional().describe('Número propuesta (PPCC_NUMPROP).'),
       PPCC_USUARIO: z.string().optional().describe('Usuario (PPCC_USUARIO).'),
       PPCC_CLAVE_FAC: z.string().optional().describe('Clave facturación (PPCC_CLAVE_FAC).'),
@@ -184,6 +186,7 @@ export function registerPcmpEscriturasTools(
         .optional()
         .describe('Fecha contrato instalación (ISO) (PPCC_FCH_CONT_INS).'),
       PPCC_DELEG_SERV: z.string().optional().describe('Delegación servicio (PPCC_DELEG_SERV).'),
+      // Postman muestra PPCC_LOC_SERV_CLIENTE como 0 (entero) → z.number().int() es correcto.
       PPCC_LOC_SERV_CLIENTE: z
         .number()
         .int()

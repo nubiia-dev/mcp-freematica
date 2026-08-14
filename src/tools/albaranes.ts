@@ -291,6 +291,10 @@ export function registerAlbaranesTools(server: McpServer, client: FreematicaClie
     [
       'Devuelve la lista paginada de naturalezas de abono (módulo pven).',
       '',
+      'Nota: este endpoint (/pven/v1/naturalezas-abono) devuelve los registros operativos paginados del módulo pven.',
+      'Es distinto del catálogo estático "naturalezas-abono" de freematica_get_master_data, que devuelve la tabla maestra.',
+      'Use freematica_get_master_data({ catalog: "naturalezas-abono" }) para el catálogo de referencia (sin paginar).',
+      '',
       'Endpoint: GET /pven/v1/naturalezas-abono.',
     ].join('\n'),
     PaginationSchema,

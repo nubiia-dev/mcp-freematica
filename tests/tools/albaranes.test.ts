@@ -61,7 +61,7 @@ describe('registerAlbaranesTools', () => {
     nock.cleanAll();
   });
 
-  it('registers all 5 tools', () => {
+  it('registers all 6 tools', () => {
     const server = buildServer();
     const tools = (server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
     expect(tools).toHaveProperty(LIST_ALBARANES_VENTAS_TOOL);
@@ -69,6 +69,7 @@ describe('registerAlbaranesTools', () => {
     expect(tools).toHaveProperty(LIST_ALBARANES_FACTURA_TOOL);
     expect(tools).toHaveProperty(GET_ALBARAN_FACTURA_TOOL);
     expect(tools).toHaveProperty(LIST_RESULTADOS_FACTURACION_TOOL);
+    expect(tools).toHaveProperty('freematica_list_naturalezas_abono');
   });
 
   // ===========================================================================
@@ -655,5 +656,77 @@ describe('registerAlbaranesTools', () => {
     expect(result.isError).toBe(true);
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('invalid_token');
+  });
+
+  it('list_resultados_facturacion returns error on network failure (non-FreematicaError)', async () => {
+    nock(BASE_URL)
+      .get('/pvss/v1/facturacion-resultados')
+      .query({ items: '20', page: '1' })
+      .replyWithError('ECONNREFUSED');
+
+    const handler = getHandler(buildServer(), LIST_RESULTADOS_FACTURACION_TOOL);
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+  });
+
+  // ===========================================================================
+  // freematica_list_naturalezas_abono
+  // ===========================================================================
+
+  describe('freematica_list_naturalezas_abono', () => {
+    it('returns paginated results from /pven/v1/naturalezas-abono', async () => {
+      const fake = [{ NAB_CODIGO: 'N001', NAB_DESCRIPCION: 'Abono normal' }];
+      nock(BASE_URL)
+        .get('/pven/v1/naturalezas-abono')
+        .query({ items: '20', page: '1' })
+        .reply(200, listEnv(fake, 3));
+
+      const handler = getHandler(buildServer(), 'freematica_list_naturalezas_abono');
+      const result = (await handler({ page: 1, items: 20 })) as {
+        content: { text: string }[];
+        isError?: boolean;
+      };
+
+      expect(result.isError).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.items).toEqual(fake);
+      expect(parsed.total).toBe(3);
+    });
+
+    it('returns error on 500', async () => {
+      nock(BASE_URL)
+        .get('/pven/v1/naturalezas-abono')
+        .query({ items: '20', page: '1' })
+        .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+
+      const handler = getHandler(buildServer(), 'freematica_list_naturalezas_abono');
+      const result = (await handler({ page: 1, items: 20 })) as {
+        content: { text: string }[];
+        isError?: boolean;
+      };
+
+      expect(result.isError).toBe(true);
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.error).toBe('server_error');
+    });
+
+    it('returns error on network failure (non-FreematicaError)', async () => {
+      nock(BASE_URL)
+        .get('/pven/v1/naturalezas-abono')
+        .query({ items: '20', page: '1' })
+        .replyWithError('ECONNREFUSED');
+
+      const handler = getHandler(buildServer(), 'freematica_list_naturalezas_abono');
+      const result = (await handler({ page: 1, items: 20 })) as {
+        content: { text: string }[];
+        isError?: boolean;
+      };
+
+      expect(result.isError).toBe(true);
+    });
   });
 });

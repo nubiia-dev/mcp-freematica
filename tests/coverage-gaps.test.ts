@@ -45,6 +45,9 @@ import { registerPgrlInstaladoresTools } from '../src/tools/pgrl-instaladores.js
 import { registerPgrlCalendariosFestivosTools } from '../src/tools/pgrl-calendarios-festivos.js';
 import { registerPgrlCargosClientesTools } from '../src/tools/pgrl-cargos-clientes.js';
 import { registerProveedoresTools } from '../src/tools/proveedores.js';
+import { registerAlbaranesTools } from '../src/tools/albaranes.js';
+import { registerHabilitacionesTools } from '../src/tools/habilitaciones.js';
+import { registerCuadrantesTools } from '../src/tools/cuadrantes.js';
 import { Writable } from 'node:stream';
 
 // ---------------------------------------------------------------------------
@@ -1341,6 +1344,255 @@ describe('tool catch branches — contactos-clientes.ts v1 (pgrl completar)', ()
     const server = new McpServer({ name: 'test', version: '0.0.0' });
     registerContactosClientesTools(server, client);
     const result = (await getHandler(server, 'freematica_get_contacto_cliente')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 19. albaranes.ts — catch con Error genérico (Fase 7)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — albaranes.ts Fase 7', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_albaranes_factura — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listAlbaranesFactura').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerAlbaranesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_albaranes_factura')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_resultados_facturacion — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listResultadosFacturacion').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerAlbaranesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_resultados_facturacion')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_naturalezas_abono — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listServiciosPvss').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerAlbaranesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_naturalezas_abono')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_albaran_factura — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getAlbaranFactura').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerAlbaranesTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_albaran_factura')({ id: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 20. habilitaciones.ts — catch con Error genérico (Fase 7)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — habilitaciones.ts Fase 7', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('get_solicitud_material — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getSolicitudMaterial').mockRejectedValueOnce(new Error('timeout'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerHabilitacionesTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_solicitud_material')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('actualizar_baja_habilitaciones_personal — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'actualizarBajaHabilitacionesPersonal').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerHabilitacionesTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_actualizar_baja_habilitaciones_personal')({ datos: [] })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('actualizar_alta_habilitaciones_servicios — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'actualizarAltaHabilitacionesServicios').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerHabilitacionesTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_actualizar_alta_habilitaciones_servicios')({ datos: [] })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('actualizar_baja_habilitaciones_servicios — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'actualizarBajaHabilitacionesServicios').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerHabilitacionesTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_actualizar_baja_habilitaciones_servicios')({ datos: [] })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 21. cuadrantes.ts — catch con Error genérico (Fase 7 — nuevas tools de lectura)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — cuadrantes.ts Fase 7 (nuevas tools de lectura)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_inspecciones — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCuadrantes').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_inspecciones')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_plantillas — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCuadrantes').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_plantillas')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_normas — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCuadrantes').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_normas')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_rutas_gestion — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCuadrantes').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_rutas_gestion')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_rutas_planificacion — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCuadrantes').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_rutas_planificacion')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('list_acompanante_ruta — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listCuadrantes').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_acompanante_ruta')({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('get_computos_pers_h — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getComputosPersonasH').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_computos_pers_h')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('create_computo_pers — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createComputoPers').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_computo_pers')({})) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('update_computo_pers — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'updateComputoPers').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_computo_pers')({ idReg: 'X' })) as {
+      content: { type: string; text: string }[]; isError?: boolean;
+    };
+    expect(result.isError).toBe(true);
+    expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+
+  it('create_computo_pers_h — catches generic Error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createComputoPersH').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCuadrantesTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_computo_pers_h')({})) as {
       content: { type: string; text: string }[]; isError?: boolean;
     };
     expect(result.isError).toBe(true);
