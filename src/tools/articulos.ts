@@ -85,7 +85,8 @@ const CREATE_DESCRIPTION = [
   '',
   'Campos principales: COD_GRUPO_ART, COD_ARTICULO, DESC_ART, COD_LIN_ART,',
   'COD_FAMILIA, COD_SUBFAM, COD_IVA, COD_PROVEEDOR, CODIGO_BARRAS,',
-  'TIPO_CODIGO, PRECIO_VENTA_DV1, PRECIO_COSTE_DV1, ACTIVO.',
+  'TIPO_CODIGO, PRECIO_VENTA, PRECIO_VENTA2, DESCUENTO.',
+  'Baja del artículo: MOTIVO_BAJA + FECHA_BAJA.',
   'Devuelve el artículo creado.',
 ].join('\n');
 
@@ -171,7 +172,8 @@ const ArticuloBodyShape = {
       'Campos nativos del artículo (VoArticulosV2). ' +
         'Principales: COD_GRUPO_ART, COD_ARTICULO, DESC_ART, COD_LIN_ART, ' +
         'COD_FAMILIA, COD_SUBFAM, COD_IVA, COD_PROVEEDOR, CODIGO_BARRAS, ' +
-        'TIPO_CODIGO, PRECIO_VENTA_DV1, PRECIO_COSTE_DV1, ACTIVO. ' +
+        'TIPO_CODIGO, PRECIO_VENTA, PRECIO_VENTA2, DESCUENTO. ' +
+        'Baja del artículo: MOTIVO_BAJA + FECHA_BAJA. ' +
         'El campo "GMA-ECOMMERCE" se pasa como clave string literal con guion.',
     ),
 };
@@ -386,6 +388,9 @@ export function registerArticulosTools(
         return error(new Error('Se requiere al menos un campo a actualizar en `fields`.')) as CallToolResult;
       }
       try {
+        // fetch+merge: la lectura es v1 (GET /part/v1/articulos/{id}) y la
+        // escritura v2 (PUT /part/v2/articulos/{id}); es la misma entidad, no
+        // hay endpoint de escritura v1.
         const current = await client.getArticulo(idReg);
         const merged = { ...current, ...typedFields };
         const updated = await client.updateArticulo(idReg, merged);
