@@ -276,6 +276,17 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_verificar_mail`                               | `GET /pgrl/v2/control/mail/verificar`                          | Verifica si un email es válido                                                                     |
 | `freematica_mailing_unsubscribe`                          | `GET /pgrl/v1/mailing/unsubscribe/{idReg}`                     | Da de baja a un contacto del mailing                                                               |
 | `freematica_mailing_subscribe`                            | `GET /pgrl/v1/mailing/subscribe/{idReg}`                       | Da de alta a un contacto en el mailing                                                             |
+| `freematica_list_campos_estadisticos`                     | `GET /pvss/v2/campos-estadisticos`                             | Lista de campos estadísticos de cuadrantes                                                         |
+| `freematica_list_inspecciones`                            | `GET /pvss/v2/inspecciones`                                    | Lista de inspecciones                                                                              |
+| `freematica_list_plantillas`                              | `GET /pvss/v2/plantillas`                                      | Lista de plantillas de cuadrantes                                                                  |
+| `freematica_list_normas`                                  | `GET /pvss/v2/normas`                                          | Lista de normas                                                                                    |
+| `freematica_list_rutas_gestion`                           | `GET /pvss/v1/rutas-gestion`                                   | Lista de gestión de rutas                                                                          |
+| `freematica_list_rutas_planificacion`                     | `GET /pvss/v1/rutas-planificacion`                             | Lista de planificación de rutas                                                                    |
+| `freematica_list_acompanante_ruta`                        | `GET /pvss/v2/acompanante-ruta`                                | Lista de acompañantes en ruta                                                                      |
+| `freematica_list_naturalezas_abono`                       | `GET /pven/v1/naturalezas-abono`                               | Lista de naturalezas de abono de ventas                                                            |
+| `freematica_list_propuestas_compra`                       | `GET /pcmp/v1/propuestas`                                      | Lista de propuestas de compra                                                                      |
+| `freematica_list_solicitudes_material`                    | `GET /peqv/v2/solicitud-material`                              | Lista de solicitudes de material (CAE/equipamiento)                                                |
+| `freematica_get_solicitud_material`                       | `GET /peqv/v2/solicitud-material/{idreg}`                      | Detalle de una solicitud de material                                                               |
 
 ### Tools de escritura (requieren `FREEMATICA_ENABLE_WRITES=true`)
 
@@ -376,6 +387,30 @@ Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=tr
 | `freematica_create_correo`                              | `POST /pgrl/v2/correos`                                         | Alta de correo (v2)                                              |
 | `freematica_update_correo_estado_v1`                    | `PUT /pgrl/v1/correo/{idReg}/estado`                            | Actualización de estado de correo (v1)                           |
 | `freematica_update_correo_estado`                       | `PUT /pgrl/v2/correos/{idReg}/estado`                           | Actualización de estado de correo (v2)                           |
+| `freematica_create_computo_pers`                        | `POST /pvss/v2/computos-pers`                                   | Alta de cómputo de persona                                       |
+| `freematica_update_computo_pers`                        | `PUT /pvss/v2/computos-pers/{idReg}`                            | Actualización de cómputo de persona                              |
+| `freematica_create_computo_pers_h`                      | `POST /pvss/v2/computos-pers-h`                                 | Alta de detalle de cómputo de persona                            |
+| `freematica_update_cuadrante`                           | `PUT /pvss/v2/cuadrante/{idReg}`                                | Actualizar datos de un cuadrante (campos libres PVSS)            |
+| `freematica_create_campo_estadistico`                   | `POST /pvss/v2/campos-estadisticos`                             | Alta de campo estadístico                                        |
+| `freematica_update_campo_estadistico`                   | `PUT /pvss/v2/campos-estadisticos/{idReg}`                      | Modificación de campo estadístico                                |
+| `freematica_create_informe_control`                     | `POST /pvss/v2/informes-control`                                | Insertar informes de control                                     |
+| `freematica_update_servicio_fch_fin`                    | `PUT /pvss/v2/servicios-fch-fin/{idReg}`                        | Actualizar fecha fin de servicio (endpoint alternativo)          |
+| `freematica_create_albaran_venta`                       | `POST /pven/v2/albaranes-ventas`                                | Alta de albarán de venta (cabecera + líneas ALVC*\*/ALVL*\*)     |
+| `freematica_update_albaran_fch_traspaso_ext`            | `PUT /pven/v2/albaranes-ventas-fechatraspasoext/{idReg}`        | Modificación fecha traspaso externo de albarán de venta          |
+| `freematica_create_factura_estado`                      | `POST /pven/v1/facturas/estados`                                | Actualizar datos AAPP/EDICOM de factura electrónica              |
+| `freematica_update_factura_electronica_v1`              | `PUT /pven/v1/facturas/{idreg}`                                 | Actualizar factura electrónica (v1, campos FACED\_\*)            |
+| `freematica_update_factura_electronica_v2`              | `PUT /pven/v2/facturas/{idreg}`                                 | Actualizar factura electrónica (v2, campos FACED\_\*)            |
+| `freematica_update_factura_leido`                       | `PUT /pven/v1/facturas/{idreg}/leido`                           | Marcar factura electrónica como leída                            |
+| `freematica_update_factura_compra`                      | `PUT /pcmp/v2/facturas-compras/{idReg}`                         | Actualizar fecha exportado de factura de compra                  |
+| `freematica_update_pedido_fechas`                       | `PUT /pcmp/v2/pedidos-fechas/{idreg}`                           | Actualizar fechas entrega/enviado/conforme de pedido de compra   |
+| `freematica_recibir_pedido`                             | `PUT /pcmp/v2/control/recibir-pedidos/{idReg}`                  | Recibir pedido de compra (body vacío)                            |
+| `freematica_create_propuesta_compra`                    | `POST /pcmp/v1/propuestas`                                      | Alta de propuesta de compra                                      |
+| `freematica_actualizar_alta_habilitaciones_personal`    | `PUT /peqv/v2/habilitaciones/personal/actualizar/alta`          | Comunicar actualización de altas de licencias de personal (CAE)  |
+| `freematica_actualizar_baja_habilitaciones_personal`    | `PUT /peqv/v2/habilitaciones/personal/actualizar/baja`          | Comunicar actualización de bajas de licencias de personal (CAE)  |
+| `freematica_actualizar_alta_habilitaciones_servicios`   | `PUT /peqv/v2/habilitaciones/servicios/actualizar/alta`         | Comunicar actualización de altas de habilitaciones de servicios  |
+| `freematica_actualizar_baja_habilitaciones_servicios`   | `PUT /peqv/v2/habilitaciones/servicios/actualizar/baja`         | Comunicar actualización de bajas de habilitaciones de servicios  |
+| `freematica_create_solicitud_material`                  | `POST /peqv/v2/solicitud-material`                              | Alta de solicitud de material (CAE/equipamiento)                 |
+| `freematica_import_asientos`                            | `POST /pcon/v2/import-asientos`                                 | Insertar asiento contable en borrador (campos BORR\_\*)          |
 
 ## Filtros tipados (FIQL interno)
 
