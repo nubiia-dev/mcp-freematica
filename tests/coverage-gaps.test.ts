@@ -48,6 +48,18 @@ import { registerProveedoresTools } from '../src/tools/proveedores.js';
 import { registerAlbaranesTools } from '../src/tools/albaranes.js';
 import { registerHabilitacionesTools } from '../src/tools/habilitaciones.js';
 import { registerCuadrantesTools } from '../src/tools/cuadrantes.js';
+import { registerPettTools } from '../src/tools/pett.js';
+import { registerPkaiTools } from '../src/tools/pkai.js';
+import { registerPedvTools } from '../src/tools/pedv.js';
+import { registerPfreeTools } from '../src/tools/pfree.js';
+import { registerPdirTools } from '../src/tools/pdir.js';
+import { registerPgdocTools } from '../src/tools/pgdoc.js';
+import { registerPcuoTools } from '../src/tools/pcuo.js';
+import { registerMcomTools } from '../src/tools/mcom.js';
+import { registerPpdeTools } from '../src/tools/ppde.js';
+import { registerCompTools } from '../src/tools/comp.js';
+import { registerPselTools } from '../src/tools/psel.js';
+import { registerPtesTools } from '../src/tools/ptes.js';
 import { Writable } from 'node:stream';
 
 // ---------------------------------------------------------------------------
@@ -1597,5 +1609,269 @@ describe('tool catch branches — cuadrantes.ts Fase 7 (nuevas tools de lectura)
     };
     expect(result.isError).toBe(true);
     expect(JSON.parse(result.content[0].text).error).toBe('unexpected_error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Fase 8 — módulos pequeños
+// ---------------------------------------------------------------------------
+
+describe('coverage-gaps Fase 8 — non-FreematicaError catch branches', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  // pett reads
+  it('non-FreematicaError en freematica_list_pett_peticiones_serv', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPettPeticionesServ').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPettTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pett_peticiones_serv')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_list_pett_peticiones_serv_perso', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPettPeticionesServPerso').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPettTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pett_peticiones_serv_perso')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_list_pett_ofertas', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPettOfertas').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPettTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pett_ofertas')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_list_pett_partes_ett_c', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPettPartesEttC').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPettTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pett_partes_ett_c')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // pett writes
+  it('non-FreematicaError en freematica_create_pett_peticion_serv', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createPettPeticionServ').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPettTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_pett_peticion_serv')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_update_pett_peticion_serv', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'updatePettPeticionServ').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPettTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_pett_peticion_serv')({ idReg: 'X' })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_update_pett_peticion_serv_duplicar', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'updatePettPeticionServDuplicar').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPettTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_pett_peticion_serv_duplicar')({ idReg: 'X' })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // pkai
+  it('non-FreematicaError en freematica_list_pkai_historicos_v1', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPkaiHistoricosV1').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPkaiTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pkai_historicos_v1')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_create_pkai_marcaje', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createPkaiMarcaje').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPkaiTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_pkai_marcaje')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // pedv
+  it('non-FreematicaError en freematica_list_pedv_pedidos', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPedvPedidos').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPedvTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pedv_pedidos')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_create_pedv_pedido_servir', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createPedvPedidoServir').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPedvTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_pedv_pedido_servir')({ idReg: 'X' })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // pfree
+  it('non-FreematicaError en freematica_list_pfree_ips', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPfreeIps').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPfreeTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pfree_ips')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_get_pfree_ip', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getPfreeIp').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPfreeTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_pfree_ip')({ idReg: 'X' })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // pdir
+  it('non-FreematicaError en freematica_list_pdir_csm_indicador', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPdirCsmIndicador').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPdirTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pdir_csm_indicador')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_get_pdir_csm_indicador', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getPdirCsmIndicador').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPdirTools(server, client);
+    const result = (await getHandler(server, 'freematica_get_pdir_csm_indicador')({ idReg: 'X' })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // pgdoc
+  it('non-FreematicaError en freematica_list_pgdoc_edocs', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPgdocEdocs').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPgdocTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pgdoc_edocs')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // pcuo
+  it('non-FreematicaError en freematica_list_pcuo_beneficiarios', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPcuoBeneficiarios').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPcuoTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_pcuo_beneficiarios')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_create_pcuo_beneficiario', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createPcuoBeneficiario').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPcuoTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_pcuo_beneficiario')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // mcom
+  it('non-FreematicaError en freematica_list_mcom_usuarios', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listMcomUsuarios').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerMcomTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_mcom_usuarios')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_create_mcom_usuario', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createMcomUsuario').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerMcomTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_mcom_usuario')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // ppde
+  it('non-FreematicaError en freematica_list_ppde_solicitud_vacaciones', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listPpdeSolicitudVacaciones').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPpdeTools(server, client);
+    const result = (await getHandler(server, 'freematica_list_ppde_solicitud_vacaciones')({ page: 1, items: 20 })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_update_ppde_solicitud_vacacion', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'updatePpdeSolicitudVacacion').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPpdeTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_update_ppde_solicitud_vacacion')({ idReg: 'X' })) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_create_ppde_recordatorio_firma', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createPpdeRecordatorioFirma').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPpdeTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_ppde_recordatorio_firma')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // comp
+  it('non-FreematicaError en freematica_create_comp_albaran_compra', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createCompAlbaranCompra').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCompTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_comp_albaran_compra')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  it('non-FreematicaError en freematica_create_comp_registro_gastos_contrato', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createCompRegistroGastosContrato').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerCompTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_comp_registro_gastos_contrato')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // psel
+  it('non-FreematicaError en freematica_create_psel_candidato', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createPselCandidato').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPselTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_psel_candidato')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
+  });
+
+  // ptes
+  it('non-FreematicaError en freematica_create_ptes_importar_fichero_n43', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'createPtesImportarFicheroN43').mockRejectedValueOnce(new Error('network'));
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerPtesTools(server, client, { enableWrites: true });
+    const result = (await getHandler(server, 'freematica_create_ptes_importar_fichero_n43')({})) as { content: { type: string; text: string }[]; isError?: boolean; };
+    expect(result.isError).toBe(true);
   });
 });

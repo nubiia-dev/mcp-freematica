@@ -3624,6 +3624,258 @@ export class FreematicaClient extends BaseClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Fase 8 — módulos pequeños
+  // ---------------------------------------------------------------------------
+
+  // pett — ETT
+  async listPettPeticionesServ(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pett/v2/peticiones-serv', opts);
+  }
+
+  async listPettPeticionesServPerso(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pett/v2/peticiones-serv-perso', opts);
+  }
+
+  async listPettOfertas(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pett/v2/ofertas', opts);
+  }
+
+  async listPettPartesEttC(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pett/v1/partes_ett_c', opts);
+  }
+
+  async createPettPeticionServ(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPettPeticionServ', 'POST /pett/v2/peticiones-serv', body);
+    return this.post<Record<string, unknown>>('/pett/v2/peticiones-serv', body);
+  }
+
+  async createPettPeticionServPerso(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPettPeticionServPerso', 'POST /pett/v2/peticiones-serv/perso', body);
+    return this.post<Record<string, unknown>>('/pett/v2/peticiones-serv/perso', body);
+  }
+
+  async updatePettPeticionServ(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePettPeticionServ', `PUT /pett/v2/peticiones-serv/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pett/v2/peticiones-serv/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async updatePettPeticionServPersoEstado(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePettPeticionServPersoEstado', `PUT /pett/v2/peticiones-serv/perso/estado/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pett/v2/peticiones-serv/perso/estado/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async updatePettPeticionServDuplicar(idReg: string): Promise<Record<string, unknown>> {
+    this.logWrite('updatePettPeticionServDuplicar', `PUT /pett/v2/peticiones-serv/duplicar/${idReg}`, {});
+    return this.put<Record<string, unknown>>(`/pett/v2/peticiones-serv/duplicar/${encodeURIComponent(idReg)}`, {});
+  }
+
+  async createPettGestionPartesEttC(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPettGestionPartesEttC', 'POST /pett/v1/gestion_partes_ett_c', body);
+    return this.post<Record<string, unknown>>('/pett/v1/gestion_partes_ett_c', body);
+  }
+
+  async updatePettProcesoServicioFin(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePettProcesoServicioFin', `PUT /pett/v2/procesos_servicio_fin/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pett/v2/procesos_servicio_fin/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async updatePettProcesoServicio(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePettProcesoServicio', `PUT /pett/v2/procesos-servicio/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pett/v2/procesos-servicio/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async updatePettProcesoServicioProrroga(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePettProcesoServicioProrroga', `PUT /pett/v2/procesos-servicio-prorrogas/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pett/v2/procesos-servicio-prorrogas/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // pkai — KAIROS fichajes
+  async listPkaiHistoricosV1(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pkai/v1/historicos', opts);
+  }
+
+  async listPkaiHistoricosV2(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pkai/v2/historicos', opts);
+  }
+
+  async listPkaiTiposMarcajes(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pkai/v1/tiposmarcajes', opts);
+  }
+
+  async createPkaiMarcaje(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPkaiMarcaje', 'POST /pkai/v1/marcajes', body);
+    return this.post<Record<string, unknown>>('/pkai/v1/marcajes', body);
+  }
+
+  // pedv — pedidos venta portal
+  async listPedvPedidos(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pedv/v1/pedidos', opts);
+  }
+
+  async listPedvPedidosLineas(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pedv/v1/pedidos-lineas', opts);
+  }
+
+  async createPedvPedidoServir(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPedvPedidoServir', `POST /pedv/v1/pedidos/${idReg}/servir`, body);
+    return this.post<Record<string, unknown>>(`/pedv/v1/pedidos/${encodeURIComponent(idReg)}/servir`, body);
+  }
+
+  async updatePedvServirPedidoV2(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePedvServirPedidoV2', `PUT /pedv/v2/control/servir-pedidos/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pedv/v2/control/servir-pedidos/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // pfree — IPs internas/ERP
+  async listPfreeIps(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pfree/v2/ips', opts);
+  }
+
+  async listPfreeIpsErp(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pfree/v2/ips-erp', opts);
+  }
+
+  async getPfreeIp(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pfree/v2/ips/${encodeURIComponent(idReg)}`);
+  }
+
+  async getPfreeIpErp(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pfree/v2/ips-erp/${encodeURIComponent(idReg)}`);
+  }
+
+  // pdir — CSM indicadores
+  async listPdirCsmGrupoIndicador(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pdir/v1/csm/grupoindicador', opts);
+  }
+
+  async listPdirCsmIndicador(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pdir/v1/csm/indicador', opts);
+  }
+
+  async getPdirCsmIndicador(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pdir/v1/csm/indicador/${encodeURIComponent(idReg)}`);
+  }
+
+  // pgdoc — documentos electrónicos
+  async listPgdocEdocs(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pgdoc/v2/edocs/docs', opts);
+  }
+
+  // pcuo — beneficiarios y partes
+  async listPcuoBeneficiarios(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcuo/v2/beneficiarios', opts);
+  }
+
+  async getPcuoBeneficiario(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pcuo/v2/beneficiarios/${encodeURIComponent(idReg)}`);
+  }
+
+  async createPcuoBeneficiario(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPcuoBeneficiario', 'POST /pcuo/v2/beneficiarios', body);
+    return this.post<Record<string, unknown>>('/pcuo/v2/beneficiarios', body);
+  }
+
+  async updatePcuoBeneficiario(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePcuoBeneficiario', `PUT /pcuo/v2/beneficiarios/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pcuo/v2/beneficiarios/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async listPcuoPartes(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/pcuo/v2/partes', opts);
+  }
+
+  async getPcuoParte(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/pcuo/v2/partes/${encodeURIComponent(idReg)}`);
+  }
+
+  async createPcuoParte(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPcuoParte', 'POST /pcuo/v2/partes', body);
+    return this.post<Record<string, unknown>>('/pcuo/v2/partes', body);
+  }
+
+  async updatePcuoParte(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePcuoParte', `PUT /pcuo/v2/partes/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/pcuo/v2/partes/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // mcom — usuarios comunicaciones
+  async listMcomUsuarios(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/mcom/v2/usuarios', opts);
+  }
+
+  async getMcomUsuario(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/mcom/v2/usuarios/${encodeURIComponent(idReg)}`);
+  }
+
+  async createMcomUsuario(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createMcomUsuario', 'POST /mcom/v2/usuarios', body);
+    return this.post<Record<string, unknown>>('/mcom/v2/usuarios', body);
+  }
+
+  async updateMcomUsuario(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updateMcomUsuario', `PUT /mcom/v2/usuarios/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/mcom/v2/usuarios/${encodeURIComponent(idReg)}`, body);
+  }
+
+  // ppde — portal empleado
+  async listPpdeConfiguracionAccesoUsuario(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/ppde/v2/configuracion-acceso-usuario', opts);
+  }
+
+  async getPpdeConfiguracionAccesoUsuario(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/ppde/v2/configuracion-acceso-usuario/${encodeURIComponent(idReg)}`);
+  }
+
+  async listPpdePersonalDoc(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/ppde/v1/personal_doc', opts);
+  }
+
+  async getPpdePersonalDoc(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/ppde/v1/personal_doc/${encodeURIComponent(idReg)}`);
+  }
+
+  async listPpdeSolicitudVacaciones(opts: ListOptions = {}): Promise<ListResult<Record<string, unknown>>> {
+    return this.listResource<Record<string, unknown>>('/ppde/v2/solicitud-vacaciones', opts);
+  }
+
+  async getPpdeSolicitudVacacion(idReg: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(`/ppde/v2/solicitud-vacaciones/${encodeURIComponent(idReg)}`);
+  }
+
+  async updatePpdeSolicitudVacacion(idReg: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('updatePpdeSolicitudVacacion', `PUT /ppde/v2/solicitud-vacaciones/${idReg}`, body);
+    return this.put<Record<string, unknown>>(`/ppde/v2/solicitud-vacaciones/${encodeURIComponent(idReg)}`, body);
+  }
+
+  async createPpdeRecordatorioFirma(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPpdeRecordatorioFirma', 'POST /ppde/v2/recordatorio_firma', body);
+    return this.post<Record<string, unknown>>('/ppde/v2/recordatorio_firma', body);
+  }
+
+  // comp — compras
+  async createCompAlbaranCompra(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCompAlbaranCompra', 'POST /comp/v2/albaranes-compras', body);
+    return this.post<Record<string, unknown>>('/comp/v2/albaranes-compras', body);
+  }
+
+  async createCompRegistroGastosContrato(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createCompRegistroGastosContrato', 'POST /comp/v2/registro-gastos-contratos', body);
+    return this.post<Record<string, unknown>>('/comp/v2/registro-gastos-contratos', body);
+  }
+
+  // psel — selección
+  async createPselCandidato(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPselCandidato', 'POST /psel/v2/control/candidatos', body);
+    return this.post<Record<string, unknown>>('/psel/v2/control/candidatos', body);
+  }
+
+  // ptes — tesorería
+  async createPtesImportarFicheroN43(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    this.logWrite('createPtesImportarFicheroN43', 'POST /ptes/v1/importar-fichero-n43', body);
+    return this.post<Record<string, unknown>>('/ptes/v1/importar-fichero-n43', body);
+  }
+
+  // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------
 

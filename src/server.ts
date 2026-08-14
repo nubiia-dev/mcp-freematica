@@ -37,6 +37,18 @@ import { registerPgrlCorreoTools } from './tools/pgrl-correo.js';
 import { registerPvssEscriturasTools } from './tools/pvss-escrituras.js';
 import { registerPvenEscriturasTools } from './tools/pven-escrituras.js';
 import { registerPcmpEscriturasTools } from './tools/pcmp-escrituras.js';
+import { registerPettTools } from './tools/pett.js';
+import { registerPkaiTools } from './tools/pkai.js';
+import { registerPedvTools } from './tools/pedv.js';
+import { registerPfreeTools } from './tools/pfree.js';
+import { registerPdirTools } from './tools/pdir.js';
+import { registerPgdocTools } from './tools/pgdoc.js';
+import { registerPcuoTools } from './tools/pcuo.js';
+import { registerMcomTools } from './tools/mcom.js';
+import { registerPpdeTools } from './tools/ppde.js';
+import { registerCompTools } from './tools/comp.js';
+import { registerPselTools } from './tools/psel.js';
+import { registerPtesTools } from './tools/ptes.js';
 
 export interface CreateFreematicaServerOptions {
   client: FreematicaClient;
@@ -89,6 +101,18 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerPvssEscriturasTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPvenEscriturasTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPcmpEscriturasTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPettTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPkaiTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPedvTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPfreeTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPdirTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPgdocTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPcuoTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerMcomTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPpdeTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerCompTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPselTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPtesTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
 
   return server;
 }
