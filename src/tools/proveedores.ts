@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { FreematicaError } from '../clients/base-client.js';
 import type { FreematicaClient } from '../clients/freematica-client.js';
 import { PaginationSchema } from '../schemas/pagination.js';
-import { error, ok, okList } from './helpers.js';
+import { error, ok, okList, type RegisterOptions } from './helpers.js';
 
 const LIST_TOOL_NAME = 'freematica_list_proveedores';
 const GET_TOOL_NAME = 'freematica_get_proveedor';
@@ -93,7 +93,11 @@ const LIST_SCHEMA = {
  * @param server - Instancia del servidor MCP.
  * @param client - Cliente Freemática autenticado.
  */
-export function registerProveedoresTools(server: McpServer, client: FreematicaClient): void {
+export function registerProveedoresTools(
+  server: McpServer,
+  client: FreematicaClient,
+  opts: RegisterOptions = { enableWrites: false },
+): void {
   server.tool(
     LIST_TOOL_NAME,
     LIST_DESCRIPTION,
@@ -148,6 +152,87 @@ export function registerProveedoresTools(server: McpServer, client: FreematicaCl
       try {
         const proveedor = await client.getProveedor(id);
         return ok(proveedor) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  // --------------------------------------------------------------------------
+  // Tools v1: acceso al endpoint /pgrl/v1/proveedores
+  // --------------------------------------------------------------------------
+
+  server.tool(
+    'freematica_list_proveedores_v1',
+    [
+      'Devuelve la lista paginada de proveedores usando el endpoint v1 de Freemática.',
+      '',
+      'Paginación 1-indexed.',
+    ].join('\n'),
+    PaginationSchema,
+    { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+    async ({ page, items }): Promise<CallToolResult> => {
+      try {
+        const result = await client.listProveedoresV1({ page, items });
+        return okList({ items: result.items, total: result.total, page, itemsPerPage: items }) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  if (!opts.enableWrites) return;
+
+  // --------------------------------------------------------------------------
+  // Tools de escritura: alta y actualización de proveedores
+  // --------------------------------------------------------------------------
+
+  server.tool(
+    'freematica_create_proveedor',
+    [
+      'Da de alta un proveedor en Freemática.',
+      '',
+      'Endpoint: POST /pgrl/v2/proveedores.',
+      'Campos nativos del proveedor (COD_GRUPO_PRO, COD_PRO, NOMBRE_PRO, NIF, etc.).',
+    ].join('\n'),
+    {
+      fields: z
+        .record(z.string(), z.unknown())
+        .describe('Campos nativos del proveedor (COD_GRUPO_PRO, COD_PRO, NOMBRE_PRO, NIF, etc.).'),
+    },
+    { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    async ({ fields }): Promise<CallToolResult> => {
+      try {
+        const created = await client.createProveedor(fields);
+        return ok(created) as CallToolResult;
+      } catch (err) {
+        if (err instanceof FreematicaError) return error(err) as CallToolResult;
+        return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;
+      }
+    },
+  );
+
+  server.tool(
+    'freematica_update_proveedor',
+    [
+      'Actualiza un proveedor existente (actualización parcial).',
+      '',
+      'Endpoint: PUT /pgrl/v2/proveedores/{idReg}. La tool recupera el proveedor actual,',
+      'aplica encima los campos informados y envía el objeto completo.',
+    ].join('\n'),
+    {
+      idReg: z.string().min(1).describe('Identificador del proveedor.'),
+      fields: z.record(z.string(), z.unknown()).describe('Campos a actualizar.'),
+    },
+    { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+    async ({ idReg, fields }): Promise<CallToolResult> => {
+      try {
+        const current = await client.getProveedor(idReg);
+        const body = { ...(current as Record<string, unknown>), ...fields };
+        const updated = await client.updateProveedor(idReg, body);
+        return ok(updated) as CallToolResult;
       } catch (err) {
         if (err instanceof FreematicaError) return error(err) as CallToolResult;
         return error(err instanceof Error ? err : new Error(String(err))) as CallToolResult;

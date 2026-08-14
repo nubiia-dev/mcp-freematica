@@ -118,4 +118,58 @@ describe('registerClientesTools', () => {
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('not_found');
   });
+
+  it('list_clientes_v1 returns items from v1 endpoint', async () => {
+    const fake = [{ COD_CLI: 'C001' }];
+    nock(BASE_URL)
+      .get('/pgrl/v1/clientes')
+      .query({ items: '20', page: '1' })
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, 'freematica_list_clientes_v1');
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.items).toEqual(fake);
+  });
+
+  it('get_cliente_v1 returns the cliente object', async () => {
+    const fake = { COD_CLI: 'C001', NOMBRE_CLI: 'Test' };
+    nock(BASE_URL)
+      .get('/pgrl/v1/clientes/CLID')
+      .reply(200, detailEnv(fake));
+
+    const server = buildServer();
+    const handler = getHandler(server, 'freematica_get_cliente_v1');
+    const result = (await handler({ idReg: 'CLID' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed).toEqual(fake);
+  });
+
+  it('get_cliente_v1 returns error not_found', async () => {
+    nock(BASE_URL)
+      .get('/pgrl/v1/clientes/BAD')
+      .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+
+    const server = buildServer();
+    const handler = getHandler(server, 'freematica_get_cliente_v1');
+    const result = (await handler({ idReg: 'BAD' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('not_found');
+  });
 });

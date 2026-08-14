@@ -97,4 +97,78 @@ describe('registerContactosClientesTools', () => {
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('server_error');
   });
+
+  it('list_contactos_clientes_v1 returns items from v1 endpoint', async () => {
+    const fake = [{ CC_NOM_APELL: 'Juan García' }];
+    nock(BASE_URL)
+      .get('/pgrl/v1/contactos-clientes')
+      .query({ items: '20', page: '1' })
+      .reply(200, listEnv(fake, 1));
+
+    const server = buildServer();
+    const handler = getHandler(server, 'freematica_list_contactos_clientes_v1');
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.items).toEqual(fake);
+  });
+
+  it('list_contactos_clientes_v1 returns error on failure', async () => {
+    nock(BASE_URL)
+      .get('/pgrl/v1/contactos-clientes')
+      .query({ items: '20', page: '1' })
+      .reply(200, { errorCode: '500', errorMessage: 'Internal error', data: null });
+
+    const server = buildServer();
+    const handler = getHandler(server, 'freematica_list_contactos_clientes_v1');
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('server_error');
+  });
+
+  it('get_contacto_cliente returns the contacto object', async () => {
+    const fake = { CC_NOM_APELL: 'Juan García', CC_EMAIL1: 'juan@test.com' };
+
+    const detailEnv = <T>(item: T) => ({ errorCode: '200', errorMessage: '', data: item });
+    nock(BASE_URL)
+      .get('/pgrl/v1/contactos-clientes/CCID')
+      .reply(200, detailEnv(fake));
+
+    const server = buildServer();
+    const handler = getHandler(server, 'freematica_get_contacto_cliente');
+    const result = (await handler({ idReg: 'CCID' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed).toEqual(fake);
+  });
+
+  it('get_contacto_cliente returns error not_found', async () => {
+    nock(BASE_URL)
+      .get('/pgrl/v1/contactos-clientes/BAD')
+      .reply(200, { errorCode: '404', errorMessage: 'Not Found', data: null });
+
+    const server = buildServer();
+    const handler = getHandler(server, 'freematica_get_contacto_cliente');
+    const result = (await handler({ idReg: 'BAD' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('not_found');
+  });
 });
