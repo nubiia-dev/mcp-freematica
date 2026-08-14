@@ -2,6 +2,48 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [Unreleased] — módulo part (Inventario/Artículos) completo: lectura y escritura
+
+### Módulo `part` (Inventario/Artículos)
+
+Implementación completa del módulo `/part/` de la API de Freemática (Fase 5). Se añaden **14 tools de solo lectura** y **7 tools de escritura** (condicionadas a `FREEMATICA_ENABLE_WRITES=true`). Cubre costes de artículos, serie/lote, existencias (stocks-serie-lote), stocks por almacén, movimientos de stock, entradas de producción, albaranes de traspaso y tablas auxiliares de catálogo (familias, líneas, subfamilias).
+
+Se extiende también `src/tools/articulos.ts` con 2 tools de lectura (`list_costes`, `get_coste`) y 2 de escritura (`create_articulo`, `update_articulo`), que complementan las 3 tools preexistentes de ese módulo sin reemplazarlas.
+
+#### Added (lectura — 14 tools nuevas)
+
+- **`freematica_list_articulos_costes`** — `GET /part/v2/articulos-costes`. Lista paginada de costes de artículos.
+- **`freematica_get_articulo_coste`** — `GET /part/v2/articulos-costes/{idReg}`. Detalle de coste de un artículo.
+- **`freematica_list_articulos_serie_lote`** — `GET /part/v2/articulos-serie-lote`. Lista paginada de artículos con número de serie/lote.
+- **`freematica_get_articulo_serie_lote`** — `GET /part/v2/articulos-serie-lote/{idReg}`. Detalle de un artículo con número de serie/lote.
+- **`freematica_list_stocks_serie_lote`** — `GET /part/v2/stocks-serie-lote`. Lista paginada de existencias de artículos por serie/lote.
+- **`freematica_get_stock_serie_lote`** — `GET /part/v2/stocks-serie-lote/{idReg}`. Detalle de existencias de un artículo por serie/lote.
+- **`freematica_list_stocks`** — `GET /part/v1/stocks`. Lista paginada de stocks de artículos por almacén.
+- **`freematica_get_stock`** — `GET /part/v1/stocks/{idReg}`. Detalle de stock de un artículo por almacén (existencias, ubicación).
+- **`freematica_list_familias`** — `GET /part/v1/familias`. Lista paginada de familias de artículos (complementa `freematica_get_master_data` con paginación e idReg individual).
+- **`freematica_get_familia`** — `GET /part/v1/familias/{idReg}`. Detalle de una familia de artículos.
+- **`freematica_list_lineas`** — `GET /part/v1/lineas`. Lista paginada de líneas de artículos.
+- **`freematica_get_linea`** — `GET /part/v1/lineas/{idReg}`. Detalle de una línea de artículos.
+- **`freematica_list_subfamilias`** — `GET /part/v1/subfamilias`. Lista paginada de subfamilias de artículos (complementa `freematica_get_master_data`).
+- **`freematica_get_subfamilia`** — `GET /part/v1/subfamilias/{idReg}`. Detalle de una subfamilia de artículos.
+
+#### Added (escritura — 7 tools nuevas, solo con `FREEMATICA_ENABLE_WRITES=true`)
+
+- **`freematica_create_articulo`** — `POST /part/v2/articulos`. Alta de artículo en el catálogo de inventario (body libre por campos nativos).
+- **`freematica_update_articulo`** — `PUT /part/v2/articulos/{idReg}`. Actualización parcial de artículo (fetch+merge; rechaza `fields` vacío).
+- **`freematica_create_articulo_serie_lote`** — `POST /part/v2/articulos-serie-lote`. Alta de registro de número de serie/lote para un artículo (body libre).
+- **`freematica_create_movimiento_stock`** — `POST /part/v2/movimientos-stock`. Alta de movimiento de stock: entradas, salidas y ajustes de inventario (body libre).
+- **`freematica_create_entrada_produccion`** — `POST /part/v2/entradas-produccion`. Alta de entrada de producción (artículo fabricado). Params explícitos: `codArticulo`, `cantidad`, `codAlmacen`, `fchEntrada`, `codLote` (opcional).
+- **`freematica_create_albaran_traspaso`** — `POST /part/v2/control/albaran-traspaso`. Alta de albarán de traspaso entre almacenes (`cab`: campos de cabecera; `lineas`: array de líneas).
+- **`freematica_traspaso_albaran`** — `PUT /part/v2/control/albaran-traspaso/{idReg}`. Confirma el traspaso de un albarán de traspaso (body vacío; idReg URL-encoded).
+
+#### Not implemented (by design)
+
+- Endpoints de borrado (`DELETE`) — invariante del repositorio: no existen tools de borrado.
+- `GET /part/v1/articulos`, `GET /part/v1/articulos/{idreg}`, `GET /pgrl/v1/precio-articulo/{idreg}` — ya implementados en `src/tools/articulos.ts` (Fase 1) y no se duplican.
+
+---
+
 ## [Unreleased] — módulo pcrm (CRM extendido) completo: lectura y escritura
 
 ### Módulo `pcrm` (CRM extendido)

@@ -13,6 +13,7 @@
  * 7. src/tools/calendarios.ts — líneas 70-71, 97-98: catch con Error genérico
  * 8. src/tools/cartera.ts — líneas 75-76, 91-92: catch con Error genérico
  * 9. src/tools/pedidos-compras.ts — líneas 112-113, 136-137: catch con Error genérico (TD-152)
+ * 10. src/tools/part/*.ts — catch con Error genérico (no FreematicaError) — Fase 5
  */
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import nock from 'nock';
@@ -26,6 +27,9 @@ import { registerLocalizacionesTools } from '../src/tools/localizaciones.js';
 import { registerCalendariosTools } from '../src/tools/calendarios.js';
 import { registerCarteraTools } from '../src/tools/cartera.js';
 import { registerPedidosComprasTools } from '../src/tools/pedidos-compras.js';
+import { registerExistenciasTools } from '../src/tools/part/existencias.js';
+import { registerStocksTools } from '../src/tools/part/stocks.js';
+import { registerTablasAuxiliaresTools } from '../src/tools/part/tablas-auxiliares.js';
 import { Writable } from 'node:stream';
 
 // ---------------------------------------------------------------------------
@@ -732,5 +736,127 @@ describe('tool catch branches — pedidos-compras.ts (TD-152)', () => {
     expect(result.isError).toBe(true);
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.error).toBe('not_found');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 10. part module — catch con Error genérico (no FreematicaError)
+//
+// Cubre las ramas `else` (non-FreematicaError) en los catch blocks de los
+// sub-módulos del módulo part (Fase 5). Cada test usa vi.spyOn para lanzar
+// un plain Error que no es FreematicaError, cubriendo:
+//   - if (err instanceof FreematicaError) → FALSE branch
+//   - err instanceof Error ? err : ... → TRUE branch (ternario)
+// ---------------------------------------------------------------------------
+
+describe('tool catch branches — part module (Fase 5)', () => {
+  afterEach(() => {
+    nock.cleanAll();
+    vi.restoreAllMocks();
+  });
+
+  it('list_stocks_serie_lote — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listStocksSerieLote').mockRejectedValueOnce(
+      new Error('connection reset by peer'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerExistenciasTools(server, client);
+    const handler = getHandler(server, 'freematica_list_stocks_serie_lote');
+
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('unexpected_error');
+    expect(parsed.message).toContain('connection reset by peer');
+  });
+
+  it('get_stock — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getStock').mockRejectedValueOnce(
+      new Error('socket hang up'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerStocksTools(server, client);
+    const handler = getHandler(server, 'freematica_get_stock');
+
+    const result = (await handler({ id: 'IDREG1' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('unexpected_error');
+    expect(parsed.message).toContain('socket hang up');
+  });
+
+  it('list_familias — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listFamilias').mockRejectedValueOnce(
+      new Error('upstream timeout'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerTablasAuxiliaresTools(server, client);
+    const handler = getHandler(server, 'freematica_list_familias');
+
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('unexpected_error');
+    expect(parsed.message).toContain('upstream timeout');
+  });
+
+  it('get_stock_serie_lote — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'getStockSerieLote').mockRejectedValueOnce(
+      new Error('dns resolution failed'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerExistenciasTools(server, client);
+    const handler = getHandler(server, 'freematica_get_stock_serie_lote');
+
+    const result = (await handler({ id: 'IDREG1' })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('unexpected_error');
+    expect(parsed.message).toContain('dns resolution failed');
+  });
+
+  it('list_stocks — catches generic Error and returns unexpected_error', async () => {
+    const client = new FreematicaClient({ baseUrl: BASE_URL, authHeaders: AUTH_HEADERS });
+    vi.spyOn(client, 'listStocks').mockRejectedValueOnce(
+      new Error('network unavailable'),
+    );
+
+    const server = new McpServer({ name: 'test', version: '0.0.0' });
+    registerStocksTools(server, client);
+    const handler = getHandler(server, 'freematica_list_stocks');
+
+    const result = (await handler({ page: 1, items: 20 })) as {
+      content: { type: string; text: string }[];
+      isError?: boolean;
+    };
+
+    expect(result.isError).toBe(true);
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.error).toBe('unexpected_error');
+    expect(parsed.message).toContain('network unavailable');
   });
 });

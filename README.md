@@ -23,6 +23,20 @@ MCP server que expone operaciones del API REST de Freemática (ERP: facturación
 | `freematica_list_articulos`                               | `GET /part/v1/articulos`                                       | Catálogo de artículos/materiales/consumibles (referencias, familias, proveedores)                  |
 | `freematica_get_articulo`                                 | `GET /part/v1/articulos/{idreg}`                               | Detalle de un artículo                                                                             |
 | `freematica_get_precio_articulo`                          | `GET /pgrl/v1/precio-articulo/{idreg}`                         | Precios de venta de un artículo (PRECIO_VENTA, DESCUENTO, FACTURABLE)                              |
+| `freematica_list_articulos_costes`                        | `GET /part/v2/articulos-costes`                                | Lista paginada de costes de artículos                                                              |
+| `freematica_get_articulo_coste`                           | `GET /part/v2/articulos-costes/{idReg}`                        | Detalle de coste de un artículo                                                                    |
+| `freematica_list_articulos_serie_lote`                    | `GET /part/v2/articulos-serie-lote`                            | Lista paginada de artículos con número de serie/lote                                               |
+| `freematica_get_articulo_serie_lote`                      | `GET /part/v2/articulos-serie-lote/{idReg}`                    | Detalle de un artículo con número de serie/lote                                                    |
+| `freematica_list_stocks_serie_lote`                       | `GET /part/v2/stocks-serie-lote`                               | Lista paginada de existencias de artículos por serie/lote                                          |
+| `freematica_get_stock_serie_lote`                         | `GET /part/v2/stocks-serie-lote/{idReg}`                       | Detalle de existencias de un artículo por serie/lote                                               |
+| `freematica_list_stocks`                                  | `GET /part/v1/stocks`                                          | Lista paginada de stocks de artículos por almacén                                                  |
+| `freematica_get_stock`                                    | `GET /part/v1/stocks/{idReg}`                                  | Detalle de stock de un artículo por almacén                                                        |
+| `freematica_list_familias`                                | `GET /part/v1/familias`                                        | Lista paginada de familias de artículos (detalle + paginación vs master_data)                      |
+| `freematica_get_familia`                                  | `GET /part/v1/familias/{idReg}`                                | Detalle de una familia de artículos por idReg                                                      |
+| `freematica_list_lineas`                                  | `GET /part/v1/lineas`                                          | Lista paginada de líneas de artículos                                                              |
+| `freematica_get_linea`                                    | `GET /part/v1/lineas/{idReg}`                                  | Detalle de una línea de artículos por idReg                                                        |
+| `freematica_list_subfamilias`                             | `GET /part/v1/subfamilias`                                     | Lista paginada de subfamilias de artículos (detalle + paginación vs master_data)                   |
+| `freematica_get_subfamilia`                               | `GET /part/v1/subfamilias/{idReg}`                             | Detalle de una subfamilia de artículos por idReg                                                   |
 | `freematica_list_materiales_asignados_servicios`          | `GET /pvss/v2/contratos-servicios-material`                    | Lista de material asignado a servicios                                                             |
 | `freematica_get_master_data`                              | (24 endpoints según `catalog`)                                 | Devuelve un catálogo de datos maestros (tipos, geográficos, organizativos, inventario, financiero) |
 | `freematica_list_clientes`                                | `GET /pgrl/v2/clientes`                                        | Lista paginada de clientes                                                                         |
@@ -288,6 +302,13 @@ Por defecto el servidor es de **solo lectura**. Con `FREEMATICA_ENABLE_WRITES=tr
 | `freematica_update_oportunidad_negocio_v1`              | `PUT /pcrm/v1/oportunidades-negocio/{idReg}`                    | Actualización de oportunidad de negocio (v1)                     |
 | `freematica_update_oportunidad_negocio`                 | `PUT /pcrm/v2/oportunidades-negocio/{idReg}`                    | Actualización de oportunidad de negocio (v2)                     |
 | `freematica_update_oportunidad_negocio_datos_ampliados` | `PUT /pcrm/v2/oportunidades-negocio/{idReg}/datos-ampliados`    | Actualización de datos ampliados de oportunidad                  |
+| `freematica_create_articulo`                            | `POST /part/v2/articulos`                                       | Alta de artículo en el catálogo de inventario                    |
+| `freematica_update_articulo`                            | `PUT /part/v2/articulos/{idReg}`                                | Actualización parcial de artículo (fetch+merge)                  |
+| `freematica_create_articulo_serie_lote`                 | `POST /part/v2/articulos-serie-lote`                            | Alta de registro de serie/lote para un artículo                  |
+| `freematica_create_movimiento_stock`                    | `POST /part/v2/movimientos-stock`                               | Alta de movimiento de stock (entradas, salidas, ajustes)         |
+| `freematica_create_entrada_produccion`                  | `POST /part/v2/entradas-produccion`                             | Alta de entrada de producción (artículo fabricado)               |
+| `freematica_create_albaran_traspaso`                    | `POST /part/v2/control/albaran-traspaso`                        | Alta de albarán de traspaso entre almacenes                      |
+| `freematica_traspaso_albaran`                           | `PUT /part/v2/control/albaran-traspaso/{idReg}`                 | Confirma el traspaso de un albarán de traspaso (body vacío)      |
 
 ## Filtros tipados (FIQL interno)
 

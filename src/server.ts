@@ -28,6 +28,7 @@ import { registerServiciosPvssTools } from './tools/servicios-pvss.js';
 import { registerPpreTools } from './tools/ppre/index.js';
 import { registerPemfTools } from './tools/pemf/index.js';
 import { registerPcrmTools } from './tools/pcrm/index.js';
+import { registerPartTools } from './tools/part/index.js';
 
 export interface CreateFreematicaServerOptions {
   client: FreematicaClient;
@@ -63,7 +64,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerCalendariosTools(server, opts.client);
   registerFacturasElectronicasTools(server, opts.client);
   registerAlbaranesTools(server, opts.client);
-  registerArticulosTools(server, opts.client);
+  registerArticulosTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerVinculosPersonasServiciosTools(server, opts.client);
   registerHabilitacionesTools(server, opts.client);
   registerCuadrantesTools(server, opts.client);
@@ -71,6 +72,7 @@ export function createFreematicaServer(opts: CreateFreematicaServerOptions): Mcp
   registerPpreTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPemfTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
   registerPcrmTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
+  registerPartTools(server, opts.client, { enableWrites: opts.enableWrites ?? false });
 
   return server;
 }

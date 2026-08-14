@@ -220,6 +220,21 @@ const READ_ONLY_TOOLS = [
   'freematica_get_oportunidad_negocio_v1',
   'freematica_list_tipos_oportunidad_negocio',
   'freematica_get_tipo_oportunidad_negocio',
+  // part — Inventario/Artículos (Fase 5)
+  'freematica_list_articulos_costes',
+  'freematica_get_articulo_coste',
+  'freematica_list_articulos_serie_lote',
+  'freematica_get_articulo_serie_lote',
+  'freematica_list_stocks_serie_lote',
+  'freematica_get_stock_serie_lote',
+  'freematica_list_stocks',
+  'freematica_get_stock',
+  'freematica_list_familias',
+  'freematica_get_familia',
+  'freematica_list_lineas',
+  'freematica_get_linea',
+  'freematica_list_subfamilias',
+  'freematica_get_subfamilia',
 ].sort();
 
 const WRITE_TOOLS = [
@@ -301,6 +316,14 @@ const WRITE_TOOLS = [
   'freematica_update_oportunidad_negocio_v1',
   'freematica_update_oportunidad_negocio',
   'freematica_update_oportunidad_negocio_datos_ampliados',
+  // part write tools (Fase 5)
+  'freematica_create_articulo',
+  'freematica_update_articulo',
+  'freematica_create_articulo_serie_lote',
+  'freematica_create_movimiento_stock',
+  'freematica_create_entrada_produccion',
+  'freematica_create_albaran_traspaso',
+  'freematica_traspaso_albaran',
 ].sort();
 
 describe('createFreematicaServer', () => {
