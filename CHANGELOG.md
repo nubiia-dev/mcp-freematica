@@ -2,6 +2,21 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.11.1] — 2026-10-22
+
+### Publicación por npm Trusted Publishing y dependencias al día
+
+Sin cambios funcionales en las herramientas.
+
+#### Changed
+
+- La publicación en npm se hace por **Trusted Publishing (OIDC)** desde `publish.yml`, sin `NPM_TOKEN` y con **provenance**. El workflow actualiza npm a ≥ 11.5.1 antes de publicar.
+- `vitest`, `@vitest/coverage-v8` y `@vitest/ui` pasan a `^4.1.12`. Se regenera el lockfile, con `@modelcontextprotocol/sdk` 1.32.1 y versiones parcheadas de `axios`, `fast-uri`, `hono` e `ip-address`.
+
+#### Security
+
+- `npm audit --audit-level=high` vuelve a dar 0 vulnerabilidades. Avisos nuevos (axios, fast-uri, tinypool, @vitest/mocker, el SDK de MCP) habían roto el paso de auditoría de CI y de publicación.
+
 ## [0.11.0] — 2026-08-14
 
 ### Cobertura completa de la API de Freemática (lectura y escritura)
