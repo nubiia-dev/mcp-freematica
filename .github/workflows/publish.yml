@@ -61,7 +61,7 @@ jobs:
           "
 
       - name: Security audit
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       # No NPM_TOKEN: npm exchanges the job's OIDC identity for a short-lived publish
       # credential via the package's npm Trusted Publisher (nubiia-dev/mcp-freematica,
