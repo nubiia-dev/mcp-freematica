@@ -10,7 +10,7 @@ Sin cambios funcionales en las herramientas.
 
 #### Changed
 
-- La publicación en npm se hace por **Trusted Publishing (OIDC)** desde `publish.yml`, sin `NPM_TOKEN` y con **provenance**. El workflow actualiza npm a ≥ 11.5.1 antes de publicar.
+- La publicación en npm se hace por **Trusted Publishing (OIDC)** desde `release.yml` (antes `publish.yml`), sin `NPM_TOKEN` y con **provenance**. El workflow actualiza npm a ≥ 11.5.1 antes de publicar.
 - Lockfile regenerado: `@modelcontextprotocol/sdk` 1.32.1 y versiones parcheadas de `axios`, `fast-uri`, `hono` e `ip-address`.
 - El paso de auditoría de CI y de publicación revisa solo las dependencias de producción (`npm audit --omit=dev`), que son las que se publican. `vitest` se queda en 3.x hasta que se recalibren los umbrales de cobertura para vitest 4.
 
