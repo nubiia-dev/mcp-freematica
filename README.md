@@ -907,7 +907,7 @@ node dist/index.js
    git tag v0.5.0
    git push origin v0.5.0
    ```
-4. El workflow `.github/workflows/publish.yml` se dispara, valida (lint + typecheck + test + build) y publica en npm.
+4. El workflow `.github/workflows/release.yml` se dispara, valida (lint + typecheck + test + build) y publica en npm.
 
 ## Especificaciones y diseño
 
