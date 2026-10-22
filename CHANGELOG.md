@@ -11,11 +11,12 @@ Sin cambios funcionales en las herramientas.
 #### Changed
 
 - La publicación en npm se hace por **Trusted Publishing (OIDC)** desde `publish.yml`, sin `NPM_TOKEN` y con **provenance**. El workflow actualiza npm a ≥ 11.5.1 antes de publicar.
-- `vitest`, `@vitest/coverage-v8` y `@vitest/ui` pasan a `^4.1.12`. Se regenera el lockfile, con `@modelcontextprotocol/sdk` 1.32.1 y versiones parcheadas de `axios`, `fast-uri`, `hono` e `ip-address`.
+- Lockfile regenerado: `@modelcontextprotocol/sdk` 1.32.1 y versiones parcheadas de `axios`, `fast-uri`, `hono` e `ip-address`.
+- El paso de auditoría de CI y de publicación revisa solo las dependencias de producción (`npm audit --omit=dev`), que son las que se publican. `vitest` se queda en 3.x hasta que se recalibren los umbrales de cobertura para vitest 4.
 
 #### Security
 
-- `npm audit --audit-level=high` vuelve a dar 0 vulnerabilidades. Avisos nuevos (axios, fast-uri, tinypool, @vitest/mocker, el SDK de MCP) habían roto el paso de auditoría de CI y de publicación.
+- `npm audit --omit=dev --audit-level=high` da 0 vulnerabilidades. Avisos nuevos de axios, fast-uri y el SDK de MCP habían roto el paso de auditoría.
 
 ## [0.11.0] — 2026-08-14
 
