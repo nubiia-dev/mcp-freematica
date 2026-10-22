@@ -2,6 +2,14 @@
 
 Todas las versiones notables del paquete `@nubiia/mcp-freematica` se documentan aquí. Sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [SemVer](https://semver.org/lang/es/).
 
+## [0.11.2] — 2026-10-22
+
+### Alta en el MCP Registry
+
+#### Added
+
+- El servidor se publica en el **MCP Registry** como `io.github.nubiia-dev/mcp-freematica`. Se añaden `server.json` (esquema 2025-10-17, con las variables de autenticación necesarias) y `mcpName` en `package.json`. `release.yml` publica en el registro por OIDC justo después de npm.
+
 ## [0.11.1] — 2026-10-22
 
 ### Publicación por npm Trusted Publishing y dependencias al día
