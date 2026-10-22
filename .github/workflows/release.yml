@@ -68,3 +68,47 @@ jobs:
       # workflow release.yml).
       - name: Publish to npm
         run: npm publish --access public --provenance
+
+      # server.json lleva la versión del paquete; se sincroniza aquí con package.json
+      # para que el MCP Registry siempre registre la versión que se acaba de publicar.
+      - name: Sync server.json version with package.json
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          VERSION="$VERSION" node -e "
+            const fs = require('fs');
+            const server = JSON.parse(fs.readFileSync('server.json', 'utf8'));
+            server.version = process.env.VERSION;
+            for (const pkg of server.packages ?? []) pkg.version = process.env.VERSION;
+            fs.writeFileSync('server.json', JSON.stringify(server, null, 2) + '\\n');
+          "
+          cat server.json
+
+      # npm tarda unos segundos en servir una versión recién publicada y el
+      # registro MCP la valida contra npm: sin esta espera, publish falla con
+      # "version not found" (pasó en mcp-borme 1.0.1).
+      - name: Wait for the version to be visible on npm
+        run: |
+          PKG=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          for i in $(seq 1 30); do
+            if npm view "$PKG@$VERSION" version >/dev/null 2>&1; then
+              echo "$PKG@$VERSION is available on npm"
+              exit 0
+            fi
+            echo "Waiting for $PKG@$VERSION on npm ($i/30)..."
+            sleep 10
+          done
+          echo "::error::$PKG@$VERSION did not appear on npm after 5 minutes"
+          exit 1
+
+      - name: Download MCP Publisher
+        run: |
+          curl -L https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz -o mcp-publisher.tar.gz
+          tar -xzf mcp-publisher.tar.gz
+          chmod +x mcp-publisher
+
+      - name: Authenticate with MCP Registry (OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish

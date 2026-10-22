@@ -1,0 +1,80 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.nubiia-dev/mcp-freematica",
+  "description": "Freemática ERP: invoicing, receivables, suppliers, accounting and HR through 300+ MCP tools",
+  "version": "0.11.2",
+  "homepage": "https://github.com/nubiia-dev/mcp-freematica",
+  "license": "MIT",
+  "author": {
+    "name": "Nubiia",
+    "url": "https://nubiia.es"
+  },
+  "repository": {
+    "url": "https://github.com/nubiia-dev/mcp-freematica",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@nubiia/mcp-freematica",
+      "version": "0.11.2",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "FREEMATICA_AUTH_TOKEN",
+          "description": "Freemática API token (x-auth-token header).",
+          "format": "string",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "FREEMATICA_AUTH_COMPANY",
+          "description": "Freemática company identifier (x-auth-company header).",
+          "format": "string",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "FREEMATICA_AUTH_ORGANIZATION",
+          "description": "Freemática organization identifier (x-auth-organization header).",
+          "format": "string",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "FREEMATICA_AUTH_APP",
+          "description": "Freemática consuming application, e.g. pvss (x-auth-app header).",
+          "format": "string",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "FREEMATICA_AUTH_SESSION",
+          "description": "Freemática active session (x-auth-session header).",
+          "format": "string",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "FREEMATICA_ENABLE_WRITES",
+          "description": "Set to true to register the create/update tools. Read-only by default.",
+          "format": "boolean",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "false"
+        },
+        {
+          "name": "FREEMATICA_BASE_URL",
+          "description": "Freemática API base URL. Change only for an alternative host.",
+          "format": "string",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "https://api-p01.clientservicepanel.com/restsat/api"
+        }
+      ]
+    }
+  ]
+}

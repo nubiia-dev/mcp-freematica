@@ -1,5 +1,6 @@
 {
   "name": "@nubiia/mcp-freematica",
+  "mcpName": "io.github.nubiia-dev/mcp-freematica",
   "version": "0.11.1",
   "description": "MCP server for the Freemática ERP REST API: invoicing, accounts receivable, suppliers, accounting and HR data for AI assistants like Claude. Built by Nubiia.",
   "type": "module",
