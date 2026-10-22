@@ -18,12 +18,12 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
           scope: '@nubiia'
           cache: 'npm'
 
-      # Trusted Publishing (OIDC) needs npm >= 11.5.1; the npm bundled with Node 20 is older.
+      # Trusted Publishing (OIDC) needs npm >= 11.5.1; npm@latest (12+) requires Node >= 22.
       - name: Update npm for Trusted Publishing
         run: npm install -g npm@latest
 
